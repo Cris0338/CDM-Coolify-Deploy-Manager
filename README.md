@@ -41,6 +41,6 @@ Settings live under `%LOCALAPPDATA%\CoolifyDeployManager\settings.json` and surv
 
 ## Development and release status
 
-This project has passed **static checks only** for WPF 2.1.0; a full Windows compilation and functional testing are still required before a public release. In particular verify: settings contrast and dropdowns, window chrome, SSH startup/reconnect, token migration from 2.0.3, staging/production classification, and a single staging deployment. A completed Coolify deployment does not by itself prove application health.
+**Build verified on Windows 10 x64:** .NET SDK 10.0.403 published the self-contained WPF 2.1.0 EXE successfully, and all 8 classification tests passed. The maintainer has confirmed the application starts and runs. Before publishing a prebuilt GitHub Release, complete and document the final acceptance checks: settings controls, automatic SSH startup/reconnect, token migration, and a staging deploy with an independent application health check. A successful Coolify deployment does not by itself guarantee application health.
 
 Licensed under MIT; see [LICENSE](LICENSE) and [AUTHORS.md](AUTHORS.md).
