@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+portable/
+.vs/
+.vscode/
+*.user
+*.suo
+settings.json
