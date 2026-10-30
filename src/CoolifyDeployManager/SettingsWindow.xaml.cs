@@ -22,7 +22,7 @@ public partial class SettingsWindow : Window
         RemoteHost.Text = original.SshRemoteHost;
         ConnectionChooser.SelectedIndex = (int)original.ConnectionMode;
         foreach (var (code, nativeName) in Loc.Languages)
-            LanguageChooser.Items.Add(new ComboBoxItem { Content = nativeName, Tag = code });
+            LanguageChooser.Items.Add(new ComboBoxItem { Content = code == "system" ? Loc.T("SystemLanguage") : nativeName, Tag = code });
         foreach (ComboBoxItem item in LanguageChooser.Items)
             if ((string)item.Tag == original.Language) { LanguageChooser.SelectedItem = item; break; }
         LanguageChooser.SelectedItem ??= LanguageChooser.Items[0];
