@@ -8,7 +8,7 @@
     <AssemblyName>CoolifyDeployManager</AssemblyName>
     <RootNamespace>CoolifyDeployManager</RootNamespace>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <Authors>Cris0338</Authors>
     <Copyright>Copyright © 2026 Cris0338</Copyright>
     <Product>Coolify Deploy Manager</Product>
@@ -18,5 +18,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="Assets\AppIcon.ico" />
+    <EmbeddedResource Include="Localization\*.json" LogicalName="CoolifyDeployManager.Localization.%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

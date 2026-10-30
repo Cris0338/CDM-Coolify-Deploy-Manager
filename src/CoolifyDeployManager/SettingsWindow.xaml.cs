@@ -21,6 +21,8 @@ public partial class SettingsWindow : Window
         RemotePort.Text = original.SshRemotePort.ToString();
         RemoteHost.Text = original.SshRemoteHost;
         ConnectionChooser.SelectedIndex = (int)original.ConnectionMode;
+        foreach (var (code, nativeName) in Loc.Languages)
+            LanguageChooser.Items.Add(new ComboBoxItem { Content = nativeName, Tag = code });
         foreach (ComboBoxItem item in LanguageChooser.Items)
             if ((string)item.Tag == original.Language) { LanguageChooser.SelectedItem = item; break; }
         LanguageChooser.SelectedItem ??= LanguageChooser.Items[0];
@@ -34,8 +36,8 @@ public partial class SettingsWindow : Window
         SshFields.Visibility = mode == 1 ? Visibility.Visible : Visibility.Collapsed;
         UrlInput.IsEnabled = mode == 0;
         UrlHint.Text = mode == 0 ? Loc.T("UrlDefaultHint")
-            : mode == 1 ? "http://127.0.0.1:port → encrypted SSH tunnel"
-            : "http://127.0.0.1:port → existing local tunnel";
+            : mode == 1 ? Loc.T("UrlManagedHint")
+            : Loc.T("UrlExternalHint");
     }
     private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {

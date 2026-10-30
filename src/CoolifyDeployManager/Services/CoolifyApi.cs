@@ -18,7 +18,7 @@ internal sealed class CoolifyApi : IDisposable
         readToken = settings.ReadToken.Trim();
         deployToken = settings.DeployToken.Trim();
         if (string.IsNullOrEmpty(readToken) || string.IsNullOrEmpty(deployToken))
-            throw new ArgumentException("Configurare entrambi i token API.");
+            throw new ArgumentException("Configure both API tokens.");
 
         http = new HttpClient
         {
@@ -42,8 +42,8 @@ internal sealed class CoolifyApi : IDisposable
 
     public async Task<CoolifyInventory> GetInventoryAsync(CancellationToken ct)
     {
-        // L'endpoint /applications elenca applicazioni (non DB o servizi infrastrutturali).
-        // /projects/{uuid}/environments fornisce la mappa ID -> progetto e ambiente.
+        // The /applications endpoint lists applications (not databases or infrastructure services).
+        // /projects/{uuid}/environments maps IDs to projects and environments.
         using var projectsDoc = await GetJsonAsync("projects", readToken, ct);
         using var appsDoc = await GetJsonAsync("applications", readToken, ct);
 
@@ -101,10 +101,10 @@ internal sealed class CoolifyApi : IDisposable
     }
 
     /// <summary>
-    /// Carica il deploy piu' recente di ogni applicazione con concorrenza limitata.
-    /// Coolify restituisce normalmente { count, deployments }, ma alcune versioni
+    /// Fetch the latest deployment for each application with limited concurrency.
+    /// Coolify normally returns { count, deployments }, but some versions
     /// espongono direttamente un array: supportiamo entrambi i formati.
-    /// Un errore sul singolo storico non deve bloccare il caricamento delle card.
+    /// A failure retrieving one application's history must not block card loading.
     /// </summary>
     public async Task<(Dictionary<string, LatestDeploy> Values, int Unavailable)> GetLatestDeploysAsync(
         IReadOnlyList<CoolifyApplication> apps, CancellationToken ct)
@@ -160,24 +160,24 @@ internal sealed class CoolifyApi : IDisposable
 
     public async Task<string> StartDeployAsync(string resourceUuid, CancellationToken ct)
     {
-        // L'API Coolify accetta POST /deploy?uuid=...&force=false.
+        // The Coolify API accepts POST /deploy?uuid=...&force=false.
         var query = $"deploy?uuid={Uri.EscapeDataString(resourceUuid)}&force=false";
         using var doc = await SendJsonAsync(HttpMethod.Post, query, deployToken, ct);
         var root = doc.RootElement;
         if (!root.TryGetProperty("deployments", out var deployments)
             || deployments.ValueKind != JsonValueKind.Array)
             throw new InvalidOperationException("Coolify non ha restituito la lista dei deploy. Risposta: " +
-                                                root.Str("message", "nessun dettaglio"));
+                                                root.Str("message", "no details"));
         foreach (var item in deployments.EnumerateArray())
         {
             if (item.Str("resource_uuid").Equals(resourceUuid, StringComparison.OrdinalIgnoreCase))
             {
                 var deploymentUuid = item.Str("deployment_uuid");
                 if (deploymentUuid.Length > 0) return deploymentUuid;
-                throw new InvalidOperationException("Deploy non accodato: " + item.Str("message", "UUID assente"));
+                throw new InvalidOperationException("Deployment was not queued: " + item.Str("message", "UUID missing"));
             }
         }
-        throw new InvalidOperationException("Nessun deploy accodato per questa applicazione.");
+        throw new InvalidOperationException("No deployment was queued for this application.");
     }
 
     public async Task<DeploymentInfo> GetDeploymentAsync(string deploymentUuid, CancellationToken ct)

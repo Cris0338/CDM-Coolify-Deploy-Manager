@@ -53,8 +53,8 @@ internal static class Classifier
         return (words.Any(Stage.Contains), words.Any(Prod.Contains));
     }
 
-    // Prima nome e branch: gli ambienti Coolify possono essere denominati "prix" o "production"
-    // indipendentemente dalla destinazione effettiva dell'applicazione.
+    // Names and branches take precedence: Coolify environments may be called "services" or "production"
+    // regardless of the application's actual deployment target.
     public static DeploymentGroup Classify(CoolifyApplication app, UserSettings settings)
     {
         if (settings.Overrides.TryGetValue(app.Uuid, out var saved)) return saved;
@@ -73,6 +73,6 @@ internal static class Classifier
         return DeploymentGroup.Unknown;
     }
     public static string Explain(CoolifyApplication a, DeploymentGroup g) => g == DeploymentGroup.Unknown
-        ? $"{a.Name} (branch={a.Branch}; env={a.Environment}): nessun segnale univoco o segnali contrastanti"
+        ? $"{a.Name} (branch={a.Branch}; env={a.Environment}): no unambiguous classification signal, or conflicting signals"
         : $"{a.Name}: {g} (branch={a.Branch}, env={a.Environment})";
 }

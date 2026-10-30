@@ -48,7 +48,7 @@ public partial class MainWindow : Window
         ProductionCount.Text = Loc.F("ApplicationsCount", 0);
         UnknownCount.Text = Loc.F("ApplicationsCount", 0);
         InventoryCount.Text = Loc.F("ApplicationsCount", 0);
-        AddLog("Coolify Deploy Manager WPF 2.1.0 · Startup.");
+        AddLog("Coolify Deploy Manager WPF 2.1.1 · Startup.");
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -327,7 +327,7 @@ public partial class MainWindow : Window
     private void ClearLog_Click(object sender, RoutedEventArgs e) => LogBox.Clear();
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
-        AddLog("Richiesto stop attesa/coda LOCALE. I deploy già accodati su Coolify continuano.");
+        AddLog(Loc.T("LocalQueueCancelled"));
         operation?.Cancel();
     }
     private async void Deploy_Click(object sender, RoutedEventArgs e)
@@ -411,14 +411,14 @@ public partial class MainWindow : Window
                 AddLog($"POST /deploy: {card.App.Project}/{card.Name} ({card.Uuid})");
                 OperationText.Text = "Deploy: " + card.Name;
                 var deployment = await api.StartDeployAsync(card.Uuid, operation.Token);
-                AddLog("Deploy accodato da Coolify. UUID: " + deployment);
+                AddLog(Loc.F("DeploymentQueued", deployment));
                 var start = DateTimeOffset.UtcNow;
                 string last = "";
                 while (true)
                 {
                     operation.Token.ThrowIfCancellationRequested();
                     if (DateTimeOffset.UtcNow - start > TimeSpan.FromMinutes(30))
-                        throw new TimeoutException("Monitoraggio scaduto dopo 30 minuti. Il deploy può continuare su Coolify.");
+                        throw new TimeoutException(Loc.T("MonitorTimeout"));
                     await Task.Delay(TimeSpan.FromSeconds(4), operation.Token);
                     await EnsureConnectionAsync(operation.Token);
                     var state = await api.GetDeploymentAsync(deployment, operation.Token);
@@ -433,7 +433,7 @@ public partial class MainWindow : Window
                         break;
                     }
                     if (state.Status is "failed" or "cancelled" or "error")
-                        throw new InvalidOperationException($"Deploy fallito: {card.Name} ({state.Status})");
+                        throw new InvalidOperationException(Loc.F("DeploymentFailed", card.Name, state.Status));
                 }
             }
             OperationText.Text = Loc.T("QueueFinished");

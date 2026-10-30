@@ -8,7 +8,7 @@ using System.Net.Sockets;
 namespace CoolifyDeployManager;
 
 /// <summary>
-/// Usa il client OpenSSH di Windows già configurato dall'utente, senza mostrare una console.
+/// Uses the user's configured Windows OpenSSH client without showing a console.
 /// Non disabilita la verifica delle host key e non trasferisce token su un IP remoto in HTTP.
 /// </summary>
 internal sealed class SshTunnel : IAsyncDisposable
@@ -31,7 +31,7 @@ internal sealed class SshTunnel : IAsyncDisposable
         }
         Stop();
         if (!IsPortFree(settings.SshLocalPort))
-            throw new IOException($"La porta locale {settings.SshLocalPort} è già occupata. Chiudi il vecchio tunnel SSH oppure scegli un'altra porta.");
+            throw new IOException($"Local port {settings.SshLocalPort} is already in use. Close the old SSH tunnel or choose another port.");
         var start = new ProcessStartInfo("ssh.exe")
         {
             UseShellExecute = false,
@@ -49,7 +49,7 @@ internal sealed class SshTunnel : IAsyncDisposable
         }) start.ArgumentList.Add(arg);
         try
         {
-            process = Process.Start(start) ?? throw new IOException("Impossibile avviare ssh.exe.");
+            process = Process.Start(start) ?? throw new IOException("Unable to start ssh.exe.");
             var ownedProcess = process;
             _ = Task.Run(async () =>
             {
@@ -58,22 +58,22 @@ internal sealed class SshTunnel : IAsyncDisposable
                     string errors = await ownedProcess.StandardError.ReadToEndAsync();
                     if (!string.IsNullOrWhiteSpace(errors)) StatusChanged?.Invoke("SSH: " + errors.Trim());
                 }
-                catch (Exception) { /* Il processo può terminare durante la chiusura. */ }
+                catch (Exception) { /* The process may exit while being disposed. */ }
             });
         }
         catch (System.ComponentModel.Win32Exception ex)
         {
-            throw new IOException("OpenSSH Client (ssh.exe) non è disponibile in Windows. Verifica la funzionalità opzionale OpenSSH Client.", ex);
+            throw new IOException("OpenSSH Client (ssh.exe) is not available. Enable the optional Windows OpenSSH Client feature.", ex);
         }
         configSignature = signature;
         LocalUrl = $"http://127.0.0.1:{settings.SshLocalPort}";
-        StatusChanged?.Invoke("Avvio tunnel SSH verso " + settings.SshHost + "...");
+        StatusChanged?.Invoke("Starting SSH tunnel to " + settings.SshHost + "...");
         try
         {
             for (int attempt = 0; attempt < 25; attempt++)
             {
                 ct.ThrowIfCancellationRequested();
-                if (!IsRunning) throw new IOException("Il tunnel SSH si è chiuso. Controlla la chiave SSH, known_hosts e l'alias configurato.");
+                if (!IsRunning) throw new IOException("The SSH tunnel exited. Verify the SSH key, known_hosts and configured host alias.");
                 if (await HealthCheckAsync(settings.SshLocalPort, ct))
                 {
                     StatusChanged?.Invoke("Tunnel SSH verificato: " + LocalUrl);

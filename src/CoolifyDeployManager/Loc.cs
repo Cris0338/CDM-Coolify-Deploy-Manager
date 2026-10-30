@@ -1,169 +1,85 @@
 // Copyright (c) 2026 Cris0338. Licensed under the MIT License.
+// UI translations are embedded JSON resources. English is the canonical fallback.
 using System.Globalization;
+using System.Text.Json;
 using System.Windows;
 
 namespace CoolifyDeployManager;
 
 internal static class Loc
 {
-    private static readonly Dictionary<string, (string En, string Fr, string It)> Entries = new()
-    {
-        ["AppTitle"] = ("Coolify Deploy Manager", "Gestionnaire de déploiements Coolify", "Coolify Deploy Manager"),
-        ["Subtitle"] = ("Application deployment · Windows dashboard", "Déploiement d’applications · Tableau de bord Windows", "Distribuzione applicazioni · Dashboard Windows"),
-        ["NotConnected"] = ("Not connected", "Non connecté", "Non connesso"),
-        ["Configuration"] = ("Settings", "Configuration", "Configurazione"),
-        ["Refresh"] = ("Refresh", "Actualiser", "Aggiorna"),
-        ["ApiGuide"] = ("API guide", "Guide API", "Guida API"),
-        ["About"] = ("About", "À propos", "Informazioni"),
-        ["Project"] = ("Project", "Projet", "Progetto"),
-        ["SelectedStaging"] = ("Deploy selected staging", "Déployer les tests sélectionnés", "Deploy staging selezionati"),
-        ["StopQueue"] = ("Stop waiting / queue", "Arrêter l’attente / la file", "Ferma attesa / coda"),
-        ["SearchHint"] = ("Search application, branch or environment · Ctrl+F", "Rechercher une application, branche ou environnement · Ctrl+F", "Cerca applicazione, branch o ambiente · Ctrl+F"),
-        ["All"] = ("All", "Toutes", "Tutte"),
-        ["RunningFilter"] = ("Running", "En cours", "Running"),
-        ["Problems"] = ("Problems", "Problèmes", "Problemi"),
-        ["Unclassified"] = ("Unclassified", "Non classées", "Non classificate"),
-        ["Staging"] = ("STAGING", "STAGING", "STAGING"),
-        ["Production"] = ("PRODUCTION", "PRODUCTION", "PRODUZIONE"),
-        ["UnclassifiedTitle"] = ("UNCLASSIFIED", "NON CLASSÉES", "DA CLASSIFICARE"),
-        ["NoneMatch"] = ("No applications match the selected filters.", "Aucune application ne correspond aux filtres.", "Nessuna applicazione corrisponde ai filtri."),
-        ["Ready"] = ("Ready · No deployment running", "Prêt · Aucun déploiement en cours", "Pronto · Nessun deploy in corso"),
-        ["ToggleLog"] = ("Show / Hide log", "Afficher / Masquer le journal", "Mostra / Nascondi log"),
-        ["ActivityLog"] = ("ACTIVITY LOG", "JOURNAL D’ACTIVITÉ", "REGISTRO ATTIVITÀ"),
-        ["Copy"] = ("Copy", "Copier", "Copia"),
-        ["Clear"] = ("Clear", "Effacer", "Pulisci"),
-        ["DragTooltip"] = ("Drag to rearrange cards", "Glisser pour réorganiser les cartes", "Trascina per cambiare l’ordine"),
-        ["SettingsTitle"] = ("Coolify connection settings", "Paramètres de connexion Coolify", "Configurazione Coolify"),
-        ["SettingsIntro"] = ("Connect your Coolify server", "Connectez votre serveur Coolify", "Collega il tuo server Coolify"),
-        ["TokenEncryption"] = ("API tokens are encrypted with Windows DPAPI for your user profile.", "Les jetons API sont chiffrés par DPAPI pour votre profil Windows.", "Token cifrati con DPAPI nel tuo profilo Windows."),
-        ["ConnectionMode"] = ("01  CONNECTION MODE", "01  MODE DE CONNEXION", "01  MODALITÀ DI CONNESSIONE"),
-        ["HttpsMode"] = ("Public HTTPS (valid certificate)", "HTTPS public (certificat valide)", "HTTPS pubblico (certificato valido)"),
-        ["ManagedSshMode"] = ("Automatic SSH tunnel", "Tunnel SSH automatique", "Tunnel SSH automatico"),
-        ["ExternalSshMode"] = ("Existing local tunnel (advanced)", "Tunnel local existant (avancé)", "Tunnel locale già aperto (avanzato)"),
-        ["CoolifyUrl"] = ("Coolify HTTPS URL", "URL HTTPS de Coolify", "URL HTTPS di Coolify"),
-        ["UrlDefaultHint"] = ("For public HTTPS use a valid certificate matching the domain.", "Utilisez un certificat HTTPS valide correspondant au domaine.", "Usa un certificato HTTPS valido per il dominio."),
-        ["ManagedSshTitle"] = ("SSH tunnel managed by the application", "Tunnel SSH géré par l’application", "Tunnel SSH gestito dall’applicazione"),
-        ["SshAlias"] = ("SSH alias (as in terminal: ssh my-vps)", "Alias SSH (comme dans le terminal : ssh my-vps)", "Alias SSH (come nel terminale: ssh my-vps)"),
-        ["LocalPort"] = ("Local port", "Port local", "Porta locale"),
-        ["RemotePort"] = ("Coolify port on VPS", "Port Coolify sur le VPS", "Porta Coolify sul VPS"),
-        ["RemoteHost"] = ("Destination host on VPS", "Hôte de destination sur le VPS", "Host di destinazione sul VPS"),
-        ["SshInfo"] = ("Uses Windows OpenSSH. Your SSH host key must already be trusted. No terminal window opens.", "Utilise OpenSSH de Windows. La clé hôte doit déjà être approuvée. Aucune console ne s’ouvre.", "Usa OpenSSH di Windows: la chiave host deve essere già nota. Nessuna console viene aperta."),
-        ["TokensTitle"] = ("02  API TOKENS", "02  JETONS API", "02  TOKEN API"),
-        ["ReadToken"] = ("READ token (inventory and history)", "Jeton READ (inventaire et historique)", "Token READ (inventario e storico)"),
-        ["DeployToken"] = ("DEPLOY token (start deployments)", "Jeton DEPLOY (lancement des déploiements)", "Token DEPLOY (avvio deploy)"),
-        ["QuickGuide"] = ("03  QUICK GUIDE", "03  GUIDE RAPIDE", "03  GUIDA RAPIDA"),
-        ["GuideShort"] = ("Coolify → Settings → Access and API: enable API access. Under Keys & Tokens → API Tokens create a read token and a deploy token for the correct team. Never share tokens or include them in logs.", "Coolify → Settings → Access and API : activez l’API. Dans Keys & Tokens → API Tokens, créez un jeton read et un jeton deploy pour la bonne équipe. Ne partagez jamais les jetons.", "Coolify → Settings → Access and API: abilita le API. In Keys & Tokens → API Tokens crea un token read e uno deploy per il team corretto. Non condividere i token."),
-        ["Language"] = ("Language", "Langue", "Lingua"),
-        ["LanguageInfo"] = ("Language changes apply immediately. System uses the Windows display language.", "Le changement de langue est immédiat. Système utilise la langue de Windows.", "La lingua cambia subito. Sistema usa la lingua di Windows."),
-        ["SystemLanguage"] = ("System (automatic)", "Système (automatique)", "Sistema (automatico)"),
-        ["Cancel"] = ("Cancel", "Annuler", "Annulla"),
-        ["SaveSettings"] = ("Save settings", "Enregistrer", "Salva configurazione"),
-        ["GuideTitle"] = ("Coolify API connection guide", "Guide de connexion à l’API Coolify", "Guida alla connessione Coolify"),
-        ["GuideHeading"] = ("How to connect Coolify Deploy Manager", "Comment connecter Coolify Deploy Manager", "Come collegare Coolify Deploy Manager"),
-        ["Guide1"] = ("1 · Enable the Coolify API", "1 · Activer l’API Coolify", "1 · Abilita API in Coolify"),
-        ["Guide1Body"] = ("In Coolify go to Settings → Access and API and enable API access. You can leave MCP disabled. Allowed IPs restricts where calls can originate.", "Dans Coolify, ouvrez Settings → Access and API et activez API access. MCP peut rester désactivé. Allowed IPs filtre les adresses autorisées.", "In Coolify apri Settings → Access and API e abilita API access. Puoi lasciare MCP disattivato. Allowed IPs limita gli indirizzi autorizzati."),
-        ["Guide2"] = ("2 · Create tokens with minimum privileges", "2 · Créer des jetons aux droits minimaux", "2 · Crea token con privilegi minimi"),
-        ["Guide2Body"] = ("In Keys & Tokens → API Tokens create separate read and deploy tokens for the correct team, then enter them in Settings. Do not put tokens in screenshots or logs.", "Dans Keys & Tokens → API Tokens créez des jetons read et deploy distincts pour la bonne équipe, puis saisissez-les dans Configuration. Ne les publiez pas.", "In Keys & Tokens → API Tokens crea due token read e deploy per il team corretto, poi inseriscili nella configurazione. Non pubblicarli."),
-        ["Guide3"] = ("3 · Choose a connection", "3 · Choisir la connexion", "3 · Scegli la connessione"),
-        ["Guide3Body"] = ("HTTPS: use your dashboard domain with a trusted certificate. Automatic SSH: configure Windows OpenSSH first (ssh my-vps), then enter the alias and port. OpenSSH is not bundled inside the EXE.", "HTTPS : utilisez un domaine avec certificat valide. SSH automatique : configurez d’abord OpenSSH Windows (ssh my-vps), puis l’alias et le port. OpenSSH n’est pas inclus dans l’EXE.", "HTTPS: usa il dominio con certificato valido. SSH automatico: configura prima OpenSSH Windows (ssh my-vps), poi alias e porta. OpenSSH non è incluso nell’EXE."),
-        ["Guide4"] = ("4 · Verify the connection", "4 · Tester la connexion", "4 · Verifica la connessione"),
-        ["Guide4Body"] = ("Click Refresh. CDM checks /api/health and reads the inventory. A read-only test does not verify deploy permissions; these are checked when submitting a deployment.", "Cliquez sur Actualiser. CDM vérifie /api/health puis lit l’inventaire. Un test en lecture seule ne valide pas les permissions de déploiement.", "Premi Aggiorna. CDM verifica /api/health e legge l’inventario. Un test di lettura non verifica i permessi di deploy."),
-        ["Guide5"] = ("5 · Classification and safety", "5 · Classement et vérification", "5 · Classificazione e verifica"),
-        ["Guide5Body"] = ("CDM identifies staging, production and release from names, branches and environments. Conflicting signals remain unclassified. Verify targets before deploying.", "CDM distingue staging, production et release avec les noms, branches et environnements. Des indices contradictoires restent non classés. Vérifiez avant tout déploiement.", "CDM distingue staging, production e release dai nomi, branch e ambienti. Segnali contraddittori restano non classificati. Verifica prima del deploy."),
-        ["GuideClose"] = ("Close guide", "Fermer le guide", "Chiudi guida"),
-        ["AboutTitle"] = ("About Coolify Deploy Manager", "À propos de Coolify Deploy Manager", "Informazioni — Coolify Deploy Manager"),
-        ["CreatedBy"] = ("CREATED BY", "CRÉÉ PAR", "CREATO DA"),
-        ["License"] = ("© 2026 Cris0338 · MIT License", "© 2026 Cris0338 · Licence MIT", "© 2026 Cris0338 · Licenza MIT"),
-        ["AboutDescription"] = ("Windows dashboard for managing and deploying applications through Coolify.", "Tableau de bord Windows pour gérer et déployer des applications avec Coolify.", "Dashboard Windows per amministrare e distribuire applicazioni tramite Coolify."),
-        ["Unofficial"] = ("Independent, unofficial software. Not affiliated with or endorsed by Coolify.", "Logiciel indépendant et non officiel. Ni affilié à Coolify ni approuvé par Coolify.", "Software indipendente e non ufficiale. Non affiliato né approvato da Coolify."),
-        ["AboutSources"] = ("Source code and license terms are in README.md and LICENSE.", "Le code source et les termes de licence se trouvent dans README.md et LICENSE.", "Codice sorgente e termini della licenza in README.md e LICENSE."),
-        ["Close"] = ("Close", "Fermer", "Chiudi"),
-        ["ApplicationsCount"] = ("{0} applications", "{0} applications", "{0} applicazioni"),
-        ["AllProjects"] = ("All projects", "Tous les projets", "Tutti i progetti"),
-        ["UnclassifiedExplanation"] = ("Unclassified: {0}", "Non classée : {0}", "Da classificare: {0}"),
-        ["ManagedConnected"] = ("Automatic SSH · Connected", "SSH automatique · Connecté", "SSH automatico · Connesso"),
-        ["ExternalConnected"] = ("External SSH · Connected", "SSH externe · Connecté", "SSH esterno · Connesso"),
-        ["HttpsConnected"] = ("HTTPS · Connected", "HTTPS · Connecté", "HTTPS · Connesso"),
-        ["TunnelStopped"] = ("SSH tunnel inactive", "Tunnel SSH inactif", "Tunnel SSH non attivo"),
-        ["NeedsCheck"] = ("Needs checking", "À vérifier", "Da verificare"),
-        ["ConfigureFirst"] = ("Configure the server address and tokens in Settings.", "Configurez le serveur et les jetons dans Configuration.", "Configura indirizzo e token nelle impostazioni."),
-        ["LoadingInventory"] = ("Loading Coolify inventory…", "Chargement de l’inventaire Coolify…", "Caricamento inventario Coolify…"),
-        ["ReadingInventory"] = ("Reading projects, environments and applications…", "Lecture des projets, environnements et applications…", "Lettura progetti, ambienti e applicazioni…"),
-        ["InventoryUpdated"] = ("{0} applications · Updated {1}", "{0} applications · Actualisé à {1}", "{0} applicazioni · Aggiornato alle {1}"),
-        ["ConnectionError"] = ("Connection error · Check the log", "Erreur de connexion · Voir le journal", "Errore connessione · Controlla il registro"),
-        ["AboutVersion"] = ("WPF · Version 2.1.0", "WPF · Version 2.1.0", "WPF · Versione 2.1.0"),
-        ["BranchUnknown"] = ("Branch unavailable", "Branche indisponible", "Branch non disponibile"),
-        ["DeployProd"] = ("Deploy production", "Déployer en production", "Deploy produzione"),
-        ["DeployStage"] = ("Deploy staging", "Déployer en staging", "Deploy staging"),
-        ["DeployUnknown"] = ("Deploy (unclassified)", "Déployer (non classé)", "Deploy (da classificare)"),
-        ["LastLoading"] = ("Last deployment: loading…", "Dernier déploiement : chargement…", "Ultimo deploy: caricamento…"),
-        ["LastUnavailable"] = ("Last deployment: history unavailable", "Dernier déploiement : historique indisponible", "Ultimo deploy: storico non disponibile"),
-        ["LastNone"] = ("No deployment recorded", "Aucun déploiement enregistré", "Nessun deploy nello storico"),
-        ["LastPrefix"] = ("Last deployment: ", "Dernier déploiement : ", "Ultimo deploy: "),
-        ["UnknownDate"] = ("date unavailable", "date indisponible", "data non disponibile"),
-        ["Soon"] = ("soon", "bientôt", "fra poco"),
-        ["Now"] = ("just now", "à l’instant", "adesso"),
-        ["MinutesAgo"] = ("{0} min ago", "il y a {0} min", "{0} min fa"),
-        ["HoursAgo"] = ("{0} h ago", "il y a {0} h", "{0} h fa"),
-        ["DaysAgo"] = ("{0} days ago", "il y a {0} jours", "{0} giorni fa"),
-        ["VisibleCount"] = ("{0} visible · {1} total", "{0} visibles · {1} au total", "{0} visibili · {1} totali"),
-        ["LoadingLog"] = ("Reading projects, environments and apps…", "Lecture des projets, environnements et applications…", "Lettura progetti, ambienti, applicazioni…"),
-        ["InventoryLog"] = ("Inventory: {0} projects · {1} applications. Deployment histories unavailable: {2}.", "Inventaire : {0} projets · {1} applications. Historiques indisponibles : {2}.", "Inventario: {0} progetti · {1} applicazioni. Storici non disponibili: {2}."),
-        ["AlreadyBusy"] = ("An operation is already running.", "Une opération est déjà en cours.", "Un’operazione è già in corso."),
-        ["CouldNotLoad"] = ("Could not read saved settings. Tokens may belong to another Windows user profile.", "Impossible de charger les paramètres. Les jetons peuvent appartenir à un autre profil Windows.", "Impossibile leggere la configurazione. I token possono appartenere a un altro profilo Windows."),
-        ["InvalidSettings"] = ("Invalid settings", "Paramètres invalides", "Configurazione non valida"),
-        ["InvalidPorts"] = ("The specified ports are invalid.", "Les ports indiqués sont invalides.", "Le porte indicate non sono valide."),
-        ["NeedTokens"] = ("Enter both read and deploy tokens.", "Saisissez les jetons read et deploy.", "Inserisci entrambi i token read e deploy."),
-        ["ConfirmationTitle"] = ("Confirm deployment", "Confirmer le déploiement", "Conferma deploy"),
-        ["ConfirmationProd"] = ("CONFIRM PRODUCTION DEPLOYMENT", "CONFIRMER LE DÉPLOIEMENT EN PRODUCTION", "CONFERMA DEPLOY PRODUZIONE"),
-        ["ConfirmationText"] = ("Application: {0}\nProject: {1}\nEnvironment: {2}\nBranch: {3}\n\nStart deployment?", "Application : {0}\nProjet : {1}\nEnvironnement : {2}\nBranche : {3}\n\nLancer le déploiement ?", "Applicazione: {0}\nProgetto: {1}\nAmbiente: {2}\nBranch: {3}\n\nAvviare il deploy?"),
-        ["UnknownDeployWarning"] = ("This application could not be classified reliably. Verify the Coolify environment and Git branch first.", "Cette application n’a pas pu être classée avec certitude. Vérifiez l’environnement Coolify et la branche Git.", "Questa applicazione non è classificata con certezza. Verifica ambiente Coolify e branch Git."),
-        ["UnknownDeployTitle"] = ("Uncertain classification", "Classement incertain", "Classificazione incerta"),
-        ["NoStage"] = ("No staging applications in this project.", "Aucune application staging dans ce projet.", "Nessuna applicazione staging nel progetto."),
-        ["BatchTitle"] = ("Select staging deployments", "Choisir les déploiements staging", "Selezione deploy staging"),
-        ["BatchHeading"] = ("Select STAGING applications", "Choisir les applications STAGING", "Seleziona le applicazioni STAGING"),
-        ["ConfirmSelection"] = ("Confirm selection", "Valider la sélection", "Conferma selezione"),
-        ["BatchConfirm"] = ("Start {0} STAGING deployments sequentially?\nScope: {1}\nThe queue stops on the first error.", "Lancer {0} déploiements STAGING en série ?\nPortée : {1}\nLa file s’arrête à la première erreur.", "Avviare {0} deploy STAGING in sequenza?\nAmbito: {1}\nLa coda si interrompe al primo errore."),
-        ["BatchConfirmTitle"] = ("Confirm staging batch", "Confirmer la série staging", "Conferma batch staging"),
-        ["AllProjectsUpper"] = ("ALL PROJECTS", "TOUS LES PROJETS", "TUTTI I PROGETTI"),
-        ["StatusWaiting"] = ("Waiting / queue cancelled locally; previously queued deployments continue.", "Attente / file arrêtée localement ; les déploiements déjà lancés continuent.", "Attesa/coda interrotta localmente; i deploy già avviati continuano."),
-        ["StatusWaitingShort"] = ("Local monitoring stopped", "Suivi local arrêté", "Attesa locale interrotta"),
-        ["DeploymentFinished"] = ("OK: deployment finished. Health check not independently verified.", "OK : déploiement terminé. Santé non vérifiée séparément.", "OK: deploy terminato. Health check non verificato separatamente."),
-        ["QueueFinished"] = ("Queue finished · Refresh inventory", "File terminée · Actualiser l’inventaire", "Coda completata · Aggiorna inventario"),
-        ["OperationFailed"] = ("Operation failed · See activity log", "Échec de l’opération · Voir le journal", "Operazione fallita · Controlla il registro"),
-        ["LastStatusLog"] = ("Queue finished. Loading inventory…", "File terminée. Lecture de l’inventaire…", "Coda completata. Lettura inventario…"),
-        ["OrderSaved"] = ("Card order saved.", "Ordre des cartes enregistré.", "Ordine delle card salvato."),
-        ["SettingsSaved"] = ("Settings saved (tokens hidden).", "Paramètres enregistrés (jetons masqués).", "Configurazione salvata (token nascosti)."),
-        ["WaitOperation"] = ("Finish the current operation first.", "Terminez d’abord l’opération en cours.", "Termina prima l’operazione corrente."),
-        ["ExternalTunnelDown"] = ("Local tunnel unavailable at 127.0.0.1:{0}. Start the external SSH connection.", "Tunnel local indisponible sur 127.0.0.1:{0}. Lancez SSH externe.", "Tunnel locale non raggiungibile su 127.0.0.1:{0}. Avvia SSH esterno."),
-        ["HealthFailed"] = ("The HTTPS destination is not responding as Coolify (/api/health). Check the domain.", "La destination HTTPS ne répond pas comme Coolify (/api/health). Vérifiez le domaine.", "La destinazione HTTPS non risponde come Coolify (/api/health). Controlla il dominio."),
-        ["ErrorPrefix"] = ("ERROR: ", "ERREUR : ", "ERRORE: "),
-        ["NeedSshAlias"] = ("Enter your OpenSSH host alias (e.g. my-vps).", "Saisissez l’alias OpenSSH de votre serveur (ex. mon-vps).", "Inserisci l’alias OpenSSH del server (es. my-vps)."),
-        ["HealthHttpStatus"] = ("The destination returned HTTP {0} instead of a valid Coolify health response. Check the dashboard URL.", "Le serveur a répondu HTTP {0} au lieu d'une réponse de santé Coolify. Vérifiez l’URL.", "La destinazione ha risposto HTTP {0} invece di Coolify. Controlla l’URL della dashboard."),
-        ["HttpsTimeout"] = ("HTTPS connection timed out after 12 seconds. Verify the dashboard domain, port and firewall, or choose automatic SSH.", "Connexion HTTPS expirée après 12 secondes. Vérifiez le domaine, le port et le pare-feu, ou utilisez SSH automatique.", "Timeout HTTPS dopo 12 secondi. Verifica dominio, porta e firewall oppure scegli SSH automatico."),
-        ["HttpsCertificateInvalid"] = ("HTTPS certificate could not be validated. Use the Coolify dashboard domain with a valid certificate, or automatic SSH. Never disable TLS validation.", "Certificat HTTPS non valide. Utilisez le domaine Coolify avec un certificat valide ou le tunnel SSH automatique.", "Certificato HTTPS non valido. Usa il dominio Coolify con un certificato valido oppure il tunnel SSH automatico."),
-        ["HttpsConnectionFailed"] = ("HTTPS connection failed: {0}. Check the configured address or use automatic SSH.", "Échec de connexion HTTPS : {0}. Vérifiez l’adresse ou utilisez SSH automatique.", "Connessione HTTPS non riuscita: {0}. Verifica l'indirizzo o scegli SSH automatico."),
-    };
+    public static readonly IReadOnlyList<(string Code, string NativeName)> Languages =
+        new (string, string)[]
+        {
+            ("system", "System (automatic)"),
+            ("en", "English"),
+            ("fr", "Français"),
+            ("it", "Italiano"),
+            ("es", "Español"),
+            ("de", "Deutsch"),
+            ("pt-BR", "Português (Brasil)"),
+            ("nl", "Nederlands"),
+            ("pl", "Polski"),
+            ("tr", "Türkçe"),
+            ("ru", "Русский"),
+            ("uk", "Українська"),
+            ("ja", "日本語"),
+            ("ko", "한국어"),
+            ("zh-CN", "简体中文"),
+        };
+
+    private static readonly Dictionary<string, string> English = LoadJson("en");
+    private static readonly Dictionary<string, Dictionary<string, string>> Cache =
+        new(StringComparer.OrdinalIgnoreCase) { ["en"] = English };
+
     public static string Language { get; private set; } = "en";
-    public static string Resolve(string? pref)
+
+    private static Dictionary<string, string> LoadJson(string code)
     {
-        var input = string.IsNullOrWhiteSpace(pref) || pref == "system"
-            ? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName : pref.Trim();
-        return input.StartsWith("fr", StringComparison.OrdinalIgnoreCase) ? "fr" :
-            input.StartsWith("it", StringComparison.OrdinalIgnoreCase) ? "it" : "en";
+        var resourceName = "CoolifyDeployManager.Localization." + code + ".json";
+        using var stream = typeof(Loc).Assembly.GetManifestResourceStream(resourceName)
+            ?? throw new InvalidOperationException("Missing embedded locale: " + resourceName);
+        var values = JsonSerializer.Deserialize<Dictionary<string, string>>(stream)
+            ?? throw new InvalidOperationException("Empty locale: " + code);
+        return new Dictionary<string, string>(values, StringComparer.Ordinal);
     }
-    public static void Apply(string? pref)
+
+    public static string Resolve(string? preference)
     {
-        Language = Resolve(pref);
-        foreach (var pair in Entries)
-            Application.Current.Resources["L." + pair.Key] = Language switch
-            {
-                "fr" => pair.Value.Fr,
-                "it" => pair.Value.It,
-                _ => pair.Value.En
-            };
+        var input = string.IsNullOrWhiteSpace(preference) || string.Equals(preference, "system", StringComparison.OrdinalIgnoreCase)
+            ? CultureInfo.CurrentUICulture.Name : preference.Trim();
+        var lang = input.Replace('_', '-').ToLowerInvariant();
+        if (lang.StartsWith("pt")) return "pt-BR";
+        if (lang.StartsWith("zh")) return "zh-CN";
+        foreach (var (code, _) in Languages)
+            if (code != "system" && (lang == code.ToLowerInvariant() || lang.StartsWith(code.ToLowerInvariant() + "-")))
+                return code;
+        var prefix = lang.Split('-')[0];
+        foreach (var (code, _) in Languages)
+            if (code == prefix) return code;
+        return "en";
     }
-    public static string T(string key) => Application.Current?.Resources["L." + key] as string
-        ?? (Entries.TryGetValue(key, out var entry) ? entry.En : key);
-    public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
+
+    public static void Apply(string? preference)
+    {
+        Language = Resolve(preference);
+        if (!Cache.TryGetValue(Language, out var selected))
+        {
+            selected = LoadJson(Language);
+            Cache[Language] = selected;
+        }
+        if (Application.Current is not { } app) return;
+        foreach (var (key, english) in English)
+            app.Resources["L." + key] = selected.TryGetValue(key, out var localized) && !string.IsNullOrWhiteSpace(localized)
+                ? localized : english;
+    }
+
+    public static string T(string key)
+    {
+        if (Application.Current?.Resources["L." + key] is string localized) return localized;
+        return English.TryGetValue(key, out var english) ? english : key;
+    }
+
+    public static string F(string key, params object[] args) =>
+        string.Format(CultureInfo.CurrentCulture, T(key), args);
 }
