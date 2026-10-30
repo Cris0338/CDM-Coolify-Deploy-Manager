@@ -27,7 +27,7 @@ internal sealed class SshTunnel : IAsyncDisposable
         if (IsRunning && signature == configSignature)
         {
             if (await HealthCheckAsync(settings.SshLocalPort, ct)) return;
-            throw new IOException("Tunnel SSH attivo ma API Coolify non raggiungibile. Controllare SSH e il servizio remoto.");
+            throw new IOException("SSH tunnel is active, but the Coolify API is unreachable. Check SSH and the remote service.");
         }
         Stop();
         if (!IsPortFree(settings.SshLocalPort))
@@ -106,11 +106,11 @@ internal sealed class SshTunnel : IAsyncDisposable
     private static void Validate(UserSettings s)
     {
         if (string.IsNullOrWhiteSpace(s.SshHost) || s.SshHost.StartsWith('-') || s.SshHost.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Alias SSH non valido.");
+            throw new ArgumentException("Invalid SSH host alias.");
         if (s.SshLocalPort is < 1024 or > 65535 || s.SshRemotePort is < 1 or > 65535)
-            throw new ArgumentException("Porta SSH locale o remota non valida.");
+            throw new ArgumentException("Invalid local or remote SSH port.");
         if (string.IsNullOrWhiteSpace(s.SshRemoteHost) || s.SshRemoteHost.StartsWith('-') || s.SshRemoteHost.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Host remoto SSH non valido.");
+            throw new ArgumentException("Invalid remote SSH host.");
     }
     public void Stop()
     {

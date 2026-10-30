@@ -36,7 +36,7 @@ internal sealed class CoolifyApi : IDisposable
         if (!Uri.TryCreate(raw, UriKind.Absolute, out var uri)
             || uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0
             || !(uri.Scheme == Uri.UriSchemeHttps || (uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback)))
-            throw new ArgumentException("Inserisci l'URL HTTPS di Coolify (HTTP consentito solo su localhost).");
+            throw new ArgumentException("Enter a Coolify HTTPS URL (HTTP is allowed only on localhost).");
         return uri.GetLeftPart(UriPartial.Path).TrimEnd('/');
     }
 
@@ -166,7 +166,7 @@ internal sealed class CoolifyApi : IDisposable
         var root = doc.RootElement;
         if (!root.TryGetProperty("deployments", out var deployments)
             || deployments.ValueKind != JsonValueKind.Array)
-            throw new InvalidOperationException("Coolify non ha restituito la lista dei deploy. Risposta: " +
+            throw new InvalidOperationException("Coolify did not return a deployments list. Response: " +
                                                 root.Str("message", "no details"));
         foreach (var item in deployments.EnumerateArray())
         {
@@ -211,7 +211,7 @@ internal sealed class CoolifyApi : IDisposable
             throw new HttpRequestException($"Coolify HTTP {(int)res.StatusCode} ({res.ReasonPhrase}). {hint}", null, res.StatusCode);
         }
         try { return JsonDocument.Parse(body); }
-        catch (JsonException e) { throw new InvalidOperationException("Risposta API non JSON valido.", e); }
+        catch (JsonException e) { throw new InvalidOperationException("The API returned invalid JSON.", e); }
     }
 
     private static JsonElement.ArrayEnumerator RequireArray(JsonElement root, string endpoint)
