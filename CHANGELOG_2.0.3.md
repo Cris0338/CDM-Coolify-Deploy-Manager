@@ -1,11 +1,8 @@
-# v2.0.3 — Firma personale e rilascio open source
+# CDM WPF 2.0.3 — Creator attribution
 
-- Autore ufficiale: **Cris0338** (indipendente da qualsiasi sito/marchio).
-- Metadati assembly: Authors, Copyright, Product, Description, Version.
-- Nuova finestra **Informazioni** con copyright e nota di indipendenza da Coolify.
-- Licenza MIT e file AUTHORS.md.
-- Intestazioni copyright sui file C# e XAML.
-- Nomi di test ed esempi di connessione resi generici per il repository pubblico.
-- Funzioni API, SSH, deploy e classificazione invariate.
+- Added the personal copyright and author attribution for **Cris0338**.
+- Included the MIT license, author metadata and an About window.
+- Removed project-specific branding from sample data to keep CDM independent.
+- Retained the WPF dashboard and connection behavior.
 
-Verificati file e struttura XML; **compilazione WPF Windows e test GUI da eseguire**.
+Historical source update; see later changelogs for current status.

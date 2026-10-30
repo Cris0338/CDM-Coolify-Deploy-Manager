@@ -1,11 +1,9 @@
-# CDM WPF 2.1.0 — UI and languages
+# CDM WPF 2.1.0 — Dark theme and initial localization
 
-- Custom dark title bars for main, settings, guide and about windows.
-- Consistent dark WPF ComboBox controls and text/background contrast.
-- English, French, Italian localization; automatic Windows language recognition and user override.
-- Persistent user language in settings, existing DPAPI-encrypted token storage unchanged.
-- More specific connection messages: TLS certificate failures, 12-second HTTPS timeout and HTTP health status.
-- Refresh button disabled during inventory loading; a second click does not start a competing request.
-- Automatic SSH mode requires an alias at Save time. No changes to deployment API logic or SSH tunnel process.
-
-This release needs a Windows build and UI/connection test before a public GitHub release.
+- Introduced custom dark title bars across WPF windows.
+- Improved dark theme contrast in Settings, including ComboBox controls.
+- Added English, French and Italian interface strings with Windows UI-language detection.
+- Persisted the preferred language alongside DPAPI-encrypted tokens.
+- Improved TLS, timeout and health-check error messages and prevented concurrent refresh operations.
+- Kept Coolify deployment API and managed SSH tunnel behavior unchanged.
+- Confirmed the WPF 2.1.0 portable build on Windows 10 x64 using .NET SDK 10.0.403.

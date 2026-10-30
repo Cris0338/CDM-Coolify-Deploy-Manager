@@ -6,3 +6,8 @@ portable/
 *.user
 *.suo
 settings.json
+.env
+.env.*
+*.pfx
+*.pem
+*.key

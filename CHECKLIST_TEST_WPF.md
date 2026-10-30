@@ -1,31 +1,22 @@
-# 2026-10-30 — WPF 2.0: checklist compilazione e collaudo
+# CDM WPF release acceptance checklist
 
-**Stato:** sorgenti preparati; non compilati in questo ambiente (SDK Windows/WPF non disponibile).
+This checklist must be completed on Windows before publishing a prebuilt executable.
 
-## Test locale
-
-- [ ] `COMPILA_PORTABLE.ps1` esegue 8/8 test di classificazione
-- [ ] `dotnet publish` produce 0 errori
-- [ ] `portable\CoolifyDeployManager.exe` è il solo file nella cartella portable
-- [ ] Finestra WPF si apre in 1280×720 e 1920×1080, anche con 125% DPI
-- [ ] Importa token e impostazioni legacy senza mostrarli in chiaro
-- [ ] «Configurazione» → «Tunnel SSH automatico», alias ssh, porta locale 18000, host remoto 127.0.0.1, porta remota 8000
-- [ ] Nessuna finestra PowerShell si apre all'avvio
-- [ ] Il programma avvia ssh.exe con BatchMode e StrictHostKeyChecking e verifica `http://127.0.0.1:18000/api/health`
-- [ ] `ssh.exe` viene chiuso uscendo dall'app, ma solo se creato dal programma
-- [ ] Porta locale già occupata → errore esplicito (non riutilizza un tunnel sconosciuto)
-- [ ] Perdita SSH → non invia nuove richieste deploy
-- [ ] Carica progetti e app; Prix release → PRODUZIONE, Prix staging → STAGING
-- [ ] Rendering di `running:healthy`, `exited:unhealthy`, stato sconosciuto
-- [ ] Ultimo deploy/status/commit reali
-- [ ] Riordino card tramite maniglia, resta salvato dopo riavvio
-- [ ] Conferma produzione mostra nome + branch + ambiente
-- [ ] Batch staging comprende solo applicazioni staging e solo del progetto selezionato
-- [ ] Un deploy staging reale → `finished` + refresh stato; il programma non attribuisce automaticamente healthy
-- [ ] «Ferma attesa / coda» interrompe la coda locale senza dichiarare fermato il job su Coolify
-
-## Limiti noti
-
-- L'eseguibile è single-file e include .NET; la modalità SSH automatica usa **OpenSSH Client di Windows**, non una libreria SSH incorporata. Su PC senza `ssh.exe` serve abilitarlo.
-- Le credenziali DPAPI non si trasferiscono tra utenti Windows o PC.
-- Non pubblicare il tool fino al superamento della checklist e al controllo di hash e dipendenze.
+- [ ] Build with .NET 10 x64; classification and localization tests pass.
+- [ ] No executable or local settings are committed to Git.
+- [ ] Custom dark window chrome works: drag, minimize, maximize, close and resize.
+- [ ] Settings fields, password inputs and drop-downs are legible with the dark theme.
+- [ ] Language menu shows all supported locales; Windows language detection and manual override work.
+- [ ] Switching languages refreshes dashboard texts without losing settings or tokens.
+- [ ] Preview locales gracefully fall back to English when a translation is missing.
+- [ ] Read and deploy tokens persist encrypted and remain hidden in the UI/log.
+- [ ] HTTPS connection validates the certificate and handles invalid certificates explicitly.
+- [ ] Managed SSH opens/closes correctly using trusted host keys without an external console.
+- [ ] An occupied local SSH port produces a clear error, without adopting an unrelated process.
+- [ ] Refresh discovers projects, environments and application inventory correctly.
+- [ ] Staging/production/release classification handles conflicting signals conservatively.
+- [ ] Drag-and-drop card order persists across a restart.
+- [ ] Individual staging deployment completes; confirm deployed commit and check website health independently.
+- [ ] Production deployment always requires explicit confirmation; no automatic production batch.
+- [ ] Canceling local monitoring does not claim to cancel server-side deployments.
+- [ ] Publish the single-file EXE only after manual validation and security review.

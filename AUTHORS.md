@@ -1,7 +1,9 @@
-# Autore
+# Authors and attribution
 
-**Cris0338** — ideazione e progetto di Coolify Deploy Manager.
+**Cris0338** — project creator and maintainer of CDM — Coolify Deploy Manager.
 
-© 2026 Cris0338. Codice distribuito con licenza MIT (vedi `LICENSE`).
+Copyright © 2026 Cris0338. Licensed under the [MIT License](LICENSE).
 
-Applicazione indipendente, non affiliata a Coolify.
+CDM is an independent, unofficial application and is not affiliated with or endorsed by Coolify.
+
+Community contributions are welcome. Contributors retain credit through the Git history and pull requests.
