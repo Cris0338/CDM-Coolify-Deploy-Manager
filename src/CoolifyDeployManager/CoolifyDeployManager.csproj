@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>CoolifyDeployManager</AssemblyName>
+    <RootNamespace>CoolifyDeployManager</RootNamespace>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <Version>2.1.0</Version>
+    <Authors>Cris0338</Authors>
+    <Copyright>Copyright © 2026 Cris0338</Copyright>
+    <Product>Coolify Deploy Manager</Product>
+    <Description>Coolify deployment dashboard for Windows. Independent, unofficial application by Cris0338.</Description>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.ico" />
+  </ItemGroup>
+</Project>
