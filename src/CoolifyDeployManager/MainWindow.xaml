@@ -70,7 +70,7 @@
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
           <TextBlock Text="{DynamicResource L.Project}" Foreground="{StaticResource Muted}" Margin="0,0,10,0" VerticalAlignment="Center"/>
           <ComboBox x:Name="ProjectSelector" Width="240" SelectionChanged="ProjectSelector_SelectionChanged" Margin="0,0,12,0" DisplayMemberPath="Name" SelectedValuePath="Uuid"/>
-          <TextBlock x:Name="InventoryCount" Text="0 applicazioni" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/>
+          <TextBlock x:Name="InventoryCount" Text="0 applications" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal">
           <Button Style="{StaticResource ActionButton}" Background="{StaticResource Blue}" Content="{DynamicResource L.SelectedStaging}" Click="Batch_Click" Margin="0,0,8,0"/>
@@ -96,7 +96,7 @@
           <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
             <Border Background="{StaticResource Blue}" Width="4" CornerRadius="3" Margin="0,0,12,0"/>
             <TextBlock Text="{DynamicResource L.Staging}" FontSize="14" FontWeight="Bold"/>
-            <TextBlock x:Name="StageCount" Text="0 applicazioni" Foreground="{StaticResource Muted}" Margin="12,2,0,0"/>
+            <TextBlock x:Name="StageCount" Text="0 applications" Foreground="{StaticResource Muted}" Margin="12,2,0,0"/>
           </StackPanel>
           <ItemsControl x:Name="StagingItems" ItemTemplate="{StaticResource ApplicationCard}">
             <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
@@ -106,7 +106,7 @@
           <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
             <Border Background="{StaticResource Red}" Width="4" CornerRadius="3" Margin="0,0,12,0"/>
             <TextBlock Text="{DynamicResource L.Production}" FontSize="14" FontWeight="Bold"/>
-            <TextBlock x:Name="ProductionCount" Text="0 applicazioni" Foreground="{StaticResource Muted}" Margin="12,2,0,0"/>
+            <TextBlock x:Name="ProductionCount" Text="0 applications" Foreground="{StaticResource Muted}" Margin="12,2,0,0"/>
           </StackPanel>
           <ItemsControl x:Name="ProductionItems" ItemTemplate="{StaticResource ApplicationCard}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
         </StackPanel>
@@ -114,7 +114,7 @@
           <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
             <Border Background="{StaticResource Muted}" Width="4" CornerRadius="3" Margin="0,0,12,0"/>
             <TextBlock Text="{DynamicResource L.UnclassifiedTitle}" FontSize="14" FontWeight="Bold"/>
-            <TextBlock x:Name="UnknownCount" Text="0 applicazioni" Foreground="{StaticResource Muted}" Margin="12,2,0,0"/>
+            <TextBlock x:Name="UnknownCount" Text="0 applications" Foreground="{StaticResource Muted}" Margin="12,2,0,0"/>
           </StackPanel>
           <ItemsControl x:Name="UnknownItems" ItemTemplate="{StaticResource ApplicationCard}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
         </StackPanel>

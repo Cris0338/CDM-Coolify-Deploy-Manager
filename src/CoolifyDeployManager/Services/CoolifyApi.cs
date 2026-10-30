@@ -54,7 +54,7 @@ internal sealed class CoolifyApi : IDisposable
             if (id.Length > 0) projects.Add(new CoolifyProject(id, p.Str("name", "(senza nome)")));
         }
 
-        using var envLimit = new SemaphoreSlim(4); // massimo 4 richieste contemporanee
+        using var envLimit = new SemaphoreSlim(4); // at most four concurrent requests
         var envTasks = projects.Select(async p =>
         {
             await envLimit.WaitAsync(ct);
@@ -92,7 +92,7 @@ internal sealed class CoolifyApi : IDisposable
                 a.Str("git_branch", ""),
                 env.project ?? "(progetto sconosciuto)",
                 env.projectUuid ?? "",
-                env.environment ?? "(ambiente sconosciuto)",
+                env.environment ?? "(unknown environment)",
                 a.Str("fqdn", "")));
         }
         return new CoolifyInventory(
@@ -103,7 +103,7 @@ internal sealed class CoolifyApi : IDisposable
     /// <summary>
     /// Fetch the latest deployment for each application with limited concurrency.
     /// Coolify normally returns { count, deployments }, but some versions
-    /// espongono direttamente un array: supportiamo entrambi i formati.
+    /// return an array directly. Support both formats.
     /// A failure retrieving one application's history must not block card loading.
     /// </summary>
     public async Task<(Dictionary<string, LatestDeploy> Values, int Unavailable)> GetLatestDeploysAsync(
@@ -217,7 +217,7 @@ internal sealed class CoolifyApi : IDisposable
     private static JsonElement.ArrayEnumerator RequireArray(JsonElement root, string endpoint)
     {
         if (root.ValueKind != JsonValueKind.Array)
-            throw new InvalidOperationException($"Risposta inattesa di /{endpoint}: previsto array JSON.");
+            throw new InvalidOperationException($"Unexpected response from /{endpoint}: expected a JSON array.");
         return root.EnumerateArray();
     }
 

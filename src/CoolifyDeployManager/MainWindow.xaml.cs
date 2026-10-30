@@ -106,7 +106,7 @@ public partial class MainWindow : Window
         else
         {
             var url = CoolifyApi.NormalizeUrl(settings.ServerUrl);
-            // La verifica TLS rimane attiva: mai ignorare certificati non attendibili.
+            // Always validate TLS certificates; never bypass trust checks.
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(12) };
             try
             {
@@ -406,7 +406,7 @@ public partial class MainWindow : Window
             foreach (var card in cards)
             {
                 operation.Token.ThrowIfCancellationRequested();
-                // Rivalidare il tunnel anche prima di ogni invio, non solo prima della coda.
+                // Revalidate the SSH tunnel before each deployment, not just once per queue.
                 await EnsureConnectionAsync(operation.Token);
                 AddLog($"POST /deploy: {card.App.Project}/{card.Name} ({card.Uuid})");
                 OperationText.Text = "Deploy: " + card.Name;

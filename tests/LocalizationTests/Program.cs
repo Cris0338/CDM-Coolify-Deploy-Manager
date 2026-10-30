@@ -31,7 +31,7 @@ static string[] Placeholders(string text) =>
 var english = Read(Path.Combine(directory, "en.json"));
 if (english.Count < 130) throw new Exception("Unexpectedly small English source catalog.");
 int errors = 0;
-foreach (var file in files.OrderBy(Path.GetFileName))
+foreach (var file in files.OrderBy(path => Path.GetFileName(path)))
 {
     var lang = Path.GetFileNameWithoutExtension(file);
     var catalog = Read(file);

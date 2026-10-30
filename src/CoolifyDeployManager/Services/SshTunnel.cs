@@ -9,7 +9,7 @@ namespace CoolifyDeployManager;
 
 /// <summary>
 /// Uses the user's configured Windows OpenSSH client without showing a console.
-/// Non disabilita la verifica delle host key e non trasferisce token su un IP remoto in HTTP.
+/// Enforces SSH host key checks and does not send tokens over public HTTP.
 /// </summary>
 internal sealed class SshTunnel : IAsyncDisposable
 {
@@ -76,7 +76,7 @@ internal sealed class SshTunnel : IAsyncDisposable
                 if (!IsRunning) throw new IOException("The SSH tunnel exited. Verify the SSH key, known_hosts and configured host alias.");
                 if (await HealthCheckAsync(settings.SshLocalPort, ct))
                 {
-                    StatusChanged?.Invoke("Tunnel SSH verificato: " + LocalUrl);
+                    StatusChanged?.Invoke("SSH tunnel verified: " + LocalUrl);
                     return;
                 }
                 await Task.Delay(350, ct);
@@ -84,7 +84,7 @@ internal sealed class SshTunnel : IAsyncDisposable
         }
         catch { Stop(); throw; }
         Stop();
-        throw new TimeoutException("Tunnel SSH aperto, ma /api/health non risponde. Verifica porta remota e server Coolify.");
+        throw new TimeoutException("SSH tunnel opened, but /api/health is not responding. Verify the remote port and Coolify service.");
     }
     public static async Task<bool> HealthCheckAsync(int port, CancellationToken ct)
     {

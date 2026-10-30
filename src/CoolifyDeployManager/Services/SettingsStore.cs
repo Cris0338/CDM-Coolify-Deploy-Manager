@@ -11,7 +11,7 @@ internal static class SettingsStore
     private static readonly string Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CoolifyDeployManager");
     private static readonly string FilePath = Path.Combine(Folder, "settings.json");
 
-    // Compatibile con le configurazioni WinForms precedenti: i token sono DPAPI CurrentUser.
+    // Compatible with previous WinForms settings: API tokens use DPAPI CurrentUser.
     public static UserSettings Load()
     {
         if (!File.Exists(FilePath)) return new();
