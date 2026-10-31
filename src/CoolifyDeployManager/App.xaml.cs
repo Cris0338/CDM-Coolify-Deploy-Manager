@@ -120,7 +120,8 @@ public partial class App : Application
              e.Args[0] == "--save-self-test-clone" ||
              e.Args[0] == "--verify-saved-self-test-clone" ||
              e.Args[0] == "--verify-health-viewmodel" ||
-             e.Args[0] == "--verify-tunnel-recovery-policy"))
+             e.Args[0] == "--verify-tunnel-recovery-policy" ||
+             e.Args[0] == "--verify-build-info"))
         {
             try
             {
@@ -163,6 +164,15 @@ public partial class App : Application
                         throw new InvalidDataException(
                             "An updater started before the disposable clone exited.");
                     File.WriteAllText(e.Args[1], "CDM-PENDING-STAGED");
+                }
+                else if (e.Args[0] == "--verify-build-info")
+                {
+                    if (BuildInfo.Version == "unknown" ||
+                        BuildInfo.Commit.Length < 7 ||
+                        BuildInfo.BuildUtc == "unspecified")
+                        throw new InvalidDataException("Published CDM has incomplete source/build metadata.");
+                    File.WriteAllText(e.Args[1],
+                        $"{BuildInfo.Version}|{BuildInfo.Commit}|{BuildInfo.BuildUtc}");
                 }
                 else if (e.Args[0] == "--verify-tunnel-recovery-policy")
                 {
