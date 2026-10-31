@@ -204,6 +204,15 @@ try {
         throw "Upgraded clone failed to read its preserved embedded profile."
     }
     Write-Host 'PASS: clone upgraded from the new template without losing its embedded profile.'
+    # Personal clones must expose the SAME build identity as the template.
+    # This is the metadata the About dialog will show on the owner's EXE.
+    $cloneBuildMarker = Join-Path $smoke 'clone-build-info.txt'
+    $cloneBuildCheck = Start-Process -FilePath $clone -ArgumentList ('--verify-build-info "' + $cloneBuildMarker + '"') -Wait -PassThru
+    if ($cloneBuildCheck.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $cloneBuildMarker) -or
+        (Get-Content -LiteralPath $cloneBuildMarker -Raw).Trim() -ne $expectedBuildInfo) {
+        throw "Personal clone does not contain its original build identity. $((Get-Content "$cloneBuildMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    Write-Host 'PASS: upgraded personalized clone preserves compiled CDM version, Git commit and UTC build date.'
 
     # Exercise the real detached save helper on a disposable personal EXE.
     # No network, real SSH keys, tokens or user's own clone are involved.
