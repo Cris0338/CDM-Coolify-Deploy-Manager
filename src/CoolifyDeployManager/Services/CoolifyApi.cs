@@ -218,7 +218,10 @@ internal sealed class CoolifyApi : IDisposable
     {
         using var doc = await GetJsonAsync(
             $"applications/{Uri.EscapeDataString(appUuid)}", readToken, ct);
-        return doc.RootElement.Str("status", "non disponibile");
+        var status = doc.RootElement.Str("status");
+        if (string.IsNullOrWhiteSpace(status))
+            throw new InvalidDataException("Coolify returned no runtime status for the application.");
+        return status;
     }
 
     public async Task<DeploymentInfo> GetDeploymentAsync(string deploymentUuid, CancellationToken ct)
