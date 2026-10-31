@@ -116,7 +116,8 @@ public partial class App : Application
              e.Args[0] == "--verify-self-test-clone" ||
              e.Args[0] == "--verify-template-empty" ||
              e.Args[0] == "--save-self-test-clone" ||
-             e.Args[0] == "--verify-saved-self-test-clone"))
+             e.Args[0] == "--verify-saved-self-test-clone" ||
+             e.Args[0] == "--verify-health-viewmodel"))
         {
             try
             {
@@ -151,6 +152,30 @@ public partial class App : Application
                     updated.LockedPositions.Add("test-b");
                     SettingsStore.Save(updated);
                     File.WriteAllText(e.Args[1], "CDM-PENDING-STAGED");
+                }
+                else if (e.Args[0] == "--verify-health-viewmodel")
+                {
+                    var sampleApp = new CoolifyApplication("offline-health-test", "health-test",
+                        "running:unhealthy", "main", "test-project", "test-project-uuid",
+                        "staging", "");
+                    var card = new AppCardView(sampleApp, DeploymentGroup.Staging);
+                    bool notified = false;
+                    card.PropertyChanged += (_, args) =>
+                    {
+                        if (args.PropertyName == nameof(AppCardView.HealthLabel))
+                            notified = true;
+                    };
+                    card.UpdateDeploy(new LatestDeploy(DateTimeOffset.UtcNow,
+                        "finished", "abcdef012345", true));
+                    if (card.HealthLabel != "UNHEALTHY" || !card.HasProblem)
+                        throw new InvalidDataException("Initial unhealthy state was not represented.");
+                    card.UpdateApplicationStatus("running:healthy");
+                    if (!notified || card.HealthLabel != "HEALTHY" ||
+                        !card.Running || card.HasProblem ||
+                        !card.LastStatus.StartsWith("finished", StringComparison.Ordinal))
+                        throw new InvalidDataException(
+                            "Health sync failed or modified deployment history.");
+                    File.WriteAllText(e.Args[1], "CDM-HEALTH-UPDATED");
                 }
                 else if (e.Args[0] == "--verify-saved-self-test-clone")
                 {
