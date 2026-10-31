@@ -106,6 +106,7 @@ if ($extra.Count -gt 0) { Write-Warning "Additional files in portable/: $($extra
 Write-Host '== Smoke test the published single-file EXE and a personalized clone =='
 $smoke = Join-Path ([IO.Path]::GetTempPath()) ('cdm-smoke-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $smoke | Out-Null
+$smokeSucceeded = $false
 try {
     # Regression check: a generic CDM.exe must never read previous-version settings
     # or connect automatically, even when the current Windows user has old data.
@@ -181,6 +182,9 @@ try {
     $updaterStarted = "$pending.updater-started.txt"
     $deadline = [DateTime]::UtcNow.AddSeconds(65)
     while ((Test-Path -LiteralPath $pending) -and [DateTime]::UtcNow -lt $deadline) {
+        if (Test-Path -LiteralPath $updaterError) {
+            throw "Detached updater failed. $((Get-Content -LiteralPath $updaterError -ErrorAction SilentlyContinue) -join ' ')"
+        }
         Start-Sleep -Milliseconds 250
     }
     if (Test-Path -LiteralPath $pending) {
@@ -198,9 +202,19 @@ try {
         throw "Staged profile was not preserved in the updated executable. $((Get-Content "$updatedMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
     }
     Write-Host 'PASS: close-time .pending applied to disposable clone; token, card order and position locks preserved.'
-
+    $smokeSucceeded = $true
 }
-finally { Remove-Item -LiteralPath $smoke -Recurse -Force -ErrorAction SilentlyContinue }
+finally {
+    if ($smokeSucceeded) {
+        Remove-Item -LiteralPath $smoke -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    else {
+        # The directory contains only synthetic, explicitly invalid test
+        # credentials. Keep it on failure so the helper's started/error
+        # markers remain available for diagnosis instead of losing evidence.
+        Write-Warning "Disposable smoke evidence retained: $smoke"
+    }
+}
 
 Write-Host '== Published executable =='
 Get-Item $exe | Select-Object FullName, @{N='MB';E={[math]::Round($_.Length / 1MB, 2)}} | Format-List
