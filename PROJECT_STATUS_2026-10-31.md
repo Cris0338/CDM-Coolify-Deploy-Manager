@@ -1,5 +1,7 @@
 # 2026-10-31 — CDM 2.2 development checkpoint
 
+**FINAL STATUS (updated after the historical checkpoints below): CDM 2.2.1 has been published as a [GitHub pre-release](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/tag/v2.2.1), tag `v2.2.1` at source `3ad03bb74cfbfbd84f19a04c677892b1c693662f`.** Generic EXE digest agrees with the Windows build; release has EXE, ZIP and checksum only. Earlier paragraphs in this timeline explicitly refer to intermediate unfinished states and must not be interpreted as current release status. Further staging deployment and cross-machine testing remain deferred.
+
 Repository: https://github.com/Cris0338/CDM-Coolify-Deploy-Manager  
 Working branch: **feature/embedded-clone-20261031**  
 Version: **2.2.0**, unreleased. **No GitHub Actions. No automatic deploy.**
