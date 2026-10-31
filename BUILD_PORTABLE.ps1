@@ -152,6 +152,17 @@ try {
     }
     Write-Host 'PASS: card health changes from unhealthy to healthy without overwriting finished deployment history.'
 
+    # SSH recovery must trigger for a stopped, configured managed tunnel,
+    # but never during a deployment, another recovery, closing, HTTPS
+    # or the user's externally managed local tunnel. No real ssh.exe needed.
+    $tunnelMarker = Join-Path $smoke 'tunnel-policy.txt'
+    $tunnelTest = Start-Process -FilePath $exe -ArgumentList ('--verify-tunnel-recovery-policy "' + $tunnelMarker + '"') -Wait -PassThru
+    if ($tunnelTest.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $tunnelMarker) -or
+        (Get-Content -LiteralPath $tunnelMarker -Raw).Trim() -ne 'CDM-TUNNEL-RECOVERY-POLICY-OK') {
+        throw "Managed SSH auto-reconnect policy regression failed. $((Get-Content "$tunnelMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    Write-Host 'PASS: expired managed SSH tunnel will auto-recover; busy, active, closing and other modes are protected.'
+
     $clone = Join-Path $smoke 'CDM-Smoke-Test.exe'
     $marker = Join-Path $smoke 'clone-started.txt'
     $create = Start-Process -FilePath $exe -ArgumentList ('--emit-self-test-clone "' + $clone + '"') -Wait -PassThru
