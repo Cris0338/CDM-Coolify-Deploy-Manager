@@ -54,3 +54,7 @@ If a user pastes a public HTTP URL (including a bare IPv4:port address), CDM sho
 ## Local Coolify with no domain or Internet publishing
 
 Coolify supports access from a private LAN through `http://192.168.1.50:8000`. CDM's first connection mode accepts HTTPS URLs and HTTP addresses on private RFC1918 networks, IPv6 unique-local/link-local, localhost, private VPN/CGNAT ranges and local hostnames. No domain, public DNS, reverse proxy, SSL certificate or SSH provisioning is necessary to manage a private LAN Coolify instance. The wizard's SSH suggestion is reserved for **public** HTTP addresses. A service such as a local photo library may be accessed by the application's exposed host port or privately inside Docker's network; it does not need a public domain.
+
+## Windows OpenSSH: unsupported ssh-keyscan KEX
+
+Some Windows builds of `ssh-keyscan.exe` advertise `sntrup761x25519-sha512@openssh.com` but cannot negotiate it. The error `choose_kex: unsupported KEX method sntrup761x25519-sha512@openssh.com` occurs before host keys can be retrieved; it is not an SSH password, port or server failure. CDM intentionally uses `ssh.exe` for an unauthenticated host-key handshake with a temporary isolated `known_hosts` file. The SSH authentication is expected to fail, but the verified-on-confirmation public server host key is retained inside the clone. The user must compare its SHA256 fingerprint using a separately trusted server channel before accepting it. No server SSH configuration change is needed.
