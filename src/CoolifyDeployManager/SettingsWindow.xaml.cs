@@ -204,6 +204,71 @@ public partial class SettingsWindow : Window
             Clipboard.SetText(PublicKeyText.Text.Trim());
     }
 
+    // Windows OpenSSH ssh-keyscan.exe may advertise a post-quantum KEX which
+    // that build cannot actually negotiate. ssh.exe is not affected by this bug.
+    // Capture a host key during its unauthenticated handshake in a disposable
+    // known_hosts file. The expected SSH authentication failure is irrelevant.
+    private static async Task<string[]> DiscoverHostKeysAsync(string host, int port)
+    {
+        string folder = Directory.CreateTempSubdirectory("cdm-hostkey-").FullName;
+        try
+        {
+            var file = Path.Combine(folder, "known_hosts");
+            var start = new ProcessStartInfo("ssh.exe")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardError = true
+            };
+            foreach (var arg in new[]
+            {
+                "-F", "none",
+                "-o", "StrictHostKeyChecking=accept-new",
+                "-o", $"UserKnownHostsFile={file}",
+                "-o", "GlobalKnownHostsFile=none",
+                "-o", "HashKnownHosts=no",
+                "-o", "UpdateHostKeys=no",
+                "-o", "BatchMode=yes",
+                "-o", "PreferredAuthentications=none",
+                "-o", "NumberOfPasswordPrompts=0",
+                "-o", "ConnectTimeout=8",
+                "-T",
+                "-p", port.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                "-l", "cdm-host-key-probe",
+                host
+            }) start.ArgumentList.Add(arg);
+
+            using var process = Process.Start(start)
+                ?? throw new IOException("Unable to start Windows OpenSSH (ssh.exe).");
+            var errors = process.StandardError.ReadToEndAsync();
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(14));
+            try { await process.WaitForExitAsync(timeout.Token); }
+            catch (OperationCanceledException)
+            {
+                if (!process.HasExited) process.Kill(entireProcessTree: true);
+                throw new TimeoutException("SSH host-key probe timed out.");
+            }
+            var stderr = await errors;
+            if (!File.Exists(file))
+                throw new IOException("Unable to obtain the SSH server host key: " + stderr.Trim());
+
+            var lines = (await File.ReadAllLinesAsync(file))
+                .Select(line => line.Trim())
+                .Where(line => line.Length > 0 && !line.StartsWith('#') &&
+                    line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length >= 3)
+                .ToArray();
+            if (lines.Length == 0)
+                throw new IOException("SSH handshake completed without saving a host key: " + stderr.Trim());
+            return lines;
+        }
+        finally
+        {
+            try { Directory.Delete(folder, recursive: true); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
+    }
+
     private async void ScanHostKey_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -213,30 +278,33 @@ public partial class SettingsWindow : Window
                 throw new ArgumentException("Enter the VPS hostname or IP first.");
             if (!int.TryParse(SshPort.Text.Trim(), out int port) || port is < 1 or > 65535)
                 throw new ArgumentException("Invalid SSH port.");
-            using var process = new Process { StartInfo = new ProcessStartInfo("ssh-keyscan.exe") {
-                UseShellExecute = false, CreateNoWindow = true,
-                RedirectStandardOutput = true, RedirectStandardError = true } };
-            foreach (var arg in new[] { "-T", "5", "-t", "ed25519", "-p", port.ToString(), host })
-                process.StartInfo.ArgumentList.Add(arg);
-            process.Start();
-            string stdout = await process.StandardOutput.ReadToEndAsync();
-            _ = await process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync();
-            var lines = stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Where(line => !line.StartsWith('#') && line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length >= 3)
-                .ToArray();
-            if (lines.Length == 0) throw new IOException("SSH host key scan returned no public keys.");
+            var lines = await DiscoverHostKeysAsync(host, port);
             var selected = lines.FirstOrDefault(line => line.Contains(" ssh-ed25519 ", StringComparison.Ordinal))
                 ?? lines[0];
             var parts = selected.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var fingerprint = Convert.ToBase64String(SHA256.HashData(Convert.FromBase64String(parts[2]))).TrimEnd('=');
-            var message = $"SHA256:{fingerprint}\n\nCompare with the VPS SSH host key fingerprint via an independent trusted channel. On the VPS:\nssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub\n\nDo they match?";
-            if (MessageBox.Show(this, message, "Confirm VPS identity", MessageBoxButton.YesNo, MessageBoxImage.Question)
+            var fingerprint = Convert.ToBase64String(
+                SHA256.HashData(Convert.FromBase64String(parts[2]))).TrimEnd('=');
+            var hostKeyPath = parts[1] switch
+            {
+                "ssh-ed25519" => "/etc/ssh/ssh_host_ed25519_key.pub",
+                var k when k.StartsWith("ecdsa-", StringComparison.Ordinal) =>
+                    "/etc/ssh/ssh_host_ecdsa_key.pub",
+                _ => "/etc/ssh/ssh_host_rsa_key.pub"
+            };
+            var message = $"SSH host key: {parts[1]}\nSHA256:{fingerprint}\n\n" +
+                "Compare this fingerprint with the VPS through an independent trusted channel. " +
+                $"On the VPS, run:\nssh-keygen -lf {hostKeyPath}\n\nDoes it match?";
+            if (MessageBox.Show(this, message, "Confirm VPS SSH identity",
+                    MessageBoxButton.YesNo, MessageBoxImage.Question)
                 != MessageBoxResult.Yes) return;
             knownHosts = string.Join("\n", lines);
             SshStatus.Text = Loc.T("SetupHostPinned");
         }
-        catch (Exception ex) { MessageBox.Show(this, ex.Message, "SSH host verification", MessageBoxButton.OK, MessageBoxImage.Warning); }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "SSH host verification",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private async void Save_Click(object sender, RoutedEventArgs e)
