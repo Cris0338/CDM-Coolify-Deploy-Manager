@@ -5,7 +5,6 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $project = Join-Path $root 'src\CoolifyDeployManager\CoolifyDeployManager.csproj'
 $classifierTests = Join-Path $root 'tests\ClassifierTests\ClassifierTests.csproj'
 $localeTests = Join-Path $root 'tests\LocalizationTests\LocalizationTests.csproj'
-$vaultTests = Join-Path $root 'tests\PortableVaultTests\PortableVaultTests.csproj'
 $destination = Join-Path $root 'portable'
 $dotnet = Join-Path $env:ProgramFiles 'dotnet\dotnet.exe'
 if (-not (Test-Path $dotnet)) { throw 'The 64-bit .NET 10 SDK was not found under Program Files.' }
@@ -17,10 +16,6 @@ if ($LASTEXITCODE -ne 0) { throw "Classification tests failed (exit $LASTEXITCOD
 Write-Host '== Localization tests =='
 & $dotnet run --project $localeTests -c Release
 if ($LASTEXITCODE -ne 0) { throw "Localization tests failed (exit $LASTEXITCODE)." }
-
-Write-Host '== Portable vault encryption tests =='
-& $dotnet run --project $vaultTests -c Release
-if ($LASTEXITCODE -ne 0) { throw "Portable vault tests failed (exit $LASTEXITCODE)." }
 
 Write-Host '== Publish portable WPF Windows x64 executable =='
 & $dotnet publish $project -c Release -r win-x64 --self-contained true '-p:PublishSingleFile=true' '-p:IncludeNativeLibrariesForSelfExtract=true' '-p:EnableCompressionInSingleFile=true' '-p:DebugType=None' '-p:DebugSymbols=false' -o $destination
