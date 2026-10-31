@@ -7,3 +7,7 @@ Local generic package files were created: `CDM.exe` (67689213 bytes), `CDM-2.2.1
 After packaging, PowerShell reported deleting eight obsolete local personal executable backup files and preserving the newest backup by exclusion. No pending files were listed in the preceding inventory. A separate post-deletion inventory has not yet been performed. These private files were never committed to GitHub.
 
 **Release provenance:** any v2.2.1 tag accompanying these exact compiled assets must point to the source revision embedded in the binary above, even when later documentation commits advance main. No further code changes are planned. The next step is public pre-release publication of only these three generic files; the author will field-test real staging deployments later.
+
+## Repository landing page artwork
+
+The original splash emblem was found on GitHub at `docs/images/CDMLogo.png`. Commit `8586dc86a6ee17d1da9001e460b0d88b076c9c5d` updated the top of `README.md` to display this image centered at 320px width with the descriptive alt text `Emblème CDM néon avec orbite cosmique`. The executable, release tag and downloaded assets were not changed. Only repository presentation was updated.
