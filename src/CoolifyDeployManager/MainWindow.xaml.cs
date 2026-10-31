@@ -311,14 +311,19 @@ public partial class MainWindow : Window
             TimeSpan.FromMilliseconds(210)) { EasingFunction = ease });
     }
 
-    // Drag from the card body as well as the visible grip, but never from action controls.
+    // The grip is narrow: capture the card on mouse-down so a fast move outside it
+    // still starts the drag. Drop handlers use preview routing on individual cards so
+    // child controls and ItemsControl's empty-space handler cannot swallow a drop.
     private void Card_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         dragUuid = null;
-        if (busy || sender is not FrameworkElement card || card.DataContext is not AppCardView model ||
-            model.PositionLocked || IsInteractiveCardElement(e.OriginalSource as DependencyObject, card)) return;
+        if (busy || SearchBox.Text.Length != 0 || StatusFilter.SelectedIndex != 0 ||
+            sender is not Border card || card.DataContext is not AppCardView model ||
+            model.PositionLocked || IsInteractiveCardElement(e.OriginalSource as DependencyObject, card))
+            return;
         dragOrigin = e.GetPosition(this);
         dragUuid = model.Uuid;
+        Mouse.Capture(card, CaptureMode.SubTree);
     }
     private static bool IsInteractiveCardElement(DependencyObject? source, DependencyObject card)
     {
@@ -330,23 +335,37 @@ public partial class MainWindow : Window
         }
         return false;
     }
+    private void Card_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        dragUuid = null;
+        if (Mouse.Captured == sender) Mouse.Capture(null);
+    }
+    private void Card_LostMouseCapture(object sender, MouseEventArgs e) => dragUuid = null;
     private void Card_PreviewMouseMove(object sender, MouseEventArgs e) => StartCardDrag(sender, e);
     private void Grip_Down(object sender, MouseButtonEventArgs e)
     {
-        dragOrigin = e.GetPosition(this);
-        dragUuid = (sender as FrameworkElement)?.DataContext is AppCardView c && !c.PositionLocked ? c.Uuid : null;
+        // Card_PreviewMouseLeftButtonDown already set the source and captured it.
+        // Do not reset the origin after capture, or the threshold becomes unreliable.
     }
     private void Grip_Move(object sender, MouseEventArgs e) => StartCardDrag(sender, e);
     private void StartCardDrag(object sender, MouseEventArgs e)
     {
-        if (e.LeftButton != MouseButtonState.Pressed) { dragUuid = null; return; }
-        if (dragUuid is null || busy || SearchBox.Text.Length > 0 || StatusFilter.SelectedIndex != 0) return;
+        if (e.LeftButton != MouseButtonState.Pressed)
+        {
+            dragUuid = null;
+            if (Mouse.Captured is Border) Mouse.Capture(null);
+            return;
+        }
+        if (dragUuid is null || busy || SearchBox.Text.Length != 0 || StatusFilter.SelectedIndex != 0) return;
         var diff = e.GetPosition(this) - dragOrigin;
         if (Math.Abs(diff.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(diff.Y) < SystemParameters.MinimumVerticalDragDistance) return;
         var uuid = dragUuid;
         dragUuid = null;
-        DragDrop.DoDragDrop((DependencyObject)sender, new DataObject("CDM_CardUuid", uuid), DragDropEffects.Move);
+        // Release capture BEFORE WPF's modal drag loop so hit testing can reach other cards.
+        Mouse.Capture(null);
+        DragDrop.DoDragDrop((DependencyObject)sender,
+            new DataObject("CDM_CardUuid", uuid), DragDropEffects.Move);
         e.Handled = true;
     }
     private void Card_DragOver(object sender, DragEventArgs e)
