@@ -66,3 +66,7 @@ Checklist for **generic template + portable personalized clone**. Tests are loca
 - [ ] Manually validate drag-and-drop cards and persistence; currently not accepted.
 
 See [docs/HANDOFF_2026-10-31_UI.md](docs/HANDOFF_2026-10-31_UI.md) for screenshot-by-screenshot details.
+
+### Source fix checkpoint (31 October 2026; NOT accepted yet)
+
+Patches for the dark context menu, status/identity alignment, high-resolution PNG logo, About/Guide red vector X buttons, wrapped About license/support content, and card body/grip drag/drop have been committed to the development branch. See [docs/UI_FIXES_2026-10-31.md](docs/UI_FIXES_2026-10-31.md). The unchecked items above **must remain unchecked** pending the owner's Windows build, real GUI screenshots, and drag/lock persistence trials. No staging or production deployment was triggered during these source changes.
