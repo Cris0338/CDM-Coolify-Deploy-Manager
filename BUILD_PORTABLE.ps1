@@ -75,20 +75,31 @@ Write-Host '== Publish portable WPF Windows x64 executable =='
 if ($LASTEXITCODE -ne 0) { throw "Build failed (exit $LASTEXITCODE)." }
 
 $published = Join-Path $destination 'CoolifyDeployManager.exe'
-if (-not (Test-Path $published)) { throw "Executable not found: $published" }
-# PowerShell 5.1 does not consistently overwrite EXEs via Move-Item -Force,
-# and File.Replace can reject the path. Copy-Item works for a closed executable.
+if (-not (Test-Path -LiteralPath $published)) { throw "Executable not found: $published" }
+
+# Publish the verified generic executable. Copy and integrity validation are
+# mandatory; deleting the duplicate SDK output is best-effort housekeeping.
+# Windows Defender/indexers can temporarily lock the duplicate immediately
+# after dotnet publish even when the intended CDM.exe has copied correctly.
 try {
     Copy-Item -LiteralPath $published -Destination $exe -Force -ErrorAction Stop
-    $sourceHash = (Get-FileHash -LiteralPath $published -Algorithm SHA256).Hash
-    $targetHash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash
+    $sourceHash = (Get-FileHash -LiteralPath $published -Algorithm SHA256 -ErrorAction Stop).Hash
+    $targetHash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256 -ErrorAction Stop).Hash
     if ($sourceHash -ne $targetHash) {
         throw "The copied CDM.exe does not match the freshly published executable."
     }
+    Write-Host "PASS: generic CDM.exe matches freshly published output (SHA256 $targetHash)."
+}
+catch {
+    throw "Cannot update or verify portable\\CDM.exe. Close CDM if it is running, then rerun BUILD_PORTABLE.ps1. Details: $($_.Exception.Message)"
+}
+try {
     Remove-Item -LiteralPath $published -Force -ErrorAction Stop
 }
 catch {
-    throw "Cannot update portable\CDM.exe. Close CDM if it is running, then rerun BUILD_PORTABLE.ps1. Details: $($_.Exception.Message)"
+    # Nonfatal: the verified CDM.exe is already in place. It is safe to
+    # leave this duplicate for later manual cleanup if Windows is locking it.
+    Write-Warning "Could not remove duplicate publish output '$published' (Windows file lock or permissions); build and smoke tests will continue. Details: $($_.Exception.Message)"
 }
 $extra = @(Get-ChildItem $destination -File | Where-Object Name -ne 'CDM.exe')
 if ($extra.Count -gt 0) { Write-Warning "Additional files in portable/: $($extra.Name -join ', ')" }
