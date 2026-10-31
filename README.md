@@ -75,3 +75,11 @@ CDM can administer a Coolify instance on a private LAN, e.g. `http://192.168.1.5
 - The original generic `CDM.exe` stays credential-free; existing personalized clones are not automatically upgraded by compiling a new generic template. Preserve your working clone until its update path is tested.
 
 No GitHub Actions. Run `BUILD_PORTABLE.ps1` locally; don't publish a release or run a real staging deployment until the Windows UI and safety checks pass.
+
+### Official 3-second CDM opening animation
+
+The startup shows the **approved transparent CDM logo**, while a luminous electron makes a depth-aware orbit behind/over the letters. At ~2.25 s the particle collision radiates outward; the splash fades at ~2.64 s and reveals the real dashboard by ~3 s. No network request or deploy is triggered by the animation. Local self-test/clone-upgrade commands bypass the splash.
+
+The two approved binary assets are delivered in **`CDM_Logo_Assets.zip`** (the exact logo PNG and an ICO derived from it). Download this archive to your Windows **Downloads** folder before building. `BUILD_PORTABLE.ps1` verifies the SHA256 of the ZIP and each extracted image, installs them under `src/CoolifyDeployManager/Assets`, and embeds them in `CDM.exe`. The logo and key art thus travel inside the one-file personalized clone; the archive is only needed during building. Builds without the ZIP use the existing vector logo fallback. The binary files are Git-ignored so that source-only branches remain small; build them into the clone on the PC with the ZIP.
+
+The launch sequence does not change any SSH keys, tokens, Coolify services or deployment settings.

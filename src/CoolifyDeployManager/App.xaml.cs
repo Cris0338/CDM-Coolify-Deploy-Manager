@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Cris0338. Licensed under the MIT License.
 using System.Windows;
 using System.IO;
+using System.Windows.Media.Animation;
 
 namespace CoolifyDeployManager;
 
@@ -140,9 +141,16 @@ public partial class App : Application
 
     private static async Task ShowDashboardAfterSplashAsync(MainWindow dashboard, Window splash)
     {
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        // At 2.25 seconds the electron collision begins inside the splash.
+        // As the particles expand, fade the real window up behind the logo.
+        await Task.Delay(TimeSpan.FromMilliseconds(2630));
         if (Application.Current is null) return;
+        dashboard.Opacity = 0;
         dashboard.Show();
-        splash.Close();
+        dashboard.BeginAnimation(Window.OpacityProperty,
+            new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(370))
+            { FillBehavior = FillBehavior.HoldEnd });
+        await Task.Delay(TimeSpan.FromMilliseconds(400));
+        if (splash.IsVisible) splash.Close();
     }
 }

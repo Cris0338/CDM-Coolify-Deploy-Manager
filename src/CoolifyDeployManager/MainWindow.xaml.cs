@@ -32,6 +32,14 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        try
+        {
+            Icon = System.Windows.Media.Imaging.BitmapFrame.Create(
+                new Uri("pack://application:,,,/Assets/CDMOfficial.ico", UriKind.Absolute),
+                System.Windows.Media.Imaging.BitmapCreateOptions.None,
+                System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
+        }
+        catch (IOException) { /* Use built-in app icon when the logo package is absent. */ }
         try { settings = SettingsStore.Load(); }
         catch (Exception ex)
         {

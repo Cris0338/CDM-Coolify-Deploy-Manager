@@ -20,3 +20,7 @@ settings.json
 **/CDM-*.exe
 **/*.exe.pending
 **/.*.pending
+
+# Binary logo assets are supplied separately in the approved image ZIP.
+src/CoolifyDeployManager/Assets/CDMLogo.png
+src/CoolifyDeployManager/Assets/CDMOfficial.ico

@@ -10,6 +10,45 @@ $destination = Join-Path $root 'portable'
 $dotnet = Join-Path $env:ProgramFiles 'dotnet\dotnet.exe'
 if (-not (Test-Path $dotnet)) { throw 'The 64-bit .NET 10 SDK was not found under Program Files.' }
 
+
+# One-time import of the user-approved transparent CDM logo and derived icon.
+# Download CDM_Logo_Assets.zip to the regular Windows Downloads folder;
+# the ZIP is intentionally kept outside the repository's source-only commits.
+$assetsFolder = Join-Path $root 'src\CoolifyDeployManager\Assets'
+$logoZip = Join-Path ([Environment]::GetFolderPath('UserProfile')) 'Downloads\CDM_Logo_Assets.zip'
+$expectedZipHash = 'FC68EBFB2DD2B1FBEB913D95CE663520B57F458BD082D25FFF9C2695631FBAF7'
+$expectedLogoHash = '9087F9D3360DADD2D76572799492E439DE06E24ADBA70D81846C98EC2CBD707F'
+$expectedIconHash = '1EB1E8CD4E078373E29813323BACC69DC4B8A4E9C801E6EDBD32E56440B54CD4'
+$logoFile = Join-Path $assetsFolder 'CDMLogo.png'
+$iconFile = Join-Path $assetsFolder 'CDMOfficial.ico'
+if (Test-Path -LiteralPath $logoZip) {
+    if ((Get-FileHash -LiteralPath $logoZip -Algorithm SHA256).Hash -ne $expectedZipHash) {
+        throw 'CDM_Logo_Assets.zip has an unexpected SHA256. Use the approved original ZIP.'
+    }
+    $stage = Join-Path ([IO.Path]::GetTempPath()) ('cdm-art-' + [guid]::NewGuid().ToString('N'))
+    try {
+        Expand-Archive -LiteralPath $logoZip -DestinationPath $stage -Force
+        foreach ($pair in @(
+            @{ File = 'CDMLogo.png'; Hash = $expectedLogoHash },
+            @{ File = 'CDMOfficial.ico'; Hash = $expectedIconHash }
+        )) {
+            $source = Join-Path $stage $pair.File
+            if (-not (Test-Path -LiteralPath $source) -or
+                (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -ne $pair.Hash) {
+                throw "Approved asset '$($pair.File)' missing or changed."
+            }
+            Copy-Item -LiteralPath $source -Destination (Join-Path $assetsFolder $pair.File) -Force
+        }
+    }
+    finally { Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue }
+}
+if (-not (Test-Path -LiteralPath $logoFile) -or -not (Test-Path -LiteralPath $iconFile)) {
+    Write-Warning 'Approved CDM logo not installed. Download CDM_Logo_Assets.zip into Downloads to embed the official artwork (current build uses a fallback).'
+}
+else {
+    Write-Host 'PASS: official CDM transparent logo and icon available for embedding.'
+}
+
 Write-Host '== Classification tests (no deployments) =='
 & $dotnet run --project $classifierTests -c Release
 if ($LASTEXITCODE -ne 0) { throw "Classification tests failed (exit $LASTEXITCODE)." }
