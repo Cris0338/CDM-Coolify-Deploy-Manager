@@ -2,7 +2,7 @@
 
 **Release candidate tested on Windows 10 x64 — 31 October 2026.**
 
-**Source revision of the owner-tested executable:** `56ec905c0b6894898a78fc9a92eba93b7925593a`. Published generic binary build: CDM 2.2.1, Git `56ec905c0b68`, built `2026-10-31T21:33:56Z`, SHA256 `3037F118C4529256910ECF84A6B29B0AB8F9A7F072C8AB4A77100E81CE6F953B`. Repackaging may produce a different SHA256 or build timestamp with the same source revision: always publish checksums corresponding to the exact files actually uploaded.
+**Verified public release:** source tag `v2.2.1` points to commit `3ad03bb74cfbfbd84f19a04c677892b1c693662f`. Distributed generic `CDM.exe` embeds CDM 2.2.1, Git `3ad03bb74cfb`, built `2026-10-31T22:20:52Z`; its SHA256 is `4B50975A82F6F542388B033DDB20B266C9A0F430FAF39BDC2423C56628E3915B` (67,689,213 bytes). GitHub independently reports the same asset digest. The three published attachments are the credential-free generic EXE, Windows ZIP and SHA256 manifest. The earlier `56ec905c0b68` hash and build time describe a prior successful local test, not the published binary.
 
 ## English
 
