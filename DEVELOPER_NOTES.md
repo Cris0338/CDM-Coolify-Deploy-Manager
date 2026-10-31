@@ -101,3 +101,7 @@ Scope: static inspection of `CoolifyApi.cs`, `SshTunnel.cs`, `SettingsWindow.xam
 **Build status at this checkpoint:** user-reported Windows build error `CS0246 InvalidDataException` at `CoolifyApi.cs` line 223; resolved by `using System.IO;` at commit `0d69a6f`. No Windows build had yet confirmed the fix or the new disposable-clone save/health tests. No credentials were read or transmitted during this static review.
 
 **Release gate:** do not publish a personalized clone or debug backup; require owner-accepted Windows build + offline smoke + security strategy for encrypting personal credentials, plus public-binary authenticity check before claiming release-grade security.
+
+## Owner decision — lost clone response, no unlock password (2026-10-31)
+
+Do not introduce per-launch passwords, DPAPI account/SID binding, or nonportable user-key requirements. The owner explicitly keeps clones immediately launchable on compatible Windows machines. Security recovery is documented instead: revoke the Coolify token(s) under Keys & Tokens → API Tokens, and **independently** remove the dedicated CDM public-key line from the intended SSH user's `~/.ssh/authorized_keys` using the VPS console or another safe login. Never remove other keys blindly. The integrated GuideWindow final section and README/README_IT/CDM_SETUP_GUIDE explain this in EN/FR/IT, with English fallback for preview locales. This changes documentation only, not executable credentials or runtime auth behavior.
