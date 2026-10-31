@@ -24,7 +24,18 @@ internal static class SettingsStore
     public static bool Initialize()
     {
         isClone = ExecutableProfile.TryRead(out var saved);
-        cached = Normalize(isClone ? saved ?? new UserSettings() : LoadLegacy());
+        if (isClone) cached = Normalize(saved ?? new UserSettings());
+        else
+        {
+            // An unreadable legacy DPAPI file must not prevent the generic
+            // template from opening the new setup wizard.
+            try { cached = Normalize(LoadLegacy()); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+                or CryptographicException or JsonException or FormatException)
+            {
+                cached = Normalize(new UserSettings());
+            }
+        }
         return true;
     }
 
@@ -45,9 +56,8 @@ internal static class SettingsStore
             ExecutableProfile.Launch(target);
             cached = normalized;
             LaunchedClone = true;
-            // Legacy settings are no longer required by the new single-EXE design.
-            try { if (File.Exists(LegacyPath)) File.Delete(LegacyPath); }
-            catch (IOException) { /* No need to block startup because of an obsolete file. */ }
+            // Preserve older releases' DPAPI settings until the new clone has been
+            // verified on Windows; never erase a user's previous working recovery path.
             Application.Current.Dispatcher.BeginInvoke(new Action(Application.Current.Shutdown));
             return;
         }

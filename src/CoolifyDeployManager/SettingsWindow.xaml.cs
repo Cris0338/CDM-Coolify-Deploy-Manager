@@ -220,7 +220,7 @@ public partial class SettingsWindow : Window
             if (mode == ConnectionMode.Https)
             {
                 _ = CoolifyApi.NormalizeUrl(next.ServerUrl);
-                if (!next.ServerUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                if (!next.ServerUrl.Trim().StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                     throw new ArgumentException("Direct Coolify connections must use HTTPS. Use managed SSH for IP-only access.");
             }
             else

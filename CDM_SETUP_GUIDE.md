@@ -40,3 +40,7 @@ In CDM choose **Managed SSH**. Enter:
 The personal clone includes usable credentials. It is portable across Windows devices with the required runtime capabilities, **not confidential from anyone who has a copy of it**. Revoke the API token and SSH public key if a clone leaks. The SSH client is an OS prerequisite for SSH mode, not supplied within the EXE.
 
 CDM is an independent unofficial application, and browser login is not OAuth authorization-code grant to CDM.
+
+## Legacy configuration
+
+Earlier CDM releases used `%LOCALAPPDATA%\CoolifyDeployManager\settings.json` protected by Windows DPAPI. The new generic template reads it only as a best-effort migration source, and never writes new settings there. The old file is deliberately retained as a recovery path until the user has confirmed the newly generated EXE works on Windows. An unreadable legacy file does not stop the first-run wizard.
