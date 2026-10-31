@@ -20,10 +20,12 @@ internal static class ExecutableProfile
     public static string OwnPath => Environment.ProcessPath
         ?? throw new InvalidOperationException("Cannot locate the running executable.");
 
-    public static bool TryRead(out UserSettings? settings)
+    public static bool TryRead(out UserSettings? settings) => TryReadFile(OwnPath, out settings);
+
+    internal static bool TryReadFile(string path, out UserSettings? settings)
     {
         settings = null;
-        using var stream = new FileStream(OwnPath, FileMode.Open, FileAccess.Read,
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete);
         var offset = FindPayload(stream, out int length);
         if (offset < 0) return false;
