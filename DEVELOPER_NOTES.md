@@ -41,7 +41,7 @@ On edits, CDM creates a pending EXE with the updated trailer; the helper attempt
 - Setup validates the token with a read-only API call. No deployments occur in the wizard.
 - Single-card and staging batch deploys require explicit confirmations. Unknown classification cannot deploy. Production stays per-card with explicit confirmation.
 - Deployment locks skip or disable actions; cancelling local monitoring is not equivalent to cancelling the Coolify server task.
-- Card reorder uses section-local order, with a blank drop zone for appending to the section. Arbitrary empty slots are not implemented.
+- Card reorder uses section-local order. Drag any non-interactive part of a card; drop before/after another card, including the last, or onto unused WrapPanel space to append. No drag grip or dedicated end-of-section bar remains. Arbitrary persistent empty slots are not implemented.
 
 ## Assets, localization, builds
 
@@ -57,4 +57,12 @@ The active development branch uses [CDM Free Redistribution License v1.0](LICENS
 
 **Owner requirement (2026-10-31):** Never accumulate successive workaround layers that override previous fixes. When correcting a component, **rewrite the affected complete logical unit** (XAML template, layout or C# handler set) into one coherent current implementation. Remove obsolete handlers, duplicate event routing and obsolete styling rather than stacking adapters or compensating patches. Preserve this rule in future sessions. Save all edits directly to the development branch on GitHub, never require the owner to apply hand-written source patches in PowerShell. The owner performs only pull/build/Windows GUI acceptance. No GitHub Actions, deployment, automatic release, or unrequested merge.
 
-**Current card DnD contract:** drag from non-interactive card body/grip, cursor-following preview snapshot (WPF adorner), insert before/after target based on its horizontal midpoint, append in transparent end target or empty WrapPanel space. Cards stay inside their staging/production/unknown groups; position locks cannot shift. A single `CommitCardMove` handles persistence and rollback on save error. The legacy grip-specific drag handlers and duplicated per-target save blocks have been removed. The translucent preview must never accept hit tests.
+**Current card DnD contract:** drag from non-interactive card body/grip, cursor-following preview snapshot (WPF adorner), insert before/after target based on its horizontal midpoint, append in empty WrapPanel space (or insert after the last card using its right half); there is no extra end-target bar. Cards stay inside their staging/production/unknown groups; position locks cannot shift. A single `CommitCardMove` handles persistence and rollback on save error. The legacy grip-specific drag handlers and duplicated per-target save blocks have been removed. The translucent preview must never accept hit tests.
+
+## Window chrome and resize (2026-10-31)
+
+The full MainWindow titlebar border handles `PreviewMouseLeftButtonDown`, skipping any ButtonBase/interactive descendants. No `SizeAll` cursor, and dragging works across empty titlebar regions and labels. Minimize and maximize are vector Path buttons; the maximize glyph changes when maximized. Native `WM_GETMINMAXINFO` processing uses `MonitorFromWindow` and `GetMonitorInfo` to constrain maximize bounds to the current monitor's **work area** (taskbar respected, including on multi-monitor setups). No taskbar state changes.
+
+The dashboard ScrollViewer and activity-log TextBox use the same 16px right inset. The log row is a resizable Grid track with its resize GridSplitter across the status-bar top edge; toggle hide/show saves and restores its previous row height, collapsing the actual track rather than leaving unused space. Drag-reorder and log resizing never initiate deployments.
+
+These third/fourth iteration fixes are on the feature branch only. A successful static handler/XAML check does not substitute for the next Windows build and real UI trials. Do not release until manually accepted.
