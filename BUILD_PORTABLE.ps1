@@ -115,6 +115,17 @@ try {
         throw "Generic CDM.exe unexpectedly loaded saved credentials. $((Get-Content "$templateMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
     }
     Write-Host 'PASS: generic CDM.exe starts without credentials, irrespective of older user settings.'
+
+    # Status update is independent of the deployment's "finished" event.
+    # This offline test exercises WPF view-model property notifications only.
+    $healthMarker = Join-Path $smoke 'health-updated.txt'
+    $healthTest = Start-Process -FilePath $exe -ArgumentList ('--verify-health-viewmodel "' + $healthMarker + '"') -Wait -PassThru
+    if ($healthTest.ExitCode -ne 0 -or -not (Test-Path $healthMarker) -or
+        (Get-Content $healthMarker -Raw).Trim() -ne 'CDM-HEALTH-UPDATED') {
+        throw "Read-only app health view-model regression failed. $((Get-Content "$healthMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    Write-Host 'PASS: card health changes from unhealthy to healthy without overwriting finished deployment history.'
+
     $clone = Join-Path $smoke 'CDM-Smoke-Test.exe'
     $marker = Join-Path $smoke 'clone-started.txt'
     $create = Start-Process -FilePath $exe -ArgumentList ('--emit-self-test-clone "' + $clone + '"') -Wait -PassThru
