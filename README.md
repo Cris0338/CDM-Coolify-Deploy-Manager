@@ -68,11 +68,11 @@ The script runs local classification, localization, embedded-profile, template-s
 
 See [BUILDING.md](BUILDING.md), [DEVELOPER_NOTES.md](DEVELOPER_NOTES.md), and [CHECKLIST_TEST_WPF.md](CHECKLIST_TEST_WPF.md).
 
-## Validation status (31 October 2026)
+## Validation status — CDM 2.2.1 (31 October 2026)
 
 **Verified on Windows:** portable build, generic clean startup, serialized profile tests, personalized-clone startup and independent SSH tunnel/API connection; one live Coolify inventory of 30 applications was displayed. The logo/splash and EXE icon were rendered; Windows Explorer may cache old icons. The disposable clone upgrade smoke test has also passed.
 
-**Not yet certified for public release:** a real staging deployment and its monitoring, full usability review of all new card controls, and complete cross-machine portability testing. A successful build does not establish these behaviors.
+**2.2.1 pre-release accepted by the author:** all Windows compile/offline tests passed, including build provenance, saved-profile upgrades and card/SSH recovery logic. The personal clone connected to Coolify and its managed SSH tunnel remained stable for over 14 minutes with no observed disconnection. **Not yet tested:** a real staging deployment/monitoring and cross-PC portability; therefore this is a pre-release, not a fully certified stable release.
 
 ## Release and license
 
@@ -82,9 +82,9 @@ The repository previously contained MIT-licensed historical versions. A change i
 
 No personalized clones, API tokens, private SSH keys, local test output or backup copies belong in a public Git repository.
 
-## Future GitHub Release downloads
+## GitHub Release downloads
 
-The official single-file generic CDM.exe will be downloadable from [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases) when it is published; currently no release is claimed. `PACKAGE_RELEASE.ps1` locally prepares the generic EXE, documentation ZIP and SHA256 file without uploading them. See [RELEASE_GUIDE.md](RELEASE_GUIDE.md) and the [31 October checkpoint](PROJECT_STATUS_2026-10-31.md).
+The official single-file generic CDM.exe will be downloadable from [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases) after the corresponding GitHub Release is actually published. `PACKAGE_RELEASE.ps1` locally prepares the generic EXE, documentation ZIP and SHA256 file without uploading them. See [RELEASE_GUIDE.md](RELEASE_GUIDE.md) and the [31 October checkpoint](PROJECT_STATUS_2026-10-31.md).
 
 ## Voluntary support — buy Cris0338 a beer 🍺
 
