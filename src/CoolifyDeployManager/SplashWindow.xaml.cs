@@ -63,7 +63,10 @@ public partial class SplashWindow : Window
         // Elliptical orbit, roughly twice around the official logo.
         // On the upper half the electron is rendered behind the artwork;
         // on the lower half it crosses IN FRONT of the letters.
-        double angle = -Math.PI / 2 + seconds * Math.PI * 2 * (seconds < 1.35 ? 0.62 : 1.13);
+        double turns = seconds < 1.35
+            ? seconds * 0.62
+            : 1.35 * 0.62 + (seconds - 1.35) * 1.13;
+        double angle = -Math.PI / 2 + turns * Math.PI * 2;
         double x = 450 + 348 * Math.Cos(angle);
         double y = 265 + 142 * Math.Sin(angle);
         lastX = x;
