@@ -152,10 +152,30 @@ try {
     # Exercise the real detached save helper on a disposable personal EXE.
     # No network, real SSH keys, tokens or user's own clone are involved.
     $savedMarker = Join-Path $smoke 'pending-staged.txt'
-    $save = Start-Process -FilePath $clone -ArgumentList ('--save-self-test-clone "' + $savedMarker + '"') -Wait -PassThru
-    if ($save.ExitCode -ne 0 -or -not (Test-Path $savedMarker) -or (Get-Content $savedMarker -Raw).Trim() -ne 'CDM-PENDING-STAGED') {
-        throw "Disposable clone could not stage an embedded profile change. $((Get-Content "$savedMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    # Start-Process -Wait on Windows waits for the entire descendant process
+    # tree, not just the clone. The clone deliberately spawns a detached
+    # powershell.exe helper to update its EXE after exit. Waiting for that
+    # process tree here can stall the test before it checks the .pending file.
+    # .NET Process.WaitForExit waits for only this disposable clone's PID.
+    $saveStart = New-Object System.Diagnostics.ProcessStartInfo
+    $saveStart.FileName = $clone
+    $saveStart.Arguments = '--save-self-test-clone "' + $savedMarker + '"'
+    $saveStart.UseShellExecute = $false
+    $saveStart.CreateNoWindow = $true
+    $saveProcess = [System.Diagnostics.Process]::Start($saveStart)
+    if ($null -eq $saveProcess) { throw 'Could not launch disposable clone save smoke test.' }
+    try {
+        if (-not $saveProcess.WaitForExit(20000)) {
+            try { $saveProcess.Kill() } catch { }
+            throw 'Disposable clone save did not exit within 20 seconds.'
+        }
+        if ($saveProcess.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $savedMarker) -or
+            (Get-Content -LiteralPath $savedMarker -Raw).Trim() -ne 'CDM-PENDING-STAGED') {
+            throw "Disposable clone could not stage an embedded profile change. $((Get-Content "$savedMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+        }
     }
+    finally { $saveProcess.Dispose() }
+    Write-Host 'PASS: disposable clone staged a profile update and exited; checking detached helper.'
     $pending = Join-Path $smoke '.CDM-Smoke-Test.exe.pending'
     $updaterError = "$pending.updater-error.txt"
     $deadline = [DateTime]::UtcNow.AddSeconds(65)
