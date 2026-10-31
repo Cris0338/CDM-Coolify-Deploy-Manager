@@ -126,3 +126,14 @@ The owner reported that the first-minute stopped-tunnel symptom was absent in th
 ### 2026-10-31 — SSH recovery smoke compile correction
 
 User's first Windows compile of new SSH auto-recovery tests failed with `CS1061` and `CS8422` at `App.xaml.cs:171`. Cause: inside WPF `App : Application`, unqualified `MainWindow` resolves to the inherited **instance property** `Application.MainWindow` rather than the `CoolifyDeployManager.MainWindow` **type**. The static local function `Eligible` consequently produced both diagnostics. Fixed by using the explicit `global::CoolifyDeployManager.MainWindow.ShouldRecoverManagedTunnel(...)` type reference in `App.xaml.cs`. No SSH behavior change in this correction. **Windows compile and smoke rerun required**; neither was performed by the connector.
+
+### 2026-10-31 — Owner Windows build and offline managed SSH recovery smoke PASS
+
+After correcting the name resolution conflict in `App.xaml.cs`, owner ran `BUILD_PORTABLE.ps1` on Windows 10. Compilation and publish succeeded in 8.7s; generic executable SHA256 `9AB39928F51D96DD16FC62376BBCB726C94F5DC7D71578C19B255EA4816F4662`, reported size 64.55 MB. All smoke checks PASS:
+- Clean generic EXE with no credentials.
+- Health viewmodel unhealthy→healthy without erasing last finished deployment.
+- `expired managed SSH tunnel will auto-recover; busy, active, closing and other modes are protected.`
+- Disposable personal clone startup and explicit clone upgrade preserving embedded profile.
+- Disposable clone .pending staged; detached on-exit update completed; previous executable hash-confirmed in last-good backup; token, card order and position locks preserved.
+
+**Important qualification:** SSH recovery smoke covers eligibility logic *only*, not an actual SSH remote disconnect or recovery. Still necessary to explicitly upgrade and test user's private clone (only after closing it), observe first-minute behavior, and collect the SSH exit code/stderr if it happens. No staging deployment or production server changes were performed. The previous deferred-save end-to-end PASS remains confirmed.
