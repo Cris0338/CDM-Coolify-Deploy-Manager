@@ -119,42 +119,43 @@ internal static class ExecutableProfile
         }) ?? throw new IOException("Cannot launch the personalized CDM executable.");
     }
 
-    // Save-to-self is a two-phase operation: the live clone writes a complete,
-    // checksum-protected .pending EXE; this detached helper waits for that clone
-    // to exit and replaces it in the SAME directory. The helper retries only
-    // transient Windows file-lock errors; it never deletes an unapplied pending
-    // profile or passes credentials as command-line arguments.
+    // Save-to-self is a two-phase operation. The live clone writes a verified
+    // .pending EXE; a separate PowerShell process applies it after Windows
+    // releases the original image. It retries in a bounded loop instead of
+    // waiting indefinitely for a PID that may never signal. No credential
+    // content is included in subprocess arguments or diagnostics.
     public static void ScheduleReplaceOnExit(string pendingPath)
     {
         var target = OwnPath;
-        var absolutePending = Path.GetFullPath(pendingPath);
-        if (string.Equals(target, absolutePending, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(Path.GetDirectoryName(target),
-                Path.GetDirectoryName(absolutePending), StringComparison.OrdinalIgnoreCase))
+        var pending = Path.GetFullPath(pendingPath);
+        if (string.Equals(target, pending, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(Path.GetDirectoryName(target), Path.GetDirectoryName(pending),
+                StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The staged clone must be beside the running clone.");
-
-        // Fail before the caller marks the helper as scheduled if the staged
-        // EXE does not contain a valid, configured, intact embedded profile.
-        if (!TryReadFile(absolutePending, out var saved) || saved?.IsConfigured != true)
+        if (!TryReadFile(pending, out var saved) || saved?.IsConfigured != true)
             throw new InvalidDataException("The staged clone does not contain valid settings.");
 
-        static string Quote(string value) => "'" + value.Replace("'", "''") + "'";
-        var updaterError = absolutePending + ".updater-error.txt";
-        // A single, bounded save helper. A previous failed save remains
-        // recoverable, and the next attempt clears its diagnostic on success.
+        static string PsLiteral(string value) => "'" + value.Replace("'", "''") + "'";
+        var errorPath = pending + ".updater-error.txt";
+        var statePath = pending + ".updater-started.txt";
+        // Status marker proves that the helper actually began executing.
+        // The helper deletes it when replacement completes successfully.
+        // If a retry limit expires, only a generic error is recorded.
         var script = "$ErrorActionPreference='Stop'; " +
-            $"$pending={Quote(absolutePending)}; $target={Quote(target)}; $errorFile={Quote(updaterError)}; " +
-            $"Wait-Process -Id {Environment.ProcessId} -ErrorAction SilentlyContinue; " +
-            "$last=$null; for($attempt=0; $attempt -lt 160; $attempt++) { " +
-            "try { [System.IO.File]::Replace($pending,$target,$null); " +
-            "Remove-Item -LiteralPath $errorFile -Force -ErrorAction SilentlyContinue; exit 0 } " +
-            "catch [System.IO.IOException] { $last=$_.Exception } " +
-            "catch [System.UnauthorizedAccessException] { $last=$_.Exception } " +
-            "Start-Sleep -Milliseconds 300 }; " +
-            "try { [System.IO.File]::WriteAllText($errorFile, " +
-            "'CDM could not finish the profile save after retrying Windows file locks: ' + $last.Message) } " +
-            "catch { }; exit 1";
-        var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+            $"$pending={PsLiteral(pending)}; $target={PsLiteral(target)}; " +
+            $"$errorPath={PsLiteral(errorPath)}; $statePath={PsLiteral(statePath)}; " +
+            "try { [IO.File]::WriteAllText($statePath,'started'); " +
+            "$last=$null; for($attempt=0; $attempt -lt 200; $attempt++) { " +
+            "try { [IO.File]::Replace($pending,$target,$null); " +
+            "Remove-Item -LiteralPath $statePath,$errorPath -Force -ErrorAction SilentlyContinue; exit 0 } " +
+            "catch { if ($_.Exception -isnot [IO.IOException] -and " +
+            "$_.Exception -isnot [UnauthorizedAccessException]) { throw }; " +
+            "$last=$_.Exception }; Start-Sleep -Milliseconds 250 }; " +
+            "throw [IO.IOException]::new('Replacement still blocked after bounded retries: ' + " +
+            "$last.GetType().Name) } " +
+            "catch { try { [IO.File]::WriteAllText($errorPath, " +
+            "'CDM update helper failed: ' + $_.Exception.GetType().Name + " +
+            "' - ' + $_.Exception.Message) } catch { }; exit 1 }";
         var start = new ProcessStartInfo("powershell.exe")
         {
             UseShellExecute = false,
@@ -164,9 +165,8 @@ internal static class ExecutableProfile
         foreach (var argument in new[]
         {
             "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
-            "-WindowStyle", "Hidden", "-EncodedCommand", encoded
+            "-WindowStyle", "Hidden", "-Command", script
         }) start.ArgumentList.Add(argument);
-
         using var process = Process.Start(start)
             ?? throw new IOException("Unable to launch the detached profile-save helper.");
     }
