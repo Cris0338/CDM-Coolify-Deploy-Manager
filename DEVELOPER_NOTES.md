@@ -52,3 +52,9 @@ Windows build/test: .NET 10 SDK, local PowerShell, no GitHub Actions, no remote 
 ## License
 
 The active development branch uses [CDM Free Redistribution License v1.0](LICENSE). Source-available, free-to-use/share, **not for resale**. This is **not an OSI-approved open-source license**. Historical changelogs may mention MIT because earlier commits were MIT-licensed; those references are records, not the current terms.
+
+## Maintenance rule — no stacked patches
+
+**Owner requirement (2026-10-31):** Never accumulate successive workaround layers that override previous fixes. When correcting a component, **rewrite the affected complete logical unit** (XAML template, layout or C# handler set) into one coherent current implementation. Remove obsolete handlers, duplicate event routing and obsolete styling rather than stacking adapters or compensating patches. Preserve this rule in future sessions. Save all edits directly to the development branch on GitHub, never require the owner to apply hand-written source patches in PowerShell. The owner performs only pull/build/Windows GUI acceptance. No GitHub Actions, deployment, automatic release, or unrequested merge.
+
+**Current card DnD contract:** drag from non-interactive card body/grip, cursor-following preview snapshot (WPF adorner), insert before/after target based on its horizontal midpoint, append in transparent end target or empty WrapPanel space. Cards stay inside their staging/production/unknown groups; position locks cannot shift. A single `CommitCardMove` handles persistence and rollback on save error. The legacy grip-specific drag handlers and duplicated per-target save blocks have been removed. The translucent preview must never accept hit tests.
