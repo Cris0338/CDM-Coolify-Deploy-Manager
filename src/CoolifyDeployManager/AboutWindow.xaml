@@ -4,7 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="{DynamicResource L.AboutTitle}" Width="540" Height="450"
         MinWidth="480" MinHeight="430" ResizeMode="CanMinimize"
-        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="{StaticResource Canvas}" Foreground="{StaticResource Primary}" WindowStyle="None" Icon="Assets/AppIcon.ico">
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="{StaticResource Canvas}" Foreground="{StaticResource Primary}" WindowStyle="None" Icon="Assets/CDMOfficial.ico">
     <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="7" GlassFrameThickness="0" CornerRadius="0"/></shell:WindowChrome.WindowChrome>
     <Grid><Grid.RowDefinitions><RowDefinition Height="45"/><RowDefinition Height="*"/></Grid.RowDefinitions>
       <Border Background="{StaticResource Header}" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Cursor="SizeAll"><Grid Margin="16,0,6,0"><TextBlock Text="{DynamicResource L.AboutTitle}" VerticalAlignment="Center" FontWeight="SemiBold"/><Button Content="✕" Click="Close_Click" Width="36" HorizontalAlignment="Right" Style="{StaticResource ActionButton}" Background="#76303D"/></Grid></Border>

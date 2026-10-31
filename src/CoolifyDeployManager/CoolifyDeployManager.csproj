@@ -7,8 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>CoolifyDeployManager</AssemblyName>
     <RootNamespace>CoolifyDeployManager</RootNamespace>
-    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
-    <ApplicationIcon Condition="Exists('Assets\CDMOfficial.ico')">Assets\CDMOfficial.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\CDMOfficial.ico</ApplicationIcon>
     <Version>2.2.0</Version>
     <Authors>Cris0338</Authors>
     <Copyright>Copyright © 2026 Cris0338</Copyright>
@@ -18,9 +17,8 @@
     <SelfContained>true</SelfContained>
   </PropertyGroup>
   <ItemGroup>
-    <Resource Include="Assets\AppIcon.ico" />
-    <Resource Include="Assets\CDMOfficial.ico" Condition="Exists('Assets\CDMOfficial.ico')" />
-    <Resource Include="Assets\CDMLogo.png" Condition="Exists('Assets\CDMLogo.png')" />
+    <Resource Include="Assets\CDMOfficial.ico" />
+    <Resource Include="Assets\CDMLogo.png" />
     <EmbeddedResource Include="Localization\*.json" LogicalName="CoolifyDeployManager.Localization.%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

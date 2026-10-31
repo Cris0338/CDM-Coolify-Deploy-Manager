@@ -43,11 +43,13 @@ if (Test-Path -LiteralPath $logoZip) {
     finally { Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue }
 }
 if (-not (Test-Path -LiteralPath $logoFile) -or -not (Test-Path -LiteralPath $iconFile)) {
-    Write-Warning 'Approved CDM logo not installed. Download CDM_Logo_Assets.zip into Downloads to embed the official artwork (current build uses a fallback).'
+    throw 'Official CDM artwork is missing. Download CDM_Logo_Assets.zip into Windows Downloads before building.'
 }
-else {
-    Write-Host 'PASS: official CDM transparent logo and icon available for embedding.'
+if ((Get-FileHash -LiteralPath $logoFile -Algorithm SHA256).Hash -ne $expectedLogoHash -or
+    (Get-FileHash -LiteralPath $iconFile -Algorithm SHA256).Hash -ne $expectedIconHash) {
+    throw 'Official CDM artwork has a different SHA256. Restore the approved assets from CDM_Logo_Assets.zip.'
 }
+Write-Host 'PASS: official CDM logo AND Windows executable icon verified (SHA256).'
 
 Write-Host '== Classification tests (no deployments) =='
 & $dotnet run --project $classifierTests -c Release

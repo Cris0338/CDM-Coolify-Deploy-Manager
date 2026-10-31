@@ -83,3 +83,7 @@ The startup shows the **approved transparent CDM logo**, while a luminous electr
 The two approved binary assets are delivered in **`CDM_Logo_Assets.zip`** (the exact logo PNG and an ICO derived from it). Download this archive to your Windows **Downloads** folder before building. `BUILD_PORTABLE.ps1` verifies the SHA256 of the ZIP and each extracted image, installs them under `src/CoolifyDeployManager/Assets`, and embeds them in `CDM.exe`. The logo and key art thus travel inside the one-file personalized clone; the archive is only needed during building. Builds without the ZIP use the existing vector logo fallback. The binary files are Git-ignored so that source-only branches remain small; build them into the clone on the PC with the ZIP.
 
 The launch sequence does not change any SSH keys, tokens, Coolify services or deployment settings.
+
+### One icon source for Windows, window title and taskbar
+
+The application now uses **only** `Assets/CDMOfficial.ico` for the compiled executable resource, dashboard and About window; the old `AppIcon.ico` is not referenced. The local build **requires** the approved assets and validates their SHA256 before compilation; missing or altered assets stop the build. Existing personalized clone EXEs still contain their old binaries until upgraded explicitly. Windows Explorer may cache icons by the old file path; refreshing Explorer or changing the clone filename can refresh the shell icon independently from updating its code. The official splash PNG is unchanged.
