@@ -36,7 +36,12 @@
             </Grid>
             <StackPanel VerticalAlignment="Center">
               <TextBlock Text="Coolify Deploy Manager" FontSize="23" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
-              <TextBlock Text="{DynamicResource L.AboutVersion}" Foreground="{StaticResource Muted}" Margin="0,5,0,0"/>
+              <TextBlock x:Name="VersionText" Foreground="{StaticResource Muted}" Margin="0,5,0,0"/>
+              <TextBlock x:Name="BuildText" Foreground="{StaticResource Muted}" FontSize="11"
+                         FontFamily="Consolas" TextWrapping="Wrap" Margin="0,4,0,0"/>
+              <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.Copy}"
+                      ToolTip="{DynamicResource L.Copy}" Click="CopyBuild_Click"
+                      HorizontalAlignment="Left" FontSize="11" Padding="10,4" Margin="0,7,0,0"/>
             </StackPanel>
           </StackPanel>
           <Border Background="{StaticResource Surface}" CornerRadius="12" Padding="18" Margin="0,0,0,18">
