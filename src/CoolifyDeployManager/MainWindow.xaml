@@ -58,41 +58,95 @@
       </Setter>
     </Style>
     <DataTemplate x:Key="ApplicationCard">
-      <Border Width="345" MinHeight="267" CornerRadius="13" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" Margin="0,0,14,14" Padding="16" Cursor="Hand" AllowDrop="True" PreviewDragOver="Card_DragOver" PreviewDrop="Card_Drop" PreviewMouseLeftButtonDown="Card_PreviewMouseLeftButtonDown" PreviewMouseMove="Card_PreviewMouseMove" PreviewMouseLeftButtonUp="Card_PreviewMouseLeftButtonUp" LostMouseCapture="Card_LostMouseCapture" Loaded="Card_Loaded">
+      <!-- This template owns the complete card drag surface and two insertion cues.
+           A drop on the left/right half inserts before/after the target. -->
+      <Border Width="345" MinHeight="267" CornerRadius="13"
+              Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}"
+              BorderThickness="1" Margin="0,0,14,14" Padding="16"
+              AllowDrop="True" Cursor="Hand"
+              PreviewDragOver="Card_DragOver" PreviewDragLeave="Card_DragLeave"
+              PreviewDrop="Card_Drop" PreviewMouseLeftButtonDown="Card_PreviewMouseLeftButtonDown"
+              PreviewMouseMove="Card_PreviewMouseMove"
+              PreviewMouseLeftButtonUp="Card_PreviewMouseLeftButtonUp"
+              LostMouseCapture="Card_LostMouseCapture" Loaded="Card_Loaded">
         <Border.ContextMenu>
-          <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" Style="{StaticResource DarkCardContextMenu}">
-            <MenuItem Style="{StaticResource DarkCardMenuItem}" Header="{DynamicResource L.LockPosition}" IsCheckable="True" IsChecked="{Binding PositionLocked, Mode=OneWay}" Click="TogglePositionLock_Click"/>
-            <MenuItem Style="{StaticResource DarkCardMenuItem}" Header="{DynamicResource L.LockDeploy}" IsCheckable="True" IsChecked="{Binding DeployLocked, Mode=OneWay}" Click="ToggleDeployLock_Click"/>
+          <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                       Style="{StaticResource DarkCardContextMenu}">
+            <MenuItem Style="{StaticResource DarkCardMenuItem}" Header="{DynamicResource L.LockPosition}"
+                      IsCheckable="True" IsChecked="{Binding PositionLocked, Mode=OneWay}"
+                      Click="TogglePositionLock_Click"/>
+            <MenuItem Style="{StaticResource DarkCardMenuItem}" Header="{DynamicResource L.LockDeploy}"
+                      IsCheckable="True" IsChecked="{Binding DeployLocked, Mode=OneWay}"
+                      Click="ToggleDeployLock_Click"/>
           </ContextMenu>
         </Border.ContextMenu>
         <Border.Style>
-          <Style TargetType="Border"><Setter Property="BorderBrush" Value="{StaticResource Line}"/><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="{StaticResource Purple}"/></Trigger></Style.Triggers></Style>
+          <Style TargetType="Border">
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Style.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource Purple}"/>
+              </Trigger>
+            </Style.Triggers>
+          </Style>
         </Border.Style>
         <Grid>
-          <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
           <Grid Grid.Row="0" Margin="0,0,0,10">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" Visibility="{Binding SelectionVisibility}" Margin="0,2,10,0" VerticalAlignment="Top" ToolTip="{DynamicResource L.SelectForDeploy}"/>
-            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" MaxHeight="45" ToolTip="{Binding FullDescription}"/>
-            <Border Grid.Column="2" Background="{StaticResource Hover}" CornerRadius="6" Padding="8,6" Margin="8,0,0,0" Cursor="SizeAll" ToolTip="{DynamicResource L.DragTooltip}" PreviewMouseLeftButtonDown="Grip_Down" PreviewMouseMove="Grip_Move">
-              <TextBlock Text="⠿" FontSize="17" Foreground="{StaticResource Muted}" IsHitTestVisible="False"/>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                      Visibility="{Binding SelectionVisibility}" Margin="0,2,10,0"
+                      VerticalAlignment="Top" ToolTip="{DynamicResource L.SelectForDeploy}"/>
+            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="15"
+                       FontWeight="SemiBold" TextWrapping="Wrap" MaxHeight="45"
+                       ToolTip="{Binding FullDescription}"/>
+            <Border Grid.Column="2" Background="{StaticResource Hover}" CornerRadius="6"
+                    Padding="8,6" Margin="8,0,0,0" Cursor="SizeAll"
+                    ToolTip="{DynamicResource L.DragTooltip}">
+              <TextBlock Text="⠿" FontSize="17" Foreground="{StaticResource Muted}"
+                         IsHitTestVisible="False"/>
             </Border>
           </Grid>
           <StackPanel Grid.Row="1" Margin="0,0,0,10">
-            <TextBlock Text="{Binding Environment}" FontSize="11" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Environment}"/>
-            <Border Background="{StaticResource Header}" CornerRadius="5" Padding="6,5" Margin="0,7,0,0" HorizontalAlignment="Left" MaxWidth="305">
-              <TextBlock Text="{Binding Branch}" FontFamily="Consolas" FontSize="11" Foreground="#B9B7F6" TextTrimming="CharacterEllipsis" ToolTip="{Binding Branch}"/>
+            <TextBlock Text="{Binding Environment}" FontSize="11"
+                       Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"
+                       ToolTip="{Binding Environment}"/>
+            <Border Background="{StaticResource Header}" CornerRadius="5"
+                    Padding="6,5" Margin="0,7,0,0" HorizontalAlignment="Left" MaxWidth="305">
+              <TextBlock Text="{Binding Branch}" FontFamily="Consolas" FontSize="11"
+                         Foreground="#B9B7F6" TextTrimming="CharacterEllipsis" ToolTip="{Binding Branch}"/>
             </Border>
           </StackPanel>
           <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,14">
-            <Border Background="{Binding RunningBrush}" CornerRadius="12" Padding="10,5" Margin="0,0,7,0"><TextBlock Text="{Binding RunningLabel}" FontWeight="SemiBold" FontSize="11"/></Border>
-            <Border Background="{Binding HealthBrush}" CornerRadius="12" Padding="10,5"><TextBlock Text="{Binding HealthLabel}" FontWeight="SemiBold" FontSize="11"/></Border>
+            <Border Background="{Binding RunningBrush}" CornerRadius="12" Padding="10,5"
+                    Margin="0,0,7,0"><TextBlock Text="{Binding RunningLabel}" FontWeight="SemiBold" FontSize="11"/></Border>
+            <Border Background="{Binding HealthBrush}" CornerRadius="12" Padding="10,5">
+              <TextBlock Text="{Binding HealthLabel}" FontWeight="SemiBold" FontSize="11"/>
+            </Border>
           </StackPanel>
           <StackPanel Grid.Row="3" Margin="0,0,0,13">
-            <TextBlock Text="{Binding LastDeploy}" FontSize="12" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
-            <TextBlock Text="{Binding LastStatus}" Margin="0,4,0,0" FontSize="11" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="{Binding LastDeploy}" FontSize="12"
+                       Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
+            <TextBlock Text="{Binding LastStatus}" Margin="0,4,0,0" FontSize="11"
+                       Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
           </StackPanel>
-          <Button Grid.Row="4" Style="{StaticResource ActionButton}" Background="{Binding DeployBrush}" Content="{Binding DeployCaption}" Click="Deploy_Click" Tag="{Binding}" IsEnabled="{Binding CanDeploy}"/>
+          <Button Grid.Row="4" Style="{StaticResource ActionButton}"
+                  Background="{Binding DeployBrush}" Content="{Binding DeployCaption}"
+                  Click="Deploy_Click" Tag="{Binding}" IsEnabled="{Binding CanDeploy}"/>
+          <!-- These markers overlay card content without changing the card's size. -->
+          <Border Grid.Row="0" Grid.RowSpan="5" Tag="InsertBefore" Width="5"
+                  HorizontalAlignment="Left" CornerRadius="3"
+                  Background="{StaticResource Blue}" Visibility="Collapsed"
+                  IsHitTestVisible="False" Panel.ZIndex="10"/>
+          <Border Grid.Row="0" Grid.RowSpan="5" Tag="InsertAfter" Width="5"
+                  HorizontalAlignment="Right" CornerRadius="3"
+                  Background="{StaticResource Blue}" Visibility="Collapsed"
+                  IsHitTestVisible="False" Panel.ZIndex="10"/>
         </Grid>
       </Border>
     </DataTemplate>
@@ -101,32 +155,46 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
     </Grid.RowDefinitions>
-    <Border Grid.Row="0" Background="{StaticResource Header}" Padding="22,18">
+    <!-- Single titlebar layout: large transparent logo, title/subtitle, and
+         one vertical status column with unframed version text above both pills. -->
+    <Border Grid.Row="0" Background="{StaticResource Header}" Padding="20,10">
       <Grid>
-        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-        <StackPanel MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Cursor="SizeAll">
-          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-            <Grid Width="48" Height="48" Margin="0,0,12,0" Background="Transparent">
-              <Image Source="Assets/CDMLogo.png" Width="46" Height="46" Stretch="Uniform"
-                     RenderOptions.BitmapScalingMode="Fant" SnapsToDevicePixels="True"/>
-            </Grid>
-            <TextBlock Text="Coolify Deploy Manager" FontSize="21" FontWeight="Bold" VerticalAlignment="Center"/>
-            <Border Background="#352C4B" CornerRadius="8" Margin="10,0,0,0" Padding="8,4"><TextBlock Text="WPF 2.2.0" FontSize="11" Foreground="{StaticResource Purple}"/></Border>
-            <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="10,0,0,0" MaxWidth="340">
-              <Border Background="{StaticResource Surface}" CornerRadius="8" HorizontalAlignment="Left" Padding="10,5">
-                <TextBlock x:Name="ProfileBadge" Text="{DynamicResource L.VaultNotConfigured}" FontSize="11" Foreground="{StaticResource Green}"/>
-              </Border>
-              <Border Background="{StaticResource Surface}" CornerRadius="8" HorizontalAlignment="Left" Padding="10,5"
-                      Margin="0,5,0,0" MaxWidth="340"
-                      Visibility="{Binding ElementName=ProfileIdentity, Path=Visibility}">
-                <TextBlock x:Name="ProfileIdentity" Foreground="{StaticResource Green}" FontSize="11"
-                           FontWeight="Normal" TextTrimming="CharacterEllipsis"
-                           ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" Visibility="Collapsed"/>
-              </Border>
-            </StackPanel>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" MinWidth="0"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Cursor="SizeAll" VerticalAlignment="Center">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Image Grid.Column="0" Source="Assets/CDMLogo.png" Width="88" Height="88" Margin="0,0,12,0"
+                 Stretch="Uniform" RenderOptions.BitmapScalingMode="Fant"
+                 SnapsToDevicePixels="True"/>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+            <TextBlock Text="Coolify Deploy Manager" FontSize="21" FontWeight="Bold"/>
+            <TextBlock Text="{DynamicResource L.Subtitle}" Foreground="{StaticResource Muted}"
+                       FontSize="12" Margin="0,7,0,0"/>
           </StackPanel>
-          <TextBlock Text="{DynamicResource L.Subtitle}" Foreground="{StaticResource Muted}" FontSize="12" Margin="47,3,0,0"/>
-        </StackPanel>
+          <StackPanel Grid.Column="2" VerticalAlignment="Center" MaxWidth="335">
+            <TextBlock Text="WPF 2.2.0" FontSize="11" Foreground="{StaticResource Purple}"
+                       Margin="10,0,0,7"/>
+            <Border Background="{StaticResource Surface}" CornerRadius="8"
+                    HorizontalAlignment="Left" Padding="10,5">
+              <TextBlock x:Name="ProfileBadge" Text="{DynamicResource L.VaultNotConfigured}"
+                         FontSize="11" Foreground="{StaticResource Green}"/>
+            </Border>
+            <Border Background="{StaticResource Surface}" CornerRadius="8"
+                    HorizontalAlignment="Left" Padding="10,5" Margin="0,5,0,0"
+                    MaxWidth="335" Visibility="{Binding ElementName=ProfileIdentity, Path=Visibility}">
+              <TextBlock x:Name="ProfileIdentity" FontSize="11" Foreground="{StaticResource Green}"
+                         TextTrimming="CharacterEllipsis"
+                         ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"
+                         Visibility="Collapsed"/>
+            </Border>
+          </StackPanel>
+        </Grid>
         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
           <Ellipse x:Name="ConnectionDot" Width="9" Height="9" Fill="{StaticResource Red}" Margin="0,0,7,0"/>
           <TextBlock x:Name="ConnectionText" Text="{DynamicResource L.NotConnected}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" Margin="0,0,18,0"/>
