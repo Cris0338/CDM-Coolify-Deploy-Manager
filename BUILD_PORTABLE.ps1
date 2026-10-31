@@ -63,6 +63,31 @@ Write-Host '== Embedded executable profile tests =='
 & $dotnet run --project $profileTests -c Release
 if ($LASTEXITCODE -ne 0) { throw "Executable profile tests failed (exit $LASTEXITCODE)." }
 
+# Isolated Windows PowerShell/.NET Framework compatibility check:
+# File.Replace must receive a real backup path, not $null (which PowerShell
+# can coerce to an invalid empty string). Test ordinary file bytes first,
+# before running any executable-based save tests or touching personal clones.
+Write-Host '== PowerShell File.Replace compatibility (dummy files only) =='
+$replaceProof = Join-Path ([IO.Path]::GetTempPath()) ('CDM replace proof ' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -LiteralPath $replaceProof | Out-Null
+try {
+    $oldFile = Join-Path $replaceProof 'CDM old.txt'
+    $newFile = Join-Path $replaceProof 'CDM new.txt'
+    $backupFile = Join-Path $replaceProof 'CDM previous.bak'
+    [IO.File]::WriteAllText($oldFile, 'ORIGINAL')
+    [IO.File]::WriteAllText($newFile, 'UPDATED')
+    [IO.File]::Replace($newFile, $oldFile, $backupFile)
+    if ([IO.File]::ReadAllText($oldFile) -ne 'UPDATED' -or
+        [IO.File]::ReadAllText($backupFile) -ne 'ORIGINAL' -or
+        [IO.File]::Exists($newFile)) {
+        throw 'File.Replace produced incorrect destination, backup, or staging cleanup.'
+    }
+    Write-Host 'PASS: Windows PowerShell File.Replace updated a file and preserved the original in a valid backup.'
+}
+finally {
+    Remove-Item -LiteralPath $replaceProof -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 # Avoid rebuilding while the published template is running and its file is locked.
 $exe = Join-Path $destination 'CDM.exe'
 $running = @(Get-Process -Name CDM -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe })
@@ -152,6 +177,7 @@ try {
 
     # Exercise the real detached save helper on a disposable personal EXE.
     # No network, real SSH keys, tokens or user's own clone are involved.
+    $cloneHashBeforeSave = (Get-FileHash -LiteralPath $clone -Algorithm SHA256).Hash
     $savedMarker = Join-Path $smoke 'pending-staged.txt'
     # Start-Process -Wait on Windows waits for the entire descendant process
     # tree, not just the clone. The clone deliberately spawns a detached
@@ -195,6 +221,12 @@ try {
         }
         throw "Detached updater did not apply disposable profile. Helper started=$started. $errorDetail"
     }
+    $previousBackup = "$clone.before-save.bak"
+    if (-not (Test-Path -LiteralPath $previousBackup) -or
+        (Get-FileHash -LiteralPath $previousBackup -Algorithm SHA256).Hash -ne $cloneHashBeforeSave) {
+        throw 'The detached helper did not preserve the previous personalized clone in its last-good backup.'
+    }
+    Write-Host 'PASS: close-time save preserved the exact previous disposable clone in its last-good backup.'
     $updatedMarker = Join-Path $smoke 'pending-applied.txt'
     $verifySaved = Start-Process -FilePath $clone -ArgumentList ('--verify-saved-self-test-clone "' + $updatedMarker + '"') -Wait -PassThru
     if ($verifySaved.ExitCode -ne 0 -or -not (Test-Path $updatedMarker) -or
