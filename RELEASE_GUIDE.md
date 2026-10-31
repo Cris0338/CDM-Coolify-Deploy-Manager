@@ -24,14 +24,14 @@ The script performs the full local build and smoke tests, checks that the binary
 
 Complete [CHECKLIST_TEST_WPF.md](CHECKLIST_TEST_WPF.md), including GUI verification, testing the manual SSH authorization flow, one deliberate staging deployment, and verifying real personal clone updates. A successful build alone is not sufficient.
 
-**Important:** the public default branch **main still has the historical MIT license**. The new no-resale terms are currently on the feature branch. When release tests are accepted, first merge the verified source and license into main. Release tag, EXE binary, and license should all refer to the same tested code version.
+**Important:** `main` was fast-forwarded to the current CDM free-redistribution/no-resale license on 31 October 2026. Before tagging, verify that the release's target commit is the **same reviewed and built commit**, including any later PayPal.Me/localization changes. Release tag, EXE binary, and license must agree.
 
 ## Publishing via GitHub web interface (manual)
 
 1. Navigate to https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases.
 2. Choose **Draft a new release** and create a tag such as **v2.2.0** targeting the verified main commit.
 3. Set the release title, for example **CDM 2.2.0 — Windows portable**.
-4. Write the release notes: what changed, Windows 10/11 x64 requirement, unofficial Coolify connection, free/no-resale license and optional OpenSSH Client for SSH connections.
+4. Write the release notes: what changed, Windows 10/11 x64 requirement, unofficial Coolify connection, free/no-resale license and optional OpenSSH Client for SSH connections. Include voluntary-support text in English, French and Italian with the verified https://www.paypal.com/paypalme/Cris0338/ link (no amount specified).
 5. Upload **ONLY** the three files from release-artifacts. Do not upload the portable folder itself.
 6. Use **Save draft** to check the files and release details. When testing is accepted, choose **Publish release**. Mark as **pre-release** if it is not yet stable.
 

@@ -85,3 +85,11 @@ No personalized clones, API tokens, private SSH keys, local test output or backu
 ## Future GitHub Release downloads
 
 The official single-file generic CDM.exe will be downloadable from [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases) when it is published; currently no release is claimed. `PACKAGE_RELEASE.ps1` locally prepares the generic EXE, documentation ZIP and SHA256 file without uploading them. See [RELEASE_GUIDE.md](RELEASE_GUIDE.md) and the [31 October checkpoint](PROJECT_STATUS_2026-10-31.md).
+
+## Voluntary support — buy Cris0338 a beer 🍺
+
+CDM remains **completely free**. If you enjoy it and would like to support its development, you can choose any amount — absolutely optional:
+
+**[🍺 Buy Cris0338 a beer via PayPal.Me](https://www.paypal.com/paypalme/Cris0338/)**
+
+The donation message is translated in CDM's About window for every supported interface language. GitHub's Sponsor button links to the same PayPal.Me page. No payment is required to download, use or share CDM.

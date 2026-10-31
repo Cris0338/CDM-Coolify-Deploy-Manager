@@ -82,7 +82,7 @@
   "ReadingInventory": "Lettura progetti, ambienti e applicazioni…",
   "InventoryUpdated": "{0} applicazioni · Aggiornato alle {1}",
   "ConnectionError": "Errore connessione · Controlla il registro",
-  "AboutVersion": "WPF · Versione 2.1.1",
+  "AboutVersion": "WPF · Versione 2.2.0",
   "BranchUnknown": "Branch non disponibile",
   "DeployProd": "Deploy produzione",
   "DeployStage": "Deploy staging",
@@ -219,5 +219,8 @@
   "SetupHasAliasQuestion": "Hai già un alias SSH funzionante configurato su questo PC Windows?",
   "SetupHasAliasYes": "Sì, ho un alias",
   "SetupHasAliasNo": "No, non ce l'ho",
-  "SetupAliasEntryHint": "Inserisci il nome del tuo alias SSH Windows (per esempio contabo) e autorizza la chiave dedicata di CDM."
+  "SetupAliasEntryHint": "Inserisci il nome del tuo alias SSH Windows (per esempio contabo) e autorizza la chiave dedicata di CDM.",
+  "SupportTitle": "🍺 Offri una birra a Cris0338!",
+  "SupportDescription": "CDM è gratuito. Se ti piace e vuoi sostenere il suo sviluppo, scegli liberamente l'importo. È del tutto facoltativo.",
+  "SupportOpenPayPal": "Sostieni tramite PayPal.Me"
 }

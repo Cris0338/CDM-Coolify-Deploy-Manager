@@ -2,8 +2,8 @@
 <Window x:Class="CoolifyDeployManager.AboutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        Title="{DynamicResource L.AboutTitle}" Width="540" Height="450"
-        MinWidth="480" MinHeight="430" ResizeMode="CanMinimize"
+        Title="{DynamicResource L.AboutTitle}" Width="580" Height="560"
+        MinWidth="520" MinHeight="500" ResizeMode="CanMinimize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="{StaticResource Canvas}" Foreground="{StaticResource Primary}" WindowStyle="None" Icon="Assets/CDMOfficial.ico">
     <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="7" GlassFrameThickness="0" CornerRadius="0"/></shell:WindowChrome.WindowChrome>
     <Grid><Grid.RowDefinitions><RowDefinition Height="45"/><RowDefinition Height="*"/></Grid.RowDefinitions>
@@ -37,8 +37,24 @@
                    TextWrapping="Wrap" Margin="0,0,0,14" FontSize="13" />
         <TextBlock Grid.Row="3" Text="{DynamicResource L.Unofficial}"
                    TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,0,0,15" />
-        <TextBlock Grid.Row="4" Text="{DynamicResource L.AboutSources}"
-                   TextWrapping="Wrap" Foreground="{StaticResource Muted}" />
+        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Text="{DynamicResource L.AboutSources}" TextWrapping="Wrap"
+                       Foreground="{StaticResource Muted}" Margin="0,0,0,15"/>
+            <Border Background="{StaticResource Surface}" CornerRadius="12"
+                    BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="15">
+              <StackPanel>
+                <TextBlock Text="{DynamicResource L.SupportTitle}" FontWeight="SemiBold"
+                           FontSize="16" Foreground="{StaticResource Purple}" TextWrapping="Wrap"/>
+                <TextBlock Text="{DynamicResource L.SupportDescription}" Margin="0,8,0,11"
+                           Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
+                <Button Content="{DynamicResource L.SupportOpenPayPal}" ToolTip="https://www.paypal.com/paypalme/Cris0338/"
+                        HorizontalAlignment="Left" Style="{StaticResource ActionButton}"
+                        Background="{StaticResource Blue}" Click="Support_Click"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
         <Button Grid.Row="5" Content="{DynamicResource L.Close}" Style="{StaticResource ActionButton}"
                 HorizontalAlignment="Right" MinWidth="110" Click="Close_Click" Margin="0,15,0,0" />
       </Grid>

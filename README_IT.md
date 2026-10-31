@@ -61,3 +61,11 @@ La documentazione tecnica completa è in [README.md](README.md), [CDM_SETUP_GUID
 ## Scaricare CDM facilmente
 
 Dopo il rilascio, la pagina ufficiale sara [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases): bastera scaricare il generico `CDM.exe` oppure il pacchetto ZIP con guida italiana. Non esiste ancora una release pubblicata. `PACKAGE_RELEASE.ps1` prepara i file per il caricamento manuale, senza pubblicarli. Vedi [RELEASE_GUIDE.md](RELEASE_GUIDE.md) e il [punto del 31 ottobre](PROJECT_STATUS_2026-10-31.md).
+
+## 🍺 Offri una birra a Cris0338!
+
+CDM è **completamente gratuito**. Se ti piace e vuoi sostenere il suo sviluppo, puoi scegliere liberamente qualsiasi importo, senza alcun obbligo:
+
+**[Offri una birra tramite PayPal.Me](https://www.paypal.com/paypalme/Cris0338/)**
+
+Il messaggio è tradotto nella finestra «Informazioni» dell'applicazione secondo la lingua selezionata. Il pulsante Sponsor di GitHub porta alla stessa pagina. Non è richiesto alcun pagamento per utilizzare, scaricare o condividere CDM.
