@@ -70,3 +70,16 @@ See [docs/HANDOFF_2026-10-31_UI.md](docs/HANDOFF_2026-10-31_UI.md) for screensho
 ### Source fix checkpoint (31 October 2026; NOT accepted yet)
 
 Patches for the dark context menu, status/identity alignment, high-resolution PNG logo, About/Guide red vector X buttons, wrapped About license/support content, and card body/grip drag/drop have been committed to the development branch. See [docs/UI_FIXES_2026-10-31.md](docs/UI_FIXES_2026-10-31.md). The unchecked items above **must remain unchecked** pending the owner's Windows build, real GUI screenshots, and drag/lock persistence trials. No staging or production deployment was triggered during these source changes.
+
+### Second screenshot follow-up — 31 October 2026
+
+- [x] The owner visually verified the red vector X in the first revised EXE.
+- [x] Owner's first-patch Windows build and offline generic/clone smoke tests passed; generic SHA256 `87888E0E21A918021FD006F478A4AFE9FC318AB884C3C2397ADAE1CBD29BE2DA`.
+- [ ] Re-test *visible* dark checkboxes (unchecked and checked) in the second-patch context menu, including position/deploy lock persistence.
+- [ ] Re-test matching green status/identity badge styles, alignment and clipping at narrow window widths.
+- [ ] Re-test header/About PNG at increased sizes, with no extra purple tile.
+- [ ] Re-test initial About window height 610 px and localized support/overflow.
+- [ ] Re-test card drag from handle and body, onto another unlocked card and section append target; save/reopen order, locked positions, and no accidental deploy.
+- [ ] Compile new second-patch source, upgrade personal clone explicitly and check UI before packaging or tagging.
+
+Second-patch source commits and root-cause notes are in [docs/UI_FIXES_2026-10-31.md](docs/UI_FIXES_2026-10-31.md). Keep all unverified items open.
