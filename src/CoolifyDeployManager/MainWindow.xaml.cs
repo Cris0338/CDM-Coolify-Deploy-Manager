@@ -48,7 +48,16 @@ public partial class MainWindow : Window
         ProductionCount.Text = Loc.F("ApplicationsCount", 0);
         UnknownCount.Text = Loc.F("ApplicationsCount", 0);
         InventoryCount.Text = Loc.F("ApplicationsCount", 0);
-        AddLog("Coolify Deploy Manager WPF 2.1.1 · Startup.");
+        UpdateProfileStatus();
+        AddLog("Coolify Deploy Manager WPF 2.1.2 · Startup.");
+    }
+
+    private void UpdateProfileStatus()
+    {
+        Title = Loc.T("AppTitle") + " 2.1.2 · " +
+            Loc.T(SettingsStore.HasPortableProfile
+                ? (settings.IsConfigured ? "VaultConfigured" : "VaultNotConfigured")
+                : "VaultNotConfigured");
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -292,8 +301,18 @@ public partial class MainWindow : Window
         var position = order.IndexOf(destination.Uuid);
         if (position < 0) return;
         order.Insert(position, sourceUuid);
-        settings.CardOrders[OrderKey(destination.Group)] = order;
-        SettingsStore.Save(settings);
+        var key = OrderKey(destination.Group);
+        settings.CardOrders.TryGetValue(key, out var previous);
+        settings.CardOrders[key] = order;
+        try { SettingsStore.Save(settings); }
+        catch (Exception ex)
+        {
+            if (previous is null) settings.CardOrders.Remove(key);
+            else settings.CardOrders[key] = previous;
+            MessageBox.Show(this, ex.Message, Loc.T("VaultSaveFailed"),
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
         RenderCards();
         AddLog(Loc.T("OrderSaved"));
     }
@@ -304,10 +323,18 @@ public partial class MainWindow : Window
         if (busy) { MessageBox.Show(this, Loc.T("WaitOperation")); return; }
         var dlg = new SettingsWindow(settings) { Owner = this };
         if (dlg.ShowDialog() != true) return;
+        try { SettingsStore.Save(dlg.Result); }
+        catch (OperationCanceledException) { return; }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, Loc.T("VaultSaveFailed"),
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
         ssh.Stop();
         settings = dlg.Result;
-        SettingsStore.Save(settings);
         Loc.Apply(settings.Language);
+        UpdateProfileStatus();
         foreach (var app in inventory.Applications)
         {
             var card = new AppCardView(app, Classifier.Classify(app, settings));

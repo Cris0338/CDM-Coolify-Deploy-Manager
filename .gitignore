@@ -11,3 +11,7 @@ settings.json
 *.pfx
 *.pem
 *.key
+
+# Never publish portable encrypted user profiles or temporary vault writes.
+**/CDM.profile
+**/CDM.profile.*
