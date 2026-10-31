@@ -57,3 +57,9 @@ The author confirmed https://www.paypal.com/paypalme/Cris0338/ as the voluntary 
 ## Next-session UI handoff — 31 October 2026
 
 The owner supplied four cropped WPF screenshots documenting an incorrectly white right-click context-menu check gutter, blurry logo in the header and About, misaligned username/VPS line, and an older About modal with chevron-like red close button, clipped license and stale version text. These screenshots show an older binary, so they do not establish whether the subsequently committed PayPal.Me panel and `2.2.0` version are broken. **All technical findings and recommended next steps are recorded in [docs/HANDOFF_2026-10-31_UI.md](docs/HANDOFF_2026-10-31_UI.md).** A ready-to-copy new-chat instruction is saved in [docs/NEXT_CHAT_PROMPT_2026-10-31.md](docs/NEXT_CHAT_PROMPT_2026-10-31.md). No UI changes or releases are performed by this handoff.
+
+## UI implementation after the handoff — 31 October 2026
+
+The five reported UI areas now have **committed source fixes** on the feature branch: card right-click menu dark check gutter (`5af5f67`), status/identity placement and Main logo (`c1aa48e`), card drag/drop targets (`1542ee0`), About logo/layout/vector X (`d832fd3`), and Guide vector X (`01e59ae`). Full technical detail: [docs/UI_FIXES_2026-10-31.md](docs/UI_FIXES_2026-10-31.md).
+
+**Validation scope:** static tag-balance and handler-reference checks only; the local Windows executable has **not** been rebuilt or GUI-tested after these changes. Every pending UI acceptance checkbox remains open. Do not use the obsolete release package or synchronize/tag/publish until Windows build, manual UI testing and the owner's approval.
