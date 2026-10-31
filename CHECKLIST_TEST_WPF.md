@@ -49,3 +49,9 @@ Checklist for **generic template + portable personalized clone**. Tests are loca
 - [ ] Confirm ZIP contains the current license and Italian/English documentation, without any personal EXE or .bak.
 - [ ] Check binary/source version, license, and release tag all refer to the same verified commit on main.
 - [ ] Create GitHub Release as draft, inspect assets, then publish only after explicit acceptance.
+
+## Voluntary support localization
+
+- [ ] All 14 languages display the correct optional support title, explanation and PayPal.Me button in About.
+- [ ] PayPal.Me button opens `https://www.paypal.com/paypalme/Cris0338/` without a fixed amount.
+- [ ] Repackage after the localized support changes; ensure `SUPPORT.md` is included in the distribution ZIP.

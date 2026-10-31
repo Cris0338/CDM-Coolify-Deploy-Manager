@@ -34,7 +34,7 @@ $direct = Join-Path $out 'CDM.exe'
 $hashFile = Join-Path $out "CDM-$version-SHA256.txt"
 try {
     Copy-Item -LiteralPath $exe -Destination (Join-Path $stage 'CDM.exe') -ErrorAction Stop
-    foreach ($name in @('LICENSE','README.md','README_IT.md')) {
+    foreach ($name in @('LICENSE','README.md','README_IT.md','SUPPORT.md')) {
         Copy-Item -LiteralPath (Join-Path $root $name) -Destination $stage -ErrorAction Stop
     }
     $install = @'
@@ -46,6 +46,7 @@ This generic EXE has no server configuration or credentials.
 Never share your personalized CDM-user-server.exe: it embeds API/SSH credentials.
 Windows OpenSSH Client is required only for managed SSH connections.
 Read README_IT.md for Italian instructions or README.md for English.
+For OPTIONAL support in 14 languages see SUPPORT.md; no payment is required.
 Official downloads: https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases
 '@
     [IO.File]::WriteAllText((Join-Path $stage 'INSTALL.txt'),$install,[Text.UTF8Encoding]::new($false))

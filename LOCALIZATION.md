@@ -6,7 +6,7 @@ English is the canonical language for source comments, technical documentation a
 | --- | --- |
 | English (`en`), Français (`fr`), Italiano (`it`) | Español (`es`), Deutsch (`de`), Português-BR (`pt-BR`), Nederlands (`nl`), Polski (`pl`), Türkçe (`tr`), Русский (`ru`), Українська (`uk`), 日本語 (`ja`), 한국어 (`ko`), 简体中文 (`zh-CN`) |
 
-On the 31 October 2026 Windows build, en/fr/it had **224/224 localization keys**; preview catalogs had **56/224** and fell back to English. All 14 languages also translate the three PayPal.Me voluntary-support strings. The exact number can change as keys are added.
+In the current source, en/fr/it have **224/224 localization keys**; preview catalogs have **56/224** and fall back to English. These new support translations require a fresh local Windows build/test. All 14 languages also translate the three PayPal.Me voluntary-support strings. The exact number can change as keys are added.
 
 To contribute:
 

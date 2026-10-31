@@ -5,7 +5,7 @@
 ## Recommended downloads
 
 - **CDM.exe** — the generic, portable Windows 10/11 x64 executable; opens first-run setup and contains no credentials.
-- **CDM-2.2.0-win-x64.zip** — generic CDM.exe, English/Italian documentation, installation note and active LICENSE.
+- **CDM-2.2.0-win-x64.zip** — generic CDM.exe, English/Italian documentation, 14-language SUPPORT.md, installation note and active LICENSE.
 - **CDM-2.2.0-SHA256.txt** — integrity hashes of both assets.
 
 **NEVER upload personal CDM-username-server.exe clones, backup .bak files, SSH keys or API tokens.**
@@ -18,7 +18,7 @@ From the repository root:
 powershell -ExecutionPolicy Bypass -File .\PACKAGE_RELEASE.ps1
 ```
 
-The script performs the full local build and smoke tests, checks that the binary does not contain a personalized-profile trailer, and writes the three approved assets to the Git-ignored **release-artifacts/** folder. It does not tag, upload, merge, create a release, or deploy to Coolify.
+The script performs the full local build and smoke tests, checks that the binary does not contain a personalized-profile trailer, embeds the 14-language SUPPORT.md document in the ZIP, and writes the three approved assets to the Git-ignored **release-artifacts/** folder. It does not tag, upload, merge, create a release, or deploy to Coolify.
 
 ## Before publishing
 
@@ -31,7 +31,7 @@ Complete [CHECKLIST_TEST_WPF.md](CHECKLIST_TEST_WPF.md), including GUI verificat
 1. Navigate to https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases.
 2. Choose **Draft a new release** and create a tag such as **v2.2.0** targeting the verified main commit.
 3. Set the release title, for example **CDM 2.2.0 — Windows portable**.
-4. Write the release notes: what changed, Windows 10/11 x64 requirement, unofficial Coolify connection, free/no-resale license and optional OpenSSH Client for SSH connections. Include voluntary-support text in English, French and Italian with the verified https://www.paypal.com/paypalme/Cris0338/ link (no amount specified).
+4. Write the release notes: what changed, Windows 10/11 x64 requirement, unofficial Coolify connection, free/no-resale license and optional OpenSSH Client for SSH connections. Include voluntary-support text in English, French and Italian with the verified https://www.paypal.com/paypalme/Cris0338/ link (no amount specified). Complete optional support text is available in [SUPPORT.md](SUPPORT.md), covering all 14 UI languages. Use [RELEASE_NOTES_2.2.0.md](RELEASE_NOTES_2.2.0.md) as the release description template.
 5. Upload **ONLY** the three files from release-artifacts. Do not upload the portable folder itself.
 6. Use **Save draft** to check the files and release details. When testing is accepted, choose **Publish release**. Mark as **pre-release** if it is not yet stable.
 

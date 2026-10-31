@@ -20,7 +20,7 @@ Version: **2.2.0**, unreleased. **No GitHub Actions. No automatic deploy.**
 - Managed SSH setup now asks first whether the PC has an existing alias; only the chosen authorization path is shown.
 - Searchable project picker, staging selection boxes, separate batch-deploy actions, card locking and drag-and-drop.
 - Splash without rectangle; logo and icon use approved assets from Windows Downloads.
-- New **CDM Free Redistribution License v1.0** on feature branch: free use and sharing, no resale, voluntary donations. Main branch remains MIT pending acceptance.
+- New **CDM Free Redistribution License v1.0** on feature branch: free use and sharing, no resale, voluntary donations. Main was synchronized with the no-resale license on 31 October 2026 (before later support changes).
 - Updated documentation in README.md, README_IT.md, BUILDING.md, CDM_SETUP_GUIDE.md, DEVELOPER_NOTES.md and checklist.
 
 ## Pending before public release
@@ -29,7 +29,7 @@ Version: **2.2.0**, unreleased. **No GitHub Actions. No automatic deploy.**
 - Verify manual no-alias SSH flow and personal clone update settings/locks.
 - Test portable clone on a different machine/account.
 - Approve ONE real staging deployment and verify its results.
-- Merge tested feature branch to main to align default source license before tagging.
+- Main already carries the no-resale license; sync the final tested support/localization changes to main before tagging.
 - [DONE] Prepare generic downloadable EXE/ZIP/checksum using local PACKAGE_RELEASE.ps1 (owner confirmed local packaging output; ZIP content inspection pending).
 - Publish a manual GitHub Release only after owner explicitly approves it.
 - Improvements the owner has mentioned but not specified yet: defer to a future session.
@@ -48,4 +48,8 @@ Owner ran `PACKAGE_RELEASE.ps1` on Windows successfully. The script reported:
 
 SHA256 of source generic `portable/CDM.exe`: `9B1115C08BDCAAF19500ACDE2FAA9E357F91B03CC9A13AEB7F1F1791721AA8A4`.
 
-The script finished with `Ready for MANUAL GitHub Release upload (NOT published)`. This confirms local asset generation, **not** an actual GitHub Release. No binaries, credentials or personal clones were added to the repository. The ZIP contents have not been independently inspected. Remaining acceptance testing and the main-branch license alignment are still pending.
+The script finished with `Ready for MANUAL GitHub Release upload (NOT published)`. This confirms local asset generation, **not** an actual GitHub Release. No binaries, credentials or personal clones were added to the repository. The ZIP contents have not been independently inspected. Remaining UI acceptance testing and syncing the final release candidate to main are still pending.
+
+## Optional donations and multilingual support — 31 October 2026
+
+The author confirmed https://www.paypal.com/paypalme/Cris0338/ as the voluntary support link, with no amount prefilled. CDM now has a clickable support panel in About, including translated title, explanatory description and button for **all 14 UI languages**. The GitHub Sponsor button is configured in `.github/FUNDING.yml`; README.md and README_IT.md mention optional support. `SUPPORT.md` offers all 14 language versions and the local release ZIP will include it. This source update is not yet compiled/tested or published in a binary release; the prior prepared ZIP remains outdated and must be rebuilt.
