@@ -46,3 +46,7 @@ Previous releases may have used `settings.json`, DPAPI or `CDM.profile`. **CDM 2
 ## Licensing
 
 This development branch uses the [CDM Free Redistribution License v1.0](LICENSE), not MIT. Use, modification and free sharing are allowed; sale or paid distribution is restricted. No GitHub Actions.
+
+## Updated offline smoke checks (2026-10-31)
+
+In addition to the generic blank template and clone/upgrade tests, `BUILD_PORTABLE.ps1` now invokes two isolated, offline regression checks: a WPF card transitions from `running:unhealthy` to `running:healthy` without changing its finished deployment history; and a disposable clone modifies its artificial embedded profile, exits, automatically replaces its `.pending` EXE and is relaunched to verify the synthetic token, saved card ordering and locked positions. These tests use no real VPS, tokens, personal clones or deployment requests. A stuck pending helper causes the smoke test to FAIL rather than silently claiming completion.
