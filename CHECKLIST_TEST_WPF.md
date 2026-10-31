@@ -55,3 +55,14 @@ Checklist for **generic template + portable personalized clone**. Tests are loca
 - [ ] All 14 languages display the correct optional support title, explanation and PayPal.Me button in About.
 - [ ] PayPal.Me button opens `https://www.paypal.com/paypalme/Cris0338/` without a fixed amount.
 - [ ] Repackage after the localized support changes; ensure `SUPPORT.md` is included in the distribution ZIP.
+
+## UI defects reported in screenshots (31 Oct 2026; fix before release)
+
+- [ ] Custom dark `ContextMenu` / `MenuItem`: remove white checkbox/gutter rectangle; verify checked/un-checked states and actions.
+- [ ] Make in-app header/About CDM logos crisp at common Windows scaling (retain the approved high-res brand art).
+- [ ] Move `ProfileIdentity` under the green `Portable · Configurato` badge, not below the dashboard subtitle; verify resizing.
+- [ ] About + other modals: vector X close control, no overflowing/clipped license, appropriate layouts.
+- [ ] Verify built About displays 2.2.0 and translated PayPal.Me section: screenshot was from an older binary.
+- [ ] Manually validate drag-and-drop cards and persistence; currently not accepted.
+
+See [docs/HANDOFF_2026-10-31_UI.md](docs/HANDOFF_2026-10-31_UI.md) for screenshot-by-screenshot details.

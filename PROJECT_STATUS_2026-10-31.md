@@ -53,3 +53,7 @@ The script finished with `Ready for MANUAL GitHub Release upload (NOT published)
 ## Optional donations and multilingual support — 31 October 2026
 
 The author confirmed https://www.paypal.com/paypalme/Cris0338/ as the voluntary support link, with no amount prefilled. CDM now has a clickable support panel in About, including translated title, explanatory description and button for **all 14 UI languages**. The GitHub Sponsor button is configured in `.github/FUNDING.yml`; README.md and README_IT.md mention optional support. `SUPPORT.md` offers all 14 language versions and the local release ZIP will include it. This source update is not yet compiled/tested or published in a binary release; the prior prepared ZIP remains outdated and must be rebuilt.
+
+## Next-session UI handoff — 31 October 2026
+
+The owner supplied four cropped WPF screenshots documenting an incorrectly white right-click context-menu check gutter, blurry logo in the header and About, misaligned username/VPS line, and an older About modal with chevron-like red close button, clipped license and stale version text. These screenshots show an older binary, so they do not establish whether the subsequently committed PayPal.Me panel and `2.2.0` version are broken. **All technical findings and recommended next steps are recorded in [docs/HANDOFF_2026-10-31_UI.md](docs/HANDOFF_2026-10-31_UI.md).** A ready-to-copy new-chat instruction is saved in [docs/NEXT_CHAT_PROMPT_2026-10-31.md](docs/NEXT_CHAT_PROMPT_2026-10-31.md). No UI changes or releases are performed by this handoff.
