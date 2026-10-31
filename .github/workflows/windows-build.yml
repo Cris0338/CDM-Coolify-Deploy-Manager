@@ -24,6 +24,8 @@ jobs:
         run: dotnet run --project tests/ClassifierTests/ClassifierTests.csproj --configuration Release
       - name: Check locale catalogs
         run: dotnet run --project tests/LocalizationTests/LocalizationTests.csproj --configuration Release
+      - name: Check portable profile encryption
+        run: dotnet run --project tests/PortableVaultTests/PortableVaultTests.csproj --configuration Release
       - name: Build WPF portable executable
         run: dotnet publish src/CoolifyDeployManager/CoolifyDeployManager.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o portable
       - name: Verify output

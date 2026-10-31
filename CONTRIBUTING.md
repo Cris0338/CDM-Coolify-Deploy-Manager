@@ -18,7 +18,7 @@ Read [LOCALIZATION.md](LOCALIZATION.md). Each translation is stored in a UTF-8 J
 
 ## Security and releases
 
-Never include `settings.json`, API tokens, private SSH keys, passwords, local build output or server-specific files. Avoid turning off TLS certificate verification or SSH host-key checks. Release EXEs must be built and tested from reviewed source.
+Never include `settings.json`, `CDM.profile`, API tokens, private SSH keys, passwords, local build output or server-specific files. Avoid turning off TLS certificate verification or SSH host-key checks. Release EXEs must be built and tested from reviewed source.
 
 ## Project limitations
 

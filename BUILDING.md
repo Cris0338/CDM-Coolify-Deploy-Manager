@@ -33,7 +33,9 @@ In Settings, choose one of the three connection modes:
 
 In Coolify, enable API access and create a `read` token and a `deploy` token for the right team.
 
-Token values are stored per Windows user with DPAPI at `%LOCALAPPDATA%\CoolifyDeployManager\settings.json` and are never embedded in the executable.
+The first time you save settings, CDM prompts for a portable-profile password (12 characters minimum) and writes encrypted `CDM.profile` next to the EXE. Existing DPAPI-protected Windows settings are migrated at first launch after upgrading and the previous settings JSON is deleted after verification.
+
+Move the EXE and `CDM.profile` together for portable use, then unlock the profile with its password. The EXE is never rewritten with secrets. An SSH connection also requires SSH keys/configuration on the destination computer.
 
 ## Release validation
 
