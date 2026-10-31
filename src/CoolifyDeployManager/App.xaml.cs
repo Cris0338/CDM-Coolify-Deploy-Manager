@@ -57,9 +57,35 @@ public partial class App : Application
                         throw new InvalidDataException("Clone upgrade failed to preserve embedded credentials.");
                     var backup = target + "." + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".bak";
                     File.Copy(target, backup, overwrite: false);
-                    // Windows PowerShell's File.Replace failed on some Windows paths.
-                    // Copy the staged EXE only after creating a separate full backup.
-                    File.Copy(staged, target, overwrite: true);
+                    // Windows may retain a transient image/antivirus handle just
+                    // after a smoke-test clone exits. Move the completed EXE into
+                    // place on the same volume; never write directly into the
+                    // destination while it may still be in use.
+                    // The original stays intact on any sharing violation.
+                    const int maxAttempts = 40;
+                    for (int attempt = 0; ; attempt++)
+                    {
+                        try
+                        {
+                            File.Move(staged, target, overwrite: true);
+                            break;
+                        }
+                        catch (IOException ex) when (
+                            ((uint)ex.HResult & 0xFFFF) is 32 or 33 &&
+                            attempt < maxAttempts - 1)
+                        {
+                            // Only retry ERROR_SHARING_VIOLATION / LOCK_VIOLATION.
+                            // A genuinely running clone eventually reports
+                            // the original error after a bounded ten seconds.
+                            System.Threading.Thread.Sleep(250);
+                        }
+                    }
+                    if (!ExecutableProfile.TryReadFile(target, out var installed) ||
+                        installed is null || installed.ReadToken != saved.ReadToken ||
+                        installed.SshPrivateKey != saved.SshPrivateKey)
+                        throw new InvalidDataException(
+                            "Upgraded clone did not preserve its embedded credentials; " +
+                            "restore the timestamped .bak copy.");
                     if (!silent)
                         MessageBox.Show("Clone upgraded successfully. Existing token and SSH key preserved.\n\n" +
                             "Backup: " + backup, "CDM clone upgrade", MessageBoxButton.OK,

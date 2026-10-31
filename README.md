@@ -87,3 +87,7 @@ The launch sequence does not change any SSH keys, tokens, Coolify services or de
 ### One icon source for Windows, window title and taskbar
 
 The application now uses **only** `Assets/CDMOfficial.ico` for the compiled executable resource, dashboard and About window; the old `AppIcon.ico` is not referenced. The local build **requires** the approved assets and validates their SHA256 before compilation; missing or altered assets stop the build. Existing personalized clone EXEs still contain their old binaries until upgraded explicitly. Windows Explorer may cache icons by the old file path; refreshing Explorer or changing the clone filename can refresh the shell icon independently from updating its code. The official splash PNG is unchanged.
+
+### Clone upgrade on Windows
+
+An upgraded personalized EXE replaces the old clone only after a separate timestamped `.bak` file has been created and the completed replacement EXE has been validated. On Windows, executable image handles (including antivirus inspection immediately after the local smoke-test exits) can temporarily prevent replacement. CDM retries **only** file sharing/locking errors for up to ten seconds and then reports the failure; it does not silently delete or overwrite the previous profile. The offline BUILD_PORTABLE.ps1 smoke test exercises this upgrade path against a disposable clone, never against the user's real personalized executable.

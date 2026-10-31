@@ -21,7 +21,6 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer clock;
     private CancellationTokenSource? operation;
     private bool busy;
-    private bool rebuilding;
     private string selectedProjectUuid = "ALL";
     private readonly List<ProjectChoice> projectChoices = new();
     private Point dragOrigin;
@@ -235,7 +234,6 @@ public partial class MainWindow : Window
 
     private void ChangeProject(string uuid)
     {
-        if (rebuilding) return;
         selectedProjectUuid = uuid;
         var choice = projectChoices.FirstOrDefault(x => x.Uuid == uuid);
         ProjectPickerButton.Content = (choice?.Name ?? Loc.T("AllProjects")) + "  ▾";
