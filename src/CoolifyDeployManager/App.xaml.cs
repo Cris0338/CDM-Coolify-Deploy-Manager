@@ -168,7 +168,7 @@ public partial class App : Application
                 {
                     static bool Eligible(ConnectionMode mode, bool configured,
                         bool busy, bool running, bool recovering, bool closing) =>
-                        MainWindow.ShouldRecoverManagedTunnel(mode, configured,
+                        global::CoolifyDeployManager.MainWindow.ShouldRecoverManagedTunnel(mode, configured,
                             busy, running, recovering, closing);
                     if (!Eligible(ConnectionMode.ManagedSshTunnel, true, false,
                             false, false, false) ||
