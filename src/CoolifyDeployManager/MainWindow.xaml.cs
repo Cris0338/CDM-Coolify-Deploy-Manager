@@ -25,6 +25,10 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer clock;
     private CancellationTokenSource? operation;
     private CancellationTokenSource? postDeployHealthSync;
+    private readonly SemaphoreSlim sshConnectionGate = new(1, 1);
+    private CancellationTokenSource? tunnelRecovery;
+    private bool reconnectingTunnel;
+    private bool closingWindow;
     private bool busy;
     private string selectedProjectUuid = "ALL";
     private readonly List<ProjectChoice> projectChoices = new();
@@ -47,7 +51,11 @@ public partial class MainWindow : Window
         }
         ssh.StatusChanged += s => Dispatcher.BeginInvoke(new Action(() => AddLog(s)));
         clock = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
-        clock.Tick += (_, _) => { foreach (var card in allCards.Values) card.UpdateClock(); CheckTunnelState(); };
+        clock.Tick += async (_, _) =>
+        {
+            foreach (var card in allCards.Values) card.UpdateClock();
+            await CheckTunnelStateAsync();
+        };
         clock.Start();
         ProjectPickerButton.Content = Loc.T("AllProjects");
         LogBox.Text = "";
@@ -206,6 +214,8 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        closingWindow = true;
+        tunnelRecovery?.Cancel();
         postDeployHealthSync?.Cancel();
         operation?.Cancel();
         clock.Stop();
@@ -228,16 +238,61 @@ public partial class MainWindow : Window
         ConnectionDot.Fill = (Brush)new BrushConverter().ConvertFromString(ok ? "#3AC994" : "#C94858")!;
         ConnectionText.Text = text;
     }
-    private void CheckTunnelState()
+    // The clock ticks every 60 seconds. A terminated ssh.exe must be
+    // recovered automatically rather than leaving the dashboard disconnected
+    // until the owner presses Refresh. Never reconnect during deployment,
+    // while configuring the tunnel or after the window begins closing.
+    internal static bool ShouldRecoverManagedTunnel(ConnectionMode mode,
+        bool configured, bool busy, bool running, bool recovering, bool closing) =>
+        mode == ConnectionMode.ManagedSshTunnel && configured && !busy &&
+        !running && !recovering && !closing;
+
+    private async Task CheckTunnelStateAsync()
     {
-        if (settings.ConnectionMode == ConnectionMode.ManagedSshTunnel && !ssh.IsRunning && !busy)
-            SetConnection(false, Loc.T("TunnelStopped"));
+        if (!ShouldRecoverManagedTunnel(settings.ConnectionMode, settings.IsConfigured,
+                busy, ssh.IsRunning, reconnectingTunnel, closingWindow)) return;
+
+        reconnectingTunnel = true;
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(25));
+        tunnelRecovery = timeout;
+        SetConnection(false, Loc.T("TunnelStopped"));
+        AddLog("Managed SSH tunnel stopped: " + ssh.DescribeStoppedProcess());
+        AddLog("Reconnecting managed SSH automatically...");
+        try
+        {
+            await EnsureConnectionAsync(timeout.Token);
+            if (!closingWindow) AddLog("Managed SSH automatically reconnected.");
+        }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+        {
+            if (!closingWindow)
+                AddLog("Managed SSH automatic reconnect timed out; next status check will retry.");
+        }
+        catch (Exception ex)
+        {
+            if (!closingWindow)
+            {
+                SetConnection(false, Loc.T("TunnelStopped"));
+                AddLog("Managed SSH automatic reconnect failed: " + ex.Message);
+            }
+        }
+        finally
+        {
+            tunnelRecovery = null;
+            reconnectingTunnel = false;
+        }
     }
+
     private async Task EnsureConnectionAsync(CancellationToken ct)
     {
         if (settings.ConnectionMode == ConnectionMode.ManagedSshTunnel)
         {
-            await ssh.EnsureRunningAsync(settings, ct);
+            // A manual Refresh can be pressed during automatic recovery.
+            // Serialize both callers so they cannot kill each other's
+            // newly started SSH processes or fight over the local port.
+            await sshConnectionGate.WaitAsync(ct);
+            try { await ssh.EnsureRunningAsync(settings, ct); }
+            finally { sshConnectionGate.Release(); }
         }
         else if (settings.ConnectionMode == ConnectionMode.ExternalLocalTunnel)
         {
@@ -759,7 +814,11 @@ public partial class MainWindow : Window
     private void Settings_Click(object sender, RoutedEventArgs e) => OpenSettings();
     private async void OpenSettings()
     {
-        if (busy) { MessageBox.Show(this, Loc.T("WaitOperation")); return; }
+        if (busy || reconnectingTunnel)
+        {
+            MessageBox.Show(this, Loc.T("WaitOperation"));
+            return;
+        }
         ssh.Stop(); // The wizard may need the same local tunnel port.
         var dlg = new SettingsWindow(settings) { Owner = this };
         if (dlg.ShowDialog() != true) return;
