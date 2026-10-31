@@ -23,6 +23,64 @@ public partial class App : Application
             Shutdown();
             return;
         }
+        // Explicit, opt-in clone upgrade. The generic CDM.exe never reads old
+        // profiles on normal launch. Credentials are migrated ONLY when the user
+        // supplies a particular existing clone path on the command line.
+        if (e.Args.Length == 2 &&
+            (e.Args[0] == "--upgrade-clone" || e.Args[0] == "--upgrade-clone-silent"))
+        {
+            bool silent = e.Args[0] == "--upgrade-clone-silent";
+            try
+            {
+                if (SettingsStore.HasPortableProfile)
+                    throw new InvalidOperationException("Run upgrade from generic CDM.exe, not from a personalized clone.");
+                string target = Path.GetFullPath(e.Args[1]);
+                if (target.Equals(Path.GetFullPath(ExecutableProfile.OwnPath),
+                        StringComparison.OrdinalIgnoreCase))
+                    throw new ArgumentException("The generic CDM.exe cannot upgrade itself.");
+                if (!File.Exists(target) || !target.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                    throw new FileNotFoundException("Select an existing CDM personalized .exe.", target);
+                if (!ExecutableProfile.TryReadFile(target, out var saved) || saved is null ||
+                    !saved.IsConfigured)
+                    throw new InvalidDataException("The supplied executable has no valid personalized CDM profile.");
+                var staged = target + ".upgrade-in-progress";
+                if (File.Exists(staged))
+                    throw new IOException("An upgrade file is already present: " + staged);
+                try
+                {
+                    ExecutableProfile.Build(ExecutableProfile.OwnPath, staged, saved);
+                    if (!ExecutableProfile.TryReadFile(staged, out var verify) || verify is null ||
+                        !saved.ReadToken.Equals(verify.ReadToken, StringComparison.Ordinal) ||
+                        !saved.SshPrivateKey.Equals(verify.SshPrivateKey, StringComparison.Ordinal) ||
+                        !saved.SshKnownHosts.Equals(verify.SshKnownHosts, StringComparison.Ordinal))
+                        throw new InvalidDataException("Clone upgrade failed to preserve embedded credentials.");
+                    var backup = target + "." + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".bak";
+                    File.Copy(target, backup, overwrite: false);
+                    // Windows PowerShell's File.Replace failed on some Windows paths.
+                    // Copy the staged EXE only after creating a separate full backup.
+                    File.Copy(staged, target, overwrite: true);
+                    if (!silent)
+                        MessageBox.Show("Clone upgraded successfully. Existing token and SSH key preserved.\n\n" +
+                            "Backup: " + backup, "CDM clone upgrade", MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                }
+                finally { if (File.Exists(staged)) File.Delete(staged); }
+                Shutdown(0);
+            }
+            catch (Exception ex)
+            {
+                if (silent)
+                {
+                    try { File.WriteAllText(e.Args[1] + ".upgrade-error", ex.ToString()); }
+                    catch (Exception) { }
+                }
+                else MessageBox.Show("Clone upgrade failed. Original executable and backup (if created) were not intentionally removed.\n\n" +
+                        ex.Message, "CDM clone upgrade", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown(1);
+            }
+            return;
+        }
+
         // Local smoke-test entry points: verify that a *published* .NET single-file
         // executable can still start after the personalized trailer is appended.
         // No network calls, real credentials, or GitHub Actions are involved.

@@ -74,6 +74,17 @@ try {
         throw "The published personalized EXE failed to start or read its embedded profile. $((Get-Content "$marker.error" -ErrorAction SilentlyContinue) -join ' ')"
     }
     Write-Host 'PASS: personalized single-file clone launched and read its embedded profile.'
+    # Explicit template-to-clone upgrade must preserve embedded credentials and
+    # keep a recoverable backup (no real user profile involved).
+    $upgrade = Start-Process -FilePath $exe -ArgumentList ('--upgrade-clone-silent "' + $clone + '"') -Wait -PassThru
+    if ($upgrade.ExitCode -ne 0) {
+        throw "Personalized clone upgrade failed. $((Get-Content "$clone.upgrade-error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    $verifyAgain = Start-Process -FilePath $clone -ArgumentList ('--verify-self-test-clone "' + $marker + '"') -Wait -PassThru
+    if ($verifyAgain.ExitCode -ne 0 -or (Get-Content $marker -Raw).Trim() -ne 'CDM-CLONE-STARTED') {
+        throw "Upgraded clone failed to read its preserved embedded profile."
+    }
+    Write-Host 'PASS: clone upgraded from the new template without losing its embedded profile.'
 }
 finally { Remove-Item -LiteralPath $smoke -Recurse -Force -ErrorAction SilentlyContinue }
 
