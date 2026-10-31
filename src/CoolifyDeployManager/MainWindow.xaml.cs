@@ -321,6 +321,7 @@ public partial class MainWindow : Window
     private async void OpenSettings()
     {
         if (busy) { MessageBox.Show(this, Loc.T("WaitOperation")); return; }
+        ssh.Stop(); // The wizard may need the same local tunnel port.
         var dlg = new SettingsWindow(settings) { Owner = this };
         if (dlg.ShowDialog() != true) return;
         try { SettingsStore.Save(dlg.Result); }

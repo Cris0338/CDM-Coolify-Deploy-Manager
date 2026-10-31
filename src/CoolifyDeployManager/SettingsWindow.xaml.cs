@@ -13,6 +13,7 @@ namespace CoolifyDeployManager;
 public partial class SettingsWindow : Window
 {
     private readonly UserSettings original;
+    private readonly SshTunnel wizardTunnel = new();
     private string privateKey = "";
     private string knownHosts = "";
     internal UserSettings Result { get; private set; }
@@ -27,6 +28,7 @@ public partial class SettingsWindow : Window
         ReadToken.Password = original.ReadToken;
         SshAlias.Text = original.SshHost;
         SshUsername.Text = original.SshUsername;
+        ExistingSshAlias.Text = original.SshHost;
         SshPort.Text = original.SshPort.ToString();
         LocalPort.Text = original.SshLocalPort.ToString();
         RemotePort.Text = original.SshRemotePort.ToString();
@@ -59,17 +61,78 @@ public partial class SettingsWindow : Window
         if (e.LeftButton == MouseButtonState.Pressed) DragMove();
     }
     private void Cancel_Click(object sender, RoutedEventArgs e) { DialogResult = false; Close(); }
+    protected override void OnClosed(EventArgs e) { wizardTunnel.Stop(); base.OnClosed(e); }
 
-    private void OpenCoolify_Click(object sender, RoutedEventArgs e)
+    // For private installations the browser also travels through the dedicated SSH tunnel.
+    private async void OpenCoolify_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            string url = UrlInput.Text.Trim();
-            if (url.Length == 0) url = "https://coolify.io/docs/api-reference/authorization";
-            else url = CoolifyApi.NormalizeUrl(url);
+            string url;
+            if (ConnectionChooser.SelectedIndex == 1)
+            {
+                var connection = BuildSshConnection();
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await wizardTunnel.EnsureRunningAsync(connection, timeout.Token);
+                url = connection.EffectiveUrl;
+            }
+            else
+            {
+                url = UrlInput.Text.Trim();
+                if (url.Length == 0)
+                    throw new ArgumentException("Enter the Coolify HTTPS dashboard URL first.");
+                url = CoolifyApi.NormalizeUrl(url);
+            }
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
         }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "Coolify browser", MessageBoxButton.OK, MessageBoxImage.Warning); }
+    }
+
+    private UserSettings BuildSshConnection()
+    {
+        var connection = original.Copy();
+        connection.ConnectionMode = ConnectionMode.ManagedSshTunnel;
+        connection.SshHost = SshAlias.Text.Trim();
+        connection.SshUsername = SshUsername.Text.Trim();
+        connection.SshPort = int.Parse(SshPort.Text.Trim());
+        connection.SshLocalPort = int.Parse(LocalPort.Text.Trim());
+        connection.SshRemoteHost = RemoteHost.Text.Trim();
+        connection.SshRemotePort = int.Parse(RemotePort.Text.Trim());
+        connection.SshPrivateKey = privateKey;
+        connection.SshKnownHosts = knownHosts;
+        if (string.IsNullOrWhiteSpace(connection.SshPrivateKey) ||
+            string.IsNullOrWhiteSpace(connection.SshKnownHosts))
+            throw new ArgumentException("Generate and authorize the SSH key, then verify the VPS host key.");
+        return connection;
+    }
+
+    private async void AuthorizeKey_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string alias = ExistingSshAlias.Text.Trim();
+            if (alias.Length == 0 || alias.StartsWith('-') || alias.Any(char.IsWhiteSpace))
+                throw new ArgumentException("Enter an existing SSH alias, for example contabo.");
+            var parts = PublicKeyText.Text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 2 || parts[0] != "ssh-ed25519")
+                throw new ArgumentException("Generate the dedicated ED25519 public key first.");
+            var key = parts[0] + " " + parts[1];
+            if (key.Any(c => !(char.IsLetterOrDigit(c) || c is '-' or '_' or '+' or '/' or '=' or ' ')))
+                throw new ArgumentException("Invalid SSH public key.");
+            var command = "umask 077; mkdir -p ~/.ssh; touch ~/.ssh/authorized_keys; " +
+                $"grep -qxF '{key}' ~/.ssh/authorized_keys || printf '%s\\n' '{key}' >> ~/.ssh/authorized_keys";
+            using var process = new Process { StartInfo = new ProcessStartInfo("ssh.exe") {
+                UseShellExecute = false, CreateNoWindow = true,
+                RedirectStandardError = true } };
+            foreach (var arg in new[] { "-o", "BatchMode=yes", "-o", "ConnectTimeout=8", alias, command })
+                process.StartInfo.ArgumentList.Add(arg);
+            process.Start();
+            var errors = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            if (process.ExitCode != 0) throw new IOException("Unable to authorize the new key through this alias. " + errors);
+            SshStatus.Text = "Public key authorized using the existing SSH alias. Now verify the VPS fingerprint.";
+        }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Authorize CDM SSH key", MessageBoxButton.OK, MessageBoxImage.Warning); }
     }
 
     private async void GenerateKey_Click(object sender, RoutedEventArgs e)
@@ -157,23 +220,23 @@ public partial class SettingsWindow : Window
             if (mode == ConnectionMode.Https) _ = CoolifyApi.NormalizeUrl(next.ServerUrl);
             else
             {
-                next.SshHost = SshAlias.Text.Trim();
-                next.SshUsername = SshUsername.Text.Trim();
-                next.SshPort = int.Parse(SshPort.Text.Trim());
-                next.SshLocalPort = int.Parse(LocalPort.Text.Trim());
-                next.SshRemoteHost = RemoteHost.Text.Trim();
-                next.SshRemotePort = int.Parse(RemotePort.Text.Trim());
-                next.SshPrivateKey = privateKey;
-                next.SshKnownHosts = knownHosts;
+                var tunnelSettings = BuildSshConnection();
+                next.SshHost = tunnelSettings.SshHost;
+                next.SshUsername = tunnelSettings.SshUsername;
+                next.SshPort = tunnelSettings.SshPort;
+                next.SshLocalPort = tunnelSettings.SshLocalPort;
+                next.SshRemoteHost = tunnelSettings.SshRemoteHost;
+                next.SshRemotePort = tunnelSettings.SshRemotePort;
+                next.SshPrivateKey = tunnelSettings.SshPrivateKey;
+                next.SshKnownHosts = tunnelSettings.SshKnownHosts;
                 if (string.IsNullOrWhiteSpace(next.SshHost) || string.IsNullOrWhiteSpace(next.SshUsername)
                     || string.IsNullOrWhiteSpace(next.SshPrivateKey) || string.IsNullOrWhiteSpace(next.SshKnownHosts))
                     throw new ArgumentException("Complete the dedicated SSH key setup and verify the VPS host key first.");
             }
             SaveStatus.Text = "Verifying connection...";
             using var ct = new CancellationTokenSource(TimeSpan.FromSeconds(22));
-            await using var tunnel = new SshTunnel();
             if (mode == ConnectionMode.ManagedSshTunnel)
-                await tunnel.EnsureRunningAsync(next, ct.Token);
+                await wizardTunnel.EnsureRunningAsync(next, ct.Token);
             var baseUrl = CoolifyApi.NormalizeUrl(next.EffectiveUrl);
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(12) };
             http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", next.ReadToken);

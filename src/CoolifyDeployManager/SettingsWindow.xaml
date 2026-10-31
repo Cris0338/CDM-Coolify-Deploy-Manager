@@ -51,7 +51,11 @@
                 <Button Style="{StaticResource ActionButton}" Content="Copy public key" Click="CopyPublicKey_Click"/>
               </StackPanel>
               <TextBox x:Name="PublicKeyText" IsReadOnly="True" TextWrapping="Wrap" Height="60" VerticalScrollBarVisibility="Auto"/>
-              <TextBlock Text="2. Authorize this public key in ~/.ssh/authorized_keys on the VPS through your existing VPS access. CDM never asks for the VPS password." FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,8"/>
+              <TextBlock Text="2. Authorize the public key on the VPS. If Windows SSH is already configured, use its alias; otherwise add the key manually to ~/.ssh/authorized_keys." FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,8"/>
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBox x:Name="ExistingSshAlias" Width="175" ToolTip="Existing SSH alias, e.g. contabo"/>
+                <Button Style="{StaticResource ActionButton}" Content="Authorize using SSH alias" Click="AuthorizeKey_Click" Margin="8,0,0,0"/>
+              </StackPanel>
               <Button Style="{StaticResource ActionButton}" Content="3. Scan and verify VPS host fingerprint" Click="ScanHostKey_Click" HorizontalAlignment="Left"/>
               <TextBlock x:Name="SshStatus" Text="Dedicated key and verified server identity are required." FontSize="11" Foreground="{StaticResource Warning}" TextWrapping="Wrap" Margin="0,7,0,0"/>
             </StackPanel>
