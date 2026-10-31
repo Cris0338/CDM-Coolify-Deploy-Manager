@@ -63,3 +63,9 @@ The owner supplied four cropped WPF screenshots documenting an incorrectly white
 The five reported UI areas now have **committed source fixes** on the feature branch: card right-click menu dark check gutter (`5af5f67`), status/identity placement and Main logo (`c1aa48e`), card drag/drop targets (`1542ee0`), About logo/layout/vector X (`d832fd3`), and Guide vector X (`01e59ae`). Full technical detail: [docs/UI_FIXES_2026-10-31.md](docs/UI_FIXES_2026-10-31.md).
 
 **Validation scope:** static tag-balance and handler-reference checks only; the local Windows executable has **not** been rebuilt or GUI-tested after these changes. Every pending UI acceptance checkbox remains open. Do not use the obsolete release package or synchronize/tag/publish until Windows build, manual UI testing and the owner's approval.
+
+## Follow-up after live Windows UI screenshots — 31 October 2026
+
+Windows build and offline clone tests passed on the **first** UI patch (generic EXE SHA256 `87888E0E21A918021FD006F478A4AFE9FC318AB884C3C2397ADAE1CBD29BE2DA`); the owner upgraded the actual personal clone and **confirmed vector close X works**. New screenshots revealed the unchecked context-menu marks still invisible, status texts visually mismatched, header/About logos with purple tiles, About initial height slightly short, and the drag/drop still not operating. The 2.2.0 version appears correctly in About.
+
+New fixes are now committed only on `feature/embedded-clone-20261031`: menu squares/status badges/header logo (`5804b24`), correct bubbling/preview drop routing (`5ceb84e`), capture-based card drag (`22e4a4c`, `7f65958`), About larger/transparent logo (`39738a8`). Full details [docs/UI_FIXES_2026-10-31.md](docs/UI_FIXES_2026-10-31.md). **No second build or visual acceptance yet**. Local package and checksum must be regenerated after the new build. No automatic deployment/release.
