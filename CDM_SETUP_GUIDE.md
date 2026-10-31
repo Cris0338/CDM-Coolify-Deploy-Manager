@@ -87,3 +87,19 @@ As of 31 October 2026: automatic managed SSH, API read access, generic and perso
 The personalized EXE contains an **unencrypted** embedded settings payload, including the API token and SSH private key. Hash verification detects corruption, not theft. Disposable SSH identity/host-key files and staging files may appear in the Windows **temporary directory**, but no durable `LocalAppData` settings store is used.
 
 CDM is offered free under the [CDM Free Redistribution License v1.0](LICENSE), which allows free use and sharing but forbids sale or paid distribution without written authorization.
+
+## If a personalized CDM clone is lost or stolen
+
+A personalized `.exe`, an unapplied `.pending` file, and timestamped `.bak` files contain extractable credentials. An attacker with such a file may have **two independent forms of access**: a Coolify API token and, if SSH forwarding was configured, a dedicated SSH private key. Rotating the token alone does not disable that key.
+
+1. **Revoke API token(s)** — Sign in to Coolify using your normal browser/account. Select the correct team, open **Keys & Tokens → API Tokens**, locate the token used by CDM and select **Revoke token**. Revoke every exposed token if the clone contains more than one. Confirm the old token is no longer accepted. See the official [Coolify API Tokens guide](https://coolify.io/docs/core/security/credentials/api-tokens).
+2. **Remove the CDM SSH authorization if used** — Open the VPS provider's console or log in using a **different, still-authorized SSH identity**. Use the **same Linux user** that was configured in CDM, then inspect its SSH authorization file:
+
+   ```bash
+   nano ~/.ssh/authorized_keys
+   ```
+
+   Find the public-key line installed during CDM setup by comparing the key material with the saved CDM public key (or its independently recorded fingerprint). **Delete only that exact line**, then save the file. Do not erase `authorized_keys` or other users' keys. If you cannot confidently identify CDM's line, do not remove one arbitrarily: first inventory and positively identify the authorized keys. The wizard's authorization command stores the key without a distinctive comment, so a missing clone cannot identify it by filename or a guaranteed `CDM` comment.
+3. **Re-create access** — From the clean generic `CDM.exe`, create a new Coolify token with the required permissions and a **new, separately authorized SSH key**, if necessary. The lost clone's token and server-side SSH authorization should remain revoked.
+
+**No password or Windows-account binding is required by CDM.** Its portability is intentional; the user must revoke exposed credentials after a copy is compromised.
