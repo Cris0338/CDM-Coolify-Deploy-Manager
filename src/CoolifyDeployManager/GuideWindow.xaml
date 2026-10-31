@@ -19,6 +19,11 @@
         <TextBlock Text="{DynamicResource L.Guide5}" Foreground="{StaticResource Purple}" FontSize="16" FontWeight="SemiBold"/>
         <TextBlock Text="{DynamicResource L.Guide5Body}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,20"/>
         <TextBlock Text="Documentazione: https://coolify.io/docs/api/overview" Foreground="{StaticResource Purple}"/>
+        <!-- Final emergency recovery step, localized using EN fallback. -->
+        <TextBlock Text="{DynamicResource L.Guide6}" Foreground="{StaticResource Purple}"
+                   FontSize="16" FontWeight="SemiBold" Margin="0,22,0,0"/>
+        <TextBlock Text="{DynamicResource L.Guide6Body}" Foreground="{StaticResource Muted}"
+                   TextWrapping="Wrap" Margin="0,8,0,12"/>
       </StackPanel>
     </ScrollViewer>
     </DockPanel>
