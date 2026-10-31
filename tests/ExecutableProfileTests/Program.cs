@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cris0338. Licensed under the MIT License.
+// Copyright (c) 2026 Cris0338. Licensed under the CDM Free Redistribution License v1.0.
 using CoolifyDeployManager;
 
 static void Check(bool valid, string explanation)

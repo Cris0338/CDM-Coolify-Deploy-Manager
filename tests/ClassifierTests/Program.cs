@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cris0338. Licensed under the MIT License.
+// Copyright (c) 2026 Cris0338. Licensed under the CDM Free Redistribution License v1.0.
 using CoolifyDeployManager;
 var s = new UserSettings();
 var tests = new (string name, string branch, string project, string env, DeploymentGroup expected)[]

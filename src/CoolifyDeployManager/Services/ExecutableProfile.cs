@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cris0338. Licensed under the MIT License.
+// Copyright (c) 2026 Cris0338. Licensed under the CDM Free Redistribution License v1.0.
 // The executable is the portable profile container. The template contains no secrets.
 // Trailer: [UTF8 settings JSON][SHA256 hash (32)][payload length Int64 LE][CDMPF01! (8)].
 // Data is tamper-detectable, NOT secret. Anyone who has the EXE can extract its token/SSH key.

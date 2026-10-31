@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cris0338. Licensed under the MIT License.
+// Copyright (c) 2026 Cris0338. Licensed under the CDM Free Redistribution License v1.0.
 // The generic CDM.exe must NEVER load old settings or auto-connect.
 // Only a personalized clone reads the profile embedded in its own executable.
 using System.IO;
