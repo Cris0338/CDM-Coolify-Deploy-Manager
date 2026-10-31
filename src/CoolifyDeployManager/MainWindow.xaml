@@ -51,7 +51,9 @@
         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
         <StackPanel MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Cursor="SizeAll">
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-            <Border Width="35" Height="35" Background="#433662" CornerRadius="10" Margin="0,0,12,0"><TextBlock Text="↟" Foreground="{StaticResource Purple}" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+            <Border Width="35" Height="35" Background="#433662" CornerRadius="10" Margin="0,0,12,0">
+              <Image Source="Assets/CDMOfficial.ico" Width="31" Height="31" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Border>
             <TextBlock Text="Coolify Deploy Manager" FontSize="21" FontWeight="Bold" VerticalAlignment="Center"/>
             <Border Background="#352C4B" CornerRadius="8" Margin="10,0,0,0" Padding="8,4"><TextBlock Text="WPF 2.2.0" FontSize="11" Foreground="{StaticResource Purple}"/></Border>
             <Border Background="{StaticResource Surface}" CornerRadius="8" Margin="10,0,0,0" Padding="8,4">
