@@ -76,3 +76,28 @@ The old `ExecutableProfile.ScheduleReplaceOnExit` launched a hidden PowerShell h
 The build's disposable-clone smoke flow now performs an actual `SettingsStore.Save` with artificial token and card order, waits for automatic pending replacement and verifies the new EXE's embedded data. The exact real personal pending file must still be recovered/validated separately before installing the new generic build; the corrected updater cannot retroactively replace pending left by the older running binary.
 
 **Health:** `deployments/{uuid}` returning `finished` means deployment job completed; application health is a separate runtime status such as `running:unhealthy` or `running:healthy`. `CoolifyApi.GetApplicationStatusAsync` reads `GET applications/{uuid}` with the READ token (official docs: https://coolify.io/docs/api/endpoints/applications/get-application-by-uuid). After the existing first inventory refresh, a bounded async monitor polls only finished applications every five seconds for up to 90 seconds, updating the existing `AppCardView` via `INotifyPropertyChanged` without extra deployments or overwriting deployment history. It stops on healthy, on next deploy, or on window close; unconfirmed health is never labeled healthy without API evidence. A generic-EXE offline smoke asserts unhealthy→healthy while preserving `finished` history.
+
+## Focused security review — 2026-10-31
+
+Scope: static inspection of `CoolifyApi.cs`, `SshTunnel.cs`, `SettingsWindow.xaml.cs`, `ExecutableProfile.cs`, `SettingsStore.cs`, `App.xaml.cs`, the WPF project's `.csproj`, local build tests and `.gitignore`. This is NOT a penetration test, dependency/CVE assessment, secret-scanning result, or a guarantee of secure production operation.
+
+**Positive design measures**
+
+- The generic `CDM.exe` does not load a personal profile or auto-connect; personalized profiles are deliberately separate.
+- Coolify HTTPS uses normal .NET certificate validation; public remote HTTP is rejected by `CoolifyApi.NormalizeUrl`; direct HTTP is allowed for loopback, private LAN and VPN endpoints (LAN HTTP is still unencrypted on that segment).
+- Managed OpenSSH uses `StrictHostKeyChecking=yes`, dedicated `known_hosts`, user-confirmed fingerprint, `-F none`, and a local-only `127.0.0.1` listener. Temporary SSH identity files are restricted to the Windows user via `icacls`, with best-effort cleanup when tunnel exits.
+- Bearer API credentials are sent in the Authorization header, not inserted into the URL. The deployment request is sent only on the explicit, confirmed deployment path. The health sync reads application status with the read token and performs no new deployments.
+- The source-only Git repository excludes `portable/`, generated binaries, personal settings, temporary executable updates and backup artifacts. Build smoke uses synthetic credentials, never an actual personal clone.
+- Project's WPF `.csproj` shows no external NuGet `PackageReference`; SDK/framework dependencies still require their own lifecycle and security updates.
+
+**Important remaining risks — do not conceal from users**
+
+1. **HIGH — local credential disclosure from personalized binary:** the personal EXE trailer is unencrypted UTF-8 JSON containing a full Coolify bearer token and SSH private key. Its `SHA256` is an *unkeyed checksum* to detect corruption, not an authenticity check; anyone who can read and rewrite the EXE can recompute it. Treat `CDM-<user>-<server>.exe`, all `.pending` files and all `.bak` copies as secrets. `.gitignore` protects against ordinary accidental add, NOT exfiltration, malware, prior Git history or cloud-backup sharing. A genuinely encrypted-at-rest design needs a deliberate choice between Windows DPAPI (machine/user bound) and portable passphrase encryption, and associated backup and recovery rules.
+2. **MEDIUM/HIGH — distribution authenticity:** current EXE is not Authenticode signed; a SHA256 file helps only if the expected digest itself comes from a trusted source. Do not mistake executable-trailer hashing for publisher authentication. Sign public releases and verify provenance before distributing.
+3. **MEDIUM — HTTP inside private LAN:** app allows direct HTTP to private addresses; a hostile device on that LAN can inspect Bearer tokens. Prefer HTTPS or the verified SSH tunnel where local networks are not fully trusted. Existing SSH forwarding terminates at the configured remote HTTP service; its reachability and network exposure remain outside this app.
+4. **MEDIUM — privileges:** a single user-configured token is used for READ and DEPLOY when separate values are not supplied. Its Coolify permissions determine the blast radius; the UI cannot enforce server-side least privilege. Dedicated server credentials scoped to intended resources are preferable.
+5. **LOW/MEDIUM — residual temporary files:** a Windows lock/crash can leave temporary SSH-key material or a credential-bearing `.pending`/backup on disk; cleanup cannot be guaranteed on an abrupt exit. Existing close-time updater now retries and records a local failure message, but Windows smoke acceptance is pending.
+
+**Build status at this checkpoint:** user-reported Windows build error `CS0246 InvalidDataException` at `CoolifyApi.cs` line 223; resolved by `using System.IO;` at commit `0d69a6f`. No Windows build had yet confirmed the fix or the new disposable-clone save/health tests. No credentials were read or transmitted during this static review.
+
+**Release gate:** do not publish a personalized clone or debug backup; require owner-accepted Windows build + offline smoke + security strategy for encrypting personal credentials, plus public-binary authenticity check before claiming release-grade security.
