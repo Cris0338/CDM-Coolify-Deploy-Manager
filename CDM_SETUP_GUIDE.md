@@ -58,3 +58,9 @@ Coolify supports access from a private LAN through `http://192.168.1.50:8000`. C
 ## Windows OpenSSH: unsupported ssh-keyscan KEX
 
 Some Windows builds of `ssh-keyscan.exe` advertise `sntrup761x25519-sha512@openssh.com` but cannot negotiate it. The error `choose_kex: unsupported KEX method sntrup761x25519-sha512@openssh.com` occurs before host keys can be retrieved; it is not an SSH password, port or server failure. CDM intentionally uses `ssh.exe` for an unauthenticated host-key handshake with a temporary isolated `known_hosts` file. The SSH authentication is expected to fail, but the verified-on-confirmation public server host key is retained inside the clone. The user must compare its SHA256 fingerprint using a separately trusted server channel before accepting it. No server SSH configuration change is needed.
+
+## Windows OpenSSH rejects the temporary key ("bad permissions")
+
+Some Windows installations grant newly created temporary files inherited permissions to extra local groups (for example `CodexSandboxUsers`). Windows OpenSSH refuses SSH identity files readable by these groups and exits with code 255. Before starting the managed tunnel, CDM now runs the built-in `icacls.exe` on its own temporary `identity` file: inherited grants are removed and only the current user's Windows SID gets an explicit full-control grant. The command runs automatically, without elevation or modifying existing SSH keys. An `icacls` failure is reported explicitly and prevents SSH startup. The disposable private key is removed when the tunnel stops. If authentication still fails, the wizard displays the original OpenSSH stderr.
+
+The SSH fingerprint verification dialog uses the application's dark-themed buttons (including Copy / Yes / No).

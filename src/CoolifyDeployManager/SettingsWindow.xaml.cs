@@ -297,6 +297,7 @@ public partial class SettingsWindow : Window
         var cancel = new Button
         {
             Content = Loc.T("SetupHostNoMatch"),
+            Style = (Style)Application.Current.FindResource("ActionButton"),
             MinWidth = 110,
             IsCancel = true,
             Margin = new Thickness(0, 0, 12, 0)
@@ -305,6 +306,8 @@ public partial class SettingsWindow : Window
         var accept = new Button
         {
             Content = Loc.T("SetupHostMatches"),
+            Style = (Style)Application.Current.FindResource("ActionButton"),
+            Background = (System.Windows.Media.Brush)Application.Current.FindResource("Purple"),
             MinWidth = 150
         };
         accept.Click += (_, _) => dialog.DialogResult = true;
@@ -345,6 +348,7 @@ public partial class SettingsWindow : Window
         var copy = new Button
         {
             Content = Loc.T("Copy"),
+            Style = (Style)Application.Current.FindResource("ActionButton"),
             MinWidth = 92,
             Margin = new Thickness(10, 0, 0, 0)
         };

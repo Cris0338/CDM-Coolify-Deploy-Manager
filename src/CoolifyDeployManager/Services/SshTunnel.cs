@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Security.Principal;
 
 namespace CoolifyDeployManager;
 
@@ -44,8 +45,20 @@ internal sealed class SshTunnel : IAsyncDisposable
             ephemeralIdentityFolder = Directory.CreateTempSubdirectory("cdm-ssh-").FullName;
             identity = Path.Combine(ephemeralIdentityFolder, "identity");
             knownHosts = Path.Combine(ephemeralIdentityFolder, "known_hosts");
-            File.WriteAllText(identity, settings.SshPrivateKey);
-            File.WriteAllText(knownHosts, settings.SshKnownHosts + Environment.NewLine);
+            try
+            {
+                File.WriteAllText(identity, settings.SshPrivateKey);
+                // Windows OpenSSH rejects inherited read access by extra local groups.
+                // Restrict the temporary private key to the current Windows SID
+                // before ssh.exe can read it (no admin rights required).
+                await ProtectPrivateKeyAsync(identity, ct);
+                File.WriteAllText(knownHosts, settings.SshKnownHosts + Environment.NewLine);
+            }
+            catch
+            {
+                Stop();
+                throw;
+            }
         }
         var start = new ProcessStartInfo("ssh.exe")
         {
@@ -54,11 +67,16 @@ internal sealed class SshTunnel : IAsyncDisposable
             RedirectStandardError = true,
             RedirectStandardOutput = false,
         };
+        // Do not inherit the computer owner's aliases or global SSH defaults.
+        // The personalized EXE carries everything needed for this connection.
+        start.ArgumentList.Add("-F");
+        start.ArgumentList.Add("none");
         if (identity is not null)
         {
             foreach (var arg in new[] { "-i", identity,
                 "-o", "IdentitiesOnly=yes",
                 "-o", $"UserKnownHostsFile={knownHosts}",
+                "-o", "GlobalKnownHostsFile=none",
                 "-p", settings.SshPort.ToString(),
                 "-l", settings.SshUsername })
                 start.ArgumentList.Add(arg);
@@ -114,6 +132,41 @@ internal sealed class SshTunnel : IAsyncDisposable
         Stop();
         throw new TimeoutException("SSH tunnel opened, but /api/health is not responding. Verify the remote port and Coolify service.");
     }
+    private static async Task ProtectPrivateKeyAsync(string identity, CancellationToken ct)
+    {
+        // icacls ships with Windows 10/11; using the numeric SID avoids
+        // depending on the operating system's display language or group names.
+        var sid = WindowsIdentity.GetCurrent().User?.Value
+            ?? throw new IOException("Cannot determine the current Windows account SID.");
+        var start = new ProcessStartInfo("icacls.exe")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        // Remove all inherited ACEs (including groups such as CodexSandboxUsers).
+        // Grant the actual user explicit full control over the private key.
+        foreach (var arg in new[] { identity, "/inheritance:r", "/grant:r", "*" + sid + ":(F)" })
+            start.ArgumentList.Add(arg);
+        try
+        {
+            using var acl = Process.Start(start)
+                ?? throw new IOException("Cannot start icacls.exe to protect the SSH private key.");
+            var output = acl.StandardOutput.ReadToEndAsync();
+            var errors = acl.StandardError.ReadToEndAsync();
+            await acl.WaitForExitAsync(ct);
+            var detail = (await errors).Trim();
+            if (acl.ExitCode != 0)
+                throw new IOException("Cannot restrict SSH private-key permissions (icacls exit " +
+                    acl.ExitCode + "): " + detail + " " + (await output).Trim());
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            throw new IOException("Windows icacls.exe is unavailable; cannot protect the SSH private key.", ex);
+        }
+    }
+
     public static async Task<bool> HealthCheckAsync(int port, CancellationToken ct)
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
