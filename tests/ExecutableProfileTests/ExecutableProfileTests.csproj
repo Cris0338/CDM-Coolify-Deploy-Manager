@@ -10,5 +10,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="../../src/CoolifyDeployManager/Models.cs" Link="Models.cs"/>
     <Compile Include="../../src/CoolifyDeployManager/Services/ExecutableProfile.cs" Link="ExecutableProfile.cs"/>
+    <Compile Include="../../src/CoolifyDeployManager/Services/CoolifyApi.cs" Link="CoolifyApi.cs"/>
   </ItemGroup>
 </Project>

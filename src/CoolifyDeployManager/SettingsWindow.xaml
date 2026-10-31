@@ -28,7 +28,7 @@
             <ComboBoxItem Content="{DynamicResource L.ManagedSshMode}"/>
           </ComboBox>
           <TextBlock Text="{DynamicResource L.SetupDashboardUrl}" Foreground="{StaticResource Muted}" Margin="0,0,0,5"/>
-          <TextBox x:Name="UrlInput" ToolTip="https://coolify.example.com" TextChanged="UrlInput_TextChanged"/>
+          <TextBox x:Name="UrlInput" ToolTip="https://coolify.example.com or http://192.168.1.50:8000" TextChanged="UrlInput_TextChanged"/>
           <StackPanel Orientation="Horizontal" Margin="0,7,0,14">
             <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupOpenBrowser}" Click="OpenCoolify_Click"/>
             <TextBlock x:Name="UrlHint" Foreground="{StaticResource Muted}" VerticalAlignment="Center" FontSize="11" Margin="12,0,0,0" TextWrapping="Wrap"/>

@@ -47,3 +47,26 @@ try
 }
 finally { Directory.Delete(folder, recursive: true); }
 Console.WriteLine("Offline executable-profile tests passed.");
+
+Console.WriteLine("== Coolify connection URLs (offline, no API requests) ==");
+foreach (var url in new[] {
+    "http://127.0.0.1:8000", "http://192.168.1.50:8000",
+    "http://10.0.0.42:8000", "http://172.16.0.3:8000",
+    "http://100.64.0.10:8000", "http://[fd12::34]:8000",
+    "http://nas.local:8000", "http://homeserver:8000",
+    "https://coolify.example.com", "https://169.58.7.207:8000"
+})
+    Check(CoolifyApi.NormalizeUrl(url) == url, "Allowed direct URL: " + url);
+
+foreach (var url in new[] {
+    "http://169.58.7.207:8000", "http://coolify.example.com",
+    "http://192.168.1.50:8000?secret=yes",
+    "http://username:password@192.168.1.50:8000"
+})
+{
+    bool rejected = false;
+    try { _ = CoolifyApi.NormalizeUrl(url); }
+    catch (ArgumentException) { rejected = true; }
+    Check(rejected, "Remote public HTTP or unsafe URL rejected: " + url);
+}
+

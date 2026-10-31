@@ -50,3 +50,7 @@ The local build includes a regression smoke check that the published generic tem
 ## Remote HTTP address detected in the HTTPS field
 
 If a user pastes a public HTTP URL (including a bare IPv4:port address), CDM shows a translated explanation and a one-click **Use secure SSH tunnel for this address** option. Selecting it copies the VPS hostname/IP and Coolify remote port into SSH setup, using 127.0.0.1 for the service address on the server. The SSH username and first-time key authorization remain user-specific. CDM never transmits an API token directly to a remote HTTP endpoint.
+
+## Local Coolify with no domain or Internet publishing
+
+Coolify supports access from a private LAN through `http://192.168.1.50:8000`. CDM's first connection mode accepts HTTPS URLs and HTTP addresses on private RFC1918 networks, IPv6 unique-local/link-local, localhost, private VPN/CGNAT ranges and local hostnames. No domain, public DNS, reverse proxy, SSL certificate or SSH provisioning is necessary to manage a private LAN Coolify instance. The wizard's SSH suggestion is reserved for **public** HTTP addresses. A service such as a local photo library may be accessed by the application's exposed host port or privately inside Docker's network; it does not need a public domain.

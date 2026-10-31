@@ -63,7 +63,7 @@ public partial class SettingsWindow : Window
             value = "http://" + value;
         }
         if (!Uri.TryCreate(value, UriKind.Absolute, out var parsed) ||
-            parsed.Scheme != Uri.UriSchemeHttp || parsed.IsLoopback ||
+            parsed.Scheme != Uri.UriSchemeHttp || CoolifyApi.IsLocalHttpUri(parsed) ||
             parsed.Host.Length == 0 || parsed.UserInfo.Length > 0)
             return false;
         endpoint = parsed;
@@ -254,11 +254,7 @@ public partial class SettingsWindow : Window
             next.DeployToken = next.ReadToken;
             if (next.ReadToken.Length == 0) throw new ArgumentException("Create one Coolify API token with READ + DEPLOY permissions.");
             if (mode == ConnectionMode.Https)
-            {
                 _ = CoolifyApi.NormalizeUrl(next.ServerUrl);
-                if (!next.ServerUrl.Trim().StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                    throw new ArgumentException("Direct Coolify connections must use HTTPS. Use managed SSH for IP-only access.");
-            }
             else
             {
                 var tunnelSettings = BuildSshConnection();

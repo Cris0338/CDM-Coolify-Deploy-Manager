@@ -25,8 +25,8 @@ If settings or card order changes, CDM stages a new executable and atomically re
 
 ## Guided setup
 
-1. Pick a server label (e.g., `contabo`) and **HTTPS** or **managed SSH**.
-2. **HTTPS:** enter the trusted Coolify URL and open the dashboard in your browser.
+1. Pick a server label (e.g., `contabo`) and **direct connection** (HTTPS or local LAN/VPN HTTP), or **managed SSH**.
+2. **Direct connection:** enter a trusted HTTPS Coolify URL, or a private LAN/VPN address such as `http://192.168.1.50:8000`. No public domain or DNS setup is required. Open the dashboard in your browser.
 3. **Managed SSH:** enter VPS host/IP, SSH user and port. Generate a dedicated ED25519 SSH key. Authorize the *public* key using an existing SSH alias if you have one; otherwise add it to the VPS user's `~/.ssh/authorized_keys`. Scan and compare the server's SSH host key fingerprint to a trusted fingerprint.
 4. For managed SSH, clicking **Open Coolify in browser** opens the panel through CDM's own localhost tunnel, not over public HTTP.
 5. In Coolify **Keys & Tokens → API Tokens**, generate **one token with READ and DEPLOY only**. Do not select Root, Write or Read Sensitive Data.
@@ -58,3 +58,7 @@ CDM manages one Coolify server per clone. To manage several servers, create sepa
 ## Languages
 
 The dashboard includes 14 locale catalogs. The new 2.2.0 guided setup still needs complete localization and native-speaker review. See [LOCALIZATION.md](LOCALIZATION.md).
+
+### Domainless and offline-friendly installations
+
+CDM can administer a Coolify instance on a private LAN, e.g. `http://192.168.1.50:8000`, without a domain, public DNS, Let's Encrypt or public Internet exposure. A Docker application managed by Coolify can use Docker-internal networking or explicit host port mappings rather than a public domain. For HTTP over a public server IP, choose the managed SSH tunnel rather than transmitting the bearer token in cleartext. Private VPN address ranges are also accepted for direct HTTP access, when the VPN itself provides a secure network path.

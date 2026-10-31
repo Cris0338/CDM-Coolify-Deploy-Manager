@@ -15,7 +15,7 @@ No GitHub Actions, cloud build or automatic workflow is involved.
 ## Windows acceptance criteria before release
 
 - Fresh generic template ignores all older user settings and opens the blank setup on startup, with no password dialog and no automatic API requests.
-- HTTPS with a trusted Coolify domain and a READ+DEPLOY token gives the dashboard.
+- HTTPS with a trusted URL **or LAN/VPN HTTP by private IP** and a READ+DEPLOY token gives the dashboard (no domain required).
 - SSH setup generates a key, checks a pinned host fingerprint and successfully creates its own tunnel.
 - Browser-based Coolify login works through localhost on the managed SSH tunnel.
 - A configured clone `CDM-user-server.exe` opens on a different Windows account/computer *without* an SSH alias or user settings file.

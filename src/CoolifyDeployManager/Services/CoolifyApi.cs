@@ -28,6 +28,33 @@ internal sealed class CoolifyApi : IDisposable
         http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
+    /// <summary>
+    /// Direct HTTP is valid without a domain on loopback, LAN or a private overlay
+    /// network (e.g. a VPN). Remote public HTTP requires the managed SSH tunnel.
+    /// </summary>
+    public static bool IsLocalHttpUri(Uri uri)
+    {
+        if (uri.IsLoopback) return true;
+        var host = uri.DnsSafeHost;
+        if (host.EndsWith(".local", StringComparison.OrdinalIgnoreCase) ||
+            host.EndsWith(".lan", StringComparison.OrdinalIgnoreCase) ||
+            host.EndsWith(".home.arpa", StringComparison.OrdinalIgnoreCase) ||
+            (!host.Contains('.') && !host.Contains(':')))
+            return true;
+        if (!IPAddress.TryParse(host, out var address)) return false;
+        if (address.IsIPv4MappedToIPv6) address = address.MapToIPv4();
+        var bytes = address.GetAddressBytes();
+        if (bytes.Length == 4)
+        {
+            return bytes[0] == 10 ||
+                (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) ||
+                (bytes[0] == 192 && bytes[1] == 168) ||
+                (bytes[0] == 169 && bytes[1] == 254) ||
+                (bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127);
+        }
+        return address.IsIPv6LinkLocal || (bytes.Length == 16 && (bytes[0] & 0xFE) == 0xFC);
+    }
+
     public static string NormalizeUrl(string raw)
     {
         raw = raw.Trim().TrimEnd('/');
@@ -35,8 +62,11 @@ internal sealed class CoolifyApi : IDisposable
             raw = raw[..^7].TrimEnd('/');
         if (!Uri.TryCreate(raw, UriKind.Absolute, out var uri)
             || uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0
-            || !(uri.Scheme == Uri.UriSchemeHttps || (uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback)))
-            throw new ArgumentException("Enter a Coolify HTTPS URL (HTTP is allowed only on localhost).");
+            || !(uri.Scheme == Uri.UriSchemeHttps ||
+                 (uri.Scheme == Uri.UriSchemeHttp && IsLocalHttpUri(uri))))
+            throw new ArgumentException(
+                "Enter a Coolify HTTPS URL or a private LAN/VPN HTTP address. " +
+                "For remote public HTTP, select the managed SSH tunnel.");
         return uri.GetLeftPart(UriPartial.Path).TrimEnd('/');
     }
 
