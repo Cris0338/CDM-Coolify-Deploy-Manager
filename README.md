@@ -93,3 +93,9 @@ CDM remains **completely free**. If you enjoy it and would like to support its d
 **[🍺 Buy Cris0338 a beer via PayPal.Me](https://www.paypal.com/paypalme/Cris0338/)**
 
 The donation message is translated in CDM's About window for every supported interface language. GitHub's Sponsor button links to the same PayPal.Me page. No payment is required to download, use or share CDM.
+
+## Lost or stolen personalized CDM file
+
+A personalized `.exe`, a `.pending` save or a `.bak` copy contains usable Coolify API and possibly SSH credentials. If it is lost, **revoke both independently**: in Coolify open **Keys & Tokens → API Tokens**, revoke the token(s) used by the clone; if the CDM SSH tunnel was used, sign in to the VPS as that SSH user, open `~/.ssh/authorized_keys` and remove **only** the public key that belongs to CDM. Identify it using the saved public key or fingerprint first. Generate new credentials with the generic `CDM.exe`. Revoking the API token alone does **not** disable SSH.
+
+Full instructions: [CDM setup guide — lost or stolen clone](CDM_SETUP_GUIDE.md#if-a-personalized-cdm-clone-is-lost-or-stolen). Official Coolify reference: [API Tokens](https://coolify.io/docs/core/security/credentials/api-tokens).
