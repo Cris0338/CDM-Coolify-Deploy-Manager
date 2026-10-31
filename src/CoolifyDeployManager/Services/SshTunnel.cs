@@ -15,9 +15,34 @@ namespace CoolifyDeployManager;
 internal sealed class SshTunnel : IAsyncDisposable
 {
     private Process? process;
+    private Task<string>? stderrReader;
     private string? ephemeralIdentityFolder;
     private string? configSignature;
     public bool IsRunning => process is { HasExited: false };
+
+    // The dashboard calls this only after a managed process has exited. Keep
+    // the stderr reader alive after startup, so an exit after 30/60 seconds is
+    // diagnosable instead of appearing as an unexplained "Tunnel stopped".
+    // Never include executable-profile contents, tokens or private keys.
+    public string DescribeStoppedProcess()
+    {
+        var stopped = process;
+        if (stopped is null) return "No managed OpenSSH process.";
+        try
+        {
+            if (!stopped.HasExited) return "OpenSSH is still running.";
+            var diagnostic = stderrReader is { IsCompletedSuccessfully: true }
+                ? stderrReader.Result.Trim() : "";
+            if (diagnostic.Length > 600) diagnostic = diagnostic[..600] + "...";
+            return $"OpenSSH exited with code {stopped.ExitCode}." +
+                (diagnostic.Length == 0
+                    ? " No stderr details."
+                    : " " + diagnostic.Replace('\r', ' ').Replace('\n', ' '));
+        }
+        catch (InvalidOperationException) { return "OpenSSH process state unavailable."; }
+        catch (System.ComponentModel.Win32Exception) { return "OpenSSH exit code unavailable."; }
+    }
+
     public string LocalUrl { get; private set; } = "";
     public event Action<string>? StatusChanged;
 
@@ -91,11 +116,10 @@ internal sealed class SshTunnel : IAsyncDisposable
         }) start.ArgumentList.Add(arg);
         // Keep the stderr reader so that an early SSH failure can be shown in
         // the wizard instead of the unhelpful "tunnel exited" message.
-        Task<string>? sshErrors = null;
         try
         {
             process = Process.Start(start) ?? throw new IOException("Unable to start ssh.exe.");
-            sshErrors = process.StandardError.ReadToEndAsync();
+            stderrReader = process.StandardError.ReadToEndAsync();
         }
         catch (System.ComponentModel.Win32Exception ex)
         {
@@ -114,7 +138,7 @@ internal sealed class SshTunnel : IAsyncDisposable
                 {
                     var exitCode = process?.ExitCode;
                     string detail;
-                    try { detail = sshErrors is null ? "" : (await sshErrors).Trim(); }
+                    try { detail = stderrReader is null ? "" : (await stderrReader).Trim(); }
                     catch (IOException) { detail = "Unable to read SSH error output."; }
                     throw new IOException(
                         $"SSH tunnel exited (ssh.exe code {exitCode})." +
@@ -197,6 +221,7 @@ internal sealed class SshTunnel : IAsyncDisposable
     {
         var p = process;
         process = null;
+        stderrReader = null;
         configSignature = null;
         LocalUrl = "";
         if (p is not null)
