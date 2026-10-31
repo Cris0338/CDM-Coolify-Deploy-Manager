@@ -27,7 +27,7 @@ public partial class App : Application
         // executable can still start after the personalized trailer is appended.
         // No network calls, real credentials, or GitHub Actions are involved.
         if (e.Args.Length == 2 &&
-            (e.Args[0] == "--emit-self-test-clone" || e.Args[0] == "--verify-self-test-clone"))
+            (e.Args[0] == "--emit-self-test-clone" || e.Args[0] == "--verify-self-test-clone" || e.Args[0] == "--verify-template-empty"))
         {
             try
             {
@@ -38,6 +38,18 @@ public partial class App : Application
                         ReadToken = "__CDM_SELFTEST__", DeployToken = "__CDM_SELFTEST__"
                     };
                     ExecutableProfile.Build(ExecutableProfile.OwnPath, e.Args[1], sample);
+                }
+                else if (e.Args[0] == "--verify-template-empty")
+                {
+                    var current = SettingsStore.Load();
+                    if (SettingsStore.HasPortableProfile ||
+                        current.IsConfigured ||
+                        !string.IsNullOrWhiteSpace(current.ReadToken) ||
+                        !string.IsNullOrWhiteSpace(current.DeployToken) ||
+                        !string.IsNullOrWhiteSpace(current.ServerUrl) ||
+                        !string.IsNullOrWhiteSpace(current.SshPrivateKey))
+                        throw new InvalidDataException("Generic CDM.exe unexpectedly loaded credentials or configuration.");
+                    File.WriteAllText(e.Args[1], "CDM-TEMPLATE-CLEAN");
                 }
                 else
                 {

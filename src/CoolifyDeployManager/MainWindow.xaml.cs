@@ -63,7 +63,7 @@ public partial class MainWindow : Window
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         if (settings.IsConfigured) await RefreshAsync();
-        else Dispatcher.BeginInvoke(new Action(() => OpenSettings()));
+        else _ = Dispatcher.BeginInvoke(new Action(() => OpenSettings()));
     }
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {

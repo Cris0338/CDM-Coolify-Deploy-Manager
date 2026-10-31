@@ -13,7 +13,7 @@ CDM is an **independent, unofficial** Windows 10/11 (x64) desktop tool for manag
 
 ## Your own portable executable (2.2.0 development preview)
 
-The distributed **`CDM.exe` is an unconfigured template**. On its first launch, it opens the guided connection setup. After verifying the connection and the token, it creates and launches:
+The distributed **`CDM.exe` is an unconfigured template**. On every launch, it ignores all older user configuration files and opens a blank guided connection setup; it never connects automatically. After verifying the connection and the token, it creates and launches:
 
 `CDM-<WindowsUser>-<ServerLabel>.exe`
 

@@ -36,6 +36,14 @@ Write-Host '== Smoke test the published single-file EXE and a personalized clone
 $smoke = Join-Path ([IO.Path]::GetTempPath()) ('cdm-smoke-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $smoke | Out-Null
 try {
+    # Regression check: a generic CDM.exe must never read previous-version settings
+    # or connect automatically, even when the current Windows user has old data.
+    $templateMarker = Join-Path $smoke 'template-clean.txt'
+    $templateCheck = Start-Process -FilePath $exe -ArgumentList ('--verify-template-empty "' + $templateMarker + '"') -Wait -PassThru
+    if ($templateCheck.ExitCode -ne 0 -or -not (Test-Path $templateMarker) -or (Get-Content $templateMarker -Raw).Trim() -ne 'CDM-TEMPLATE-CLEAN') {
+        throw "Generic CDM.exe unexpectedly loaded saved credentials. $((Get-Content "$templateMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    Write-Host 'PASS: generic CDM.exe starts without credentials, irrespective of older user settings.'
     $clone = Join-Path $smoke 'CDM-Smoke-Test.exe'
     $marker = Join-Path $smoke 'clone-started.txt'
     $create = Start-Process -FilePath $exe -ArgumentList ('--emit-self-test-clone "' + $clone + '"') -Wait -PassThru

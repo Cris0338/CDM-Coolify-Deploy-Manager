@@ -9,7 +9,7 @@ CDM uses .NET 10 Windows Presentation Foundation (WPF). All source code and tech
 - `Services/CoolifyApi.cs` — REST API requests and deployment status polling.
 - `Services/SshTunnel.cs` — owned Windows OpenSSH process; ephemeral key and known_hosts files; host pinning; localhost-only forward.
 - `Services/ExecutableProfile.cs` — binary trailer reader/writer on a published PE single-file EXE, SHA256 integrity check, background self-update after process exit.
-- `Services/SettingsStore.cs` — legacy Windows DPAPI settings read/migration and new in-EXE profile saves. Never writes new AppData configuration.
+- `Services/SettingsStore.cs` — strict separation between blank generic template and personalized in-EXE profiles. Never reads or writes previous-version AppData settings.
 - `Models.cs`, `Loc.cs`, `Localization/*.json` — models, classifier, embedded translations.
 - `tests/ExecutableProfileTests`, `tests/ClassifierTests`, `tests/LocalizationTests` — offline checks.
 

@@ -41,6 +41,8 @@ The personal clone includes usable credentials. It is portable across Windows de
 
 CDM is an independent unofficial application, and browser login is not OAuth authorization-code grant to CDM.
 
-## Legacy configuration
+## Previous versions
 
-Earlier CDM releases used `%LOCALAPPDATA%\CoolifyDeployManager\settings.json` protected by Windows DPAPI. The new generic template reads it only as a best-effort migration source, and never writes new settings there. The old file is deliberately retained as a recovery path until the user has confirmed the newly generated EXE works on Windows. An unreadable legacy file does not stop the first-run wizard.
+Previous CDM releases may have saved settings under `%LOCALAPPDATA%\CoolifyDeployManager\settings.json` or alongside the application in `CDM.profile`. **CDM 2.2.0 does not inspect, read, import, alter or delete these files.** The generic `CDM.exe` always opens a blank configuration wizard. Only a personalized clone can load settings, and only from its own executable trailer. To reuse old settings, enter them explicitly in the new wizard.
+
+The local build includes a regression smoke check that the published generic template contains no configuration, even when older user settings exist on the current machine.

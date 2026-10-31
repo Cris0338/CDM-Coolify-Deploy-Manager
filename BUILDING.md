@@ -14,7 +14,7 @@ No GitHub Actions, cloud build or automatic workflow is involved.
 
 ## Windows acceptance criteria before release
 
-- Fresh template opens the setup on startup, with no password dialog.
+- Fresh generic template ignores all older user settings and opens the blank setup on startup, with no password dialog and no automatic API requests.
 - HTTPS with a trusted Coolify domain and a READ+DEPLOY token gives the dashboard.
 - SSH setup generates a key, checks a pinned host fingerprint and successfully creates its own tunnel.
 - Browser-based Coolify login works through localhost on the managed SSH tunnel.
