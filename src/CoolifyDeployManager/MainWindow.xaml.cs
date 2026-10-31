@@ -54,10 +54,10 @@ public partial class MainWindow : Window
 
     private void UpdateProfileStatus()
     {
-        Title = Loc.T("AppTitle") + " 2.1.2 · " +
-            Loc.T(SettingsStore.HasPortableProfile
-                ? (settings.IsConfigured ? "VaultConfigured" : "VaultNotConfigured")
-                : "VaultNotConfigured");
+        var status = Loc.T(SettingsStore.HasPortableProfile && settings.IsConfigured
+            ? "VaultConfigured" : "VaultNotConfigured");
+        Title = Loc.T("AppTitle") + " 2.1.2 · " + status;
+        ProfileBadge.Text = status;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)

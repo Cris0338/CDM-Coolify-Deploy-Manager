@@ -46,7 +46,10 @@
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
             <Border Width="35" Height="35" Background="#433662" CornerRadius="10" Margin="0,0,12,0"><TextBlock Text="↟" Foreground="{StaticResource Purple}" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
             <TextBlock Text="Coolify Deploy Manager" FontSize="21" FontWeight="Bold" VerticalAlignment="Center"/>
-            <Border Background="#352C4B" CornerRadius="8" Margin="10,0,0,0" Padding="8,4"><TextBlock Text="WPF 2.1.0" FontSize="11" Foreground="{StaticResource Purple}"/></Border>
+            <Border Background="#352C4B" CornerRadius="8" Margin="10,0,0,0" Padding="8,4"><TextBlock Text="WPF 2.1.2" FontSize="11" Foreground="{StaticResource Purple}"/></Border>
+            <Border Background="{StaticResource Surface}" CornerRadius="8" Margin="10,0,0,0" Padding="8,4">
+              <TextBlock x:Name="ProfileBadge" Text="{DynamicResource L.VaultNotConfigured}" FontSize="11" Foreground="{StaticResource Green}"/>
+            </Border>
           </StackPanel>
           <TextBlock Text="{DynamicResource L.Subtitle}" Foreground="{StaticResource Muted}" FontSize="12" Margin="47,4,0,0"/>
         </StackPanel>
