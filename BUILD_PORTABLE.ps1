@@ -32,6 +32,24 @@ if (-not (Test-Path $published)) { throw "Executable not found: $published" }
 Move-Item -LiteralPath $published -Destination $exe -Force
 $extra = @(Get-ChildItem $destination -File | Where-Object Name -ne 'CDM.exe')
 if ($extra.Count -gt 0) { Write-Warning "Additional files in portable/: $($extra.Name -join ', ')" }
+Write-Host '== Smoke test the published single-file EXE and a personalized clone =='
+$smoke = Join-Path ([IO.Path]::GetTempPath()) ('cdm-smoke-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Force -Path $smoke | Out-Null
+try {
+    $clone = Join-Path $smoke 'CDM-Smoke-Test.exe'
+    $marker = Join-Path $smoke 'clone-started.txt'
+    $create = Start-Process -FilePath $exe -ArgumentList ('--emit-self-test-clone "' + $clone + '"') -Wait -PassThru
+    if ($create.ExitCode -ne 0 -or -not (Test-Path $clone)) {
+        throw "The published template could not generate a test clone. $((Get-Content "$clone.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    $verify = Start-Process -FilePath $clone -ArgumentList ('--verify-self-test-clone "' + $marker + '"') -Wait -PassThru
+    if ($verify.ExitCode -ne 0 -or -not (Test-Path $marker) -or (Get-Content $marker -Raw).Trim() -ne 'CDM-CLONE-STARTED') {
+        throw "The published personalized EXE failed to start or read its embedded profile. $((Get-Content "$marker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    Write-Host 'PASS: personalized single-file clone launched and read its embedded profile.'
+}
+finally { Remove-Item -LiteralPath $smoke -Recurse -Force -ErrorAction SilentlyContinue }
+
 Write-Host '== Published executable =='
 Get-Item $exe | Select-Object FullName, @{N='MB';E={[math]::Round($_.Length / 1MB, 2)}} | Format-List
 Get-FileHash $exe -Algorithm SHA256 | Select-Object Hash, Path | Format-List
