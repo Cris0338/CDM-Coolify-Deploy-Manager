@@ -137,6 +137,31 @@ try {
         throw "Upgraded clone failed to read its preserved embedded profile."
     }
     Write-Host 'PASS: clone upgraded from the new template without losing its embedded profile.'
+
+    # Exercise the real detached save helper on a disposable personal EXE.
+    # No network, real SSH keys, tokens or user's own clone are involved.
+    $savedMarker = Join-Path $smoke 'pending-staged.txt'
+    $save = Start-Process -FilePath $clone -ArgumentList ('--save-self-test-clone "' + $savedMarker + '"') -Wait -PassThru
+    if ($save.ExitCode -ne 0 -or -not (Test-Path $savedMarker) -or (Get-Content $savedMarker -Raw).Trim() -ne 'CDM-PENDING-STAGED') {
+        throw "Disposable clone could not stage an embedded profile change. $((Get-Content "$savedMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    $pending = Join-Path $smoke '.CDM-Smoke-Test.exe.pending'
+    $updaterError = "$pending.updater-error.txt"
+    $deadline = [DateTime]::UtcNow.AddSeconds(65)
+    while ((Test-Path -LiteralPath $pending) -and [DateTime]::UtcNow -lt $deadline) {
+        Start-Sleep -Milliseconds 250
+    }
+    if (Test-Path -LiteralPath $pending) {
+        throw "Detached helper did not apply the staged clone after exit. $((Get-Content $updaterError -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    $updatedMarker = Join-Path $smoke 'pending-applied.txt'
+    $verifySaved = Start-Process -FilePath $clone -ArgumentList ('--verify-saved-self-test-clone "' + $updatedMarker + '"') -Wait -PassThru
+    if ($verifySaved.ExitCode -ne 0 -or -not (Test-Path $updatedMarker) -or
+        (Get-Content $updatedMarker -Raw).Trim() -ne 'CDM-PENDING-APPLIED') {
+        throw "Staged profile was not preserved in the updated executable. $((Get-Content "$updatedMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    Write-Host 'PASS: close-time .pending applied to disposable clone; token, card order and position locks preserved.'
+
 }
 finally { Remove-Item -LiteralPath $smoke -Recurse -Force -ErrorAction SilentlyContinue }
 
