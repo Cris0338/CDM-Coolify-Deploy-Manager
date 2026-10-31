@@ -74,3 +74,19 @@ Static inspection can reveal control-flow and data-flow risks; it cannot prove W
 ## Additional static consistency checks
 
 Verified all six WPF XAML files against their code-behind: **no missing named event handlers**, **no missing dynamic `L.*` translation resource keys** in the English fallback, and **no mismatched/unclosed XML-like tags** in the simple static tag scan. Checked current `SettingsStore.Save` only stages updates, `App.OnExit` schedules the updater, and `ExecutableProfile.ScheduleReplaceOnExit` uses Unicode-encoded PowerShell with safe status markers. These checks are useful but **do not substitute for a Windows WPF compiler or the close-time smoke test**.
+
+## 2026-10-31 — Root cause of the Windows deferred-save exception found
+
+The owner reran the full Windows script after the lifecycle redesign. Publish PASS (SHA256 `FD60F67E27595F814E7A938F7FC0EDE1787D7E2E10BC816EFC09330649EA2951`), generic launch PASS, status model PASS, disposable clone launch PASS, and explicit clone upgrade PASS. The staged clone reached exit, after which the updater reported:
+
+```
+CDM update helper failed: MethodInvocationException -
+Exception calling "Replace" with "3" arguments:
+"The path is not of a legal form."
+```
+
+**Identified incompatible call:** `[IO.File]::Replace($pending,$target,$null)` in a Windows PowerShell 5.1 child process. PowerShell's argument binder can coerce `$null` to the empty string for an argument whose .NET type is `string`. The `File.Replace` API then receives an invalid empty backup path, producing exactly this exception. This was not a lock timeout; retry changes could never fix this deterministic argument failure. References: [PowerShell issue #4616](https://github.com/PowerShell/PowerShell/issues/4616), [Microsoft File.Replace documentation](https://learn.microsoft.com/dotnet/api/system.io.file.replace).
+
+**Targeted correction — not yet Windows-verified:** `ExecutableProfile.ScheduleReplaceOnExit` now passes a real full backup path `<personal-clone>.before-save.bak` to `File.Replace`. The same path is overwritten with the latest previously installed clone at each successful save, avoiding an unbounded collection of ordinary save backups. Both the backup and current clone contain real credentials; keep them private. The build includes a small isolated Windows PowerShell `File.Replace` compatibility proof using dummy `.txt` files **before** publishing and, in the end-to-end disposable-clone smoke, an SHA256 comparison proving the last-good backup is byte-identical to the pre-save personal clone. No network, real key, or production operation involved.
+
+This fixes a specific, source-grounded cause; **do not mark the close-time save fixed until the owner's Windows script prints all PASS lines**.
