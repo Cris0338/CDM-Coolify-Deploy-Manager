@@ -81,3 +81,7 @@ The source is visible and CDM may be used professionally, modified and shared **
 The repository previously contained MIT-licensed historical versions. A change in licensing does not cancel any valid grants under those earlier versions. Old changelogs remain archival records and are not instructions for current configuration. Latest active documentation is linked above.
 
 No personalized clones, API tokens, private SSH keys, local test output or backup copies belong in a public Git repository.
+
+## Future GitHub Release downloads
+
+The official single-file generic CDM.exe will be downloadable from [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases) when it is published; currently no release is claimed. `PACKAGE_RELEASE.ps1` locally prepares the generic EXE, documentation ZIP and SHA256 file without uploading them. See [RELEASE_GUIDE.md](RELEASE_GUIDE.md) and the [31 October checkpoint](PROJECT_STATUS_2026-10-31.md).

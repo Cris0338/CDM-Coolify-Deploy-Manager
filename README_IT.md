@@ -57,3 +57,7 @@ Sostituisci il nome di esempio con quello effettivo; viene creato un backup cont
 **Da verificare prima del rilascio:** deploy reale di uno staging, tutti i controlli WPF aggiornati e portabilità su un secondo PC.
 
 La documentazione tecnica completa è in [README.md](README.md), [CDM_SETUP_GUIDE.md](CDM_SETUP_GUIDE.md), [BUILDING.md](BUILDING.md) e [DEVELOPER_NOTES.md](DEVELOPER_NOTES.md).
+
+## Scaricare CDM facilmente
+
+Dopo il rilascio, la pagina ufficiale sara [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases): bastera scaricare il generico `CDM.exe` oppure il pacchetto ZIP con guida italiana. Non esiste ancora una release pubblicata. `PACKAGE_RELEASE.ps1` prepara i file per il caricamento manuale, senza pubblicarli. Vedi [RELEASE_GUIDE.md](RELEASE_GUIDE.md) e il [punto del 31 ottobre](PROJECT_STATUS_2026-10-31.md).

@@ -42,3 +42,10 @@ Checklist for **generic template + portable personalized clone**. Tests are loca
 - [ ] Only the **generic** credential-free EXE is publicly distributed.
 - [ ] Source and documentation agree with the embedded-EXE model; no obsolete persistent settings workflow.
 - [ ] Manual Windows review completed before publishing; **no GitHub Actions**.
+
+## Manual release packaging
+
+- [ ] Run `PACKAGE_RELEASE.ps1` locally and verify only generic EXE/ZIP/checksum are produced.
+- [ ] Confirm ZIP contains the current license and Italian/English documentation, without any personal EXE or .bak.
+- [ ] Check binary/source version, license, and release tag all refer to the same verified commit on main.
+- [ ] Create GitHub Release as draft, inspect assets, then publish only after explicit acceptance.
