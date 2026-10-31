@@ -6,7 +6,15 @@ namespace CoolifyDeployManager;
 
 public partial class AboutWindow : Window
 {
-    public AboutWindow() => InitializeComponent();
+    public AboutWindow()
+    {
+        InitializeComponent();
+        VersionText.Text = Loc.F("AboutVersion", BuildInfo.Version);
+        BuildText.Text = Loc.F("AboutBuild", BuildInfo.BuildUtc, BuildInfo.Commit);
+    }
+
+    private void CopyBuild_Click(object sender, RoutedEventArgs e) =>
+        Clipboard.SetText(BuildInfo.DiagnosticIdentity);
 
     private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
