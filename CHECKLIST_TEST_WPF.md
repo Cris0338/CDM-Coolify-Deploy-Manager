@@ -83,3 +83,16 @@ Patches for the dark context menu, status/identity alignment, high-resolution PN
 - [ ] Compile new second-patch source, upgrade personal clone explicitly and check UI before packaging or tagging.
 
 Second-patch source commits and root-cause notes are in [docs/UI_FIXES_2026-10-31.md](docs/UI_FIXES_2026-10-31.md). Keep all unverified items open.
+
+### Third-iteration acceptance: clean titlebar/card drag rewrite (2026-10-31)
+
+- [x] Second-iteration Windows build and disposable clone smoke PASS (SHA256 `356D7724B006CDD0AC20E13B444A162176CF21D85AF7603759F6897319161564`).
+- [x] Owner visually accepted About size and logo, unframed Main logo, and green status badges in second-iteration real clone.
+- [ ] Build third-iteration source on Windows and explicitly upgrade clone, preserving the latest embedded profile and a timestamped backup.
+- [ ] Verify larger ~88px Main logo and plain WPF version aligned **above** both green status lines, without overlapping the window controls.
+- [ ] Drag a card and see translucent screenshot following mouse; blue marker on left/right target half.
+- [ ] Drop A **before** B; drop A **after the last card**; append via explicit end rectangle; append via blank wrap-panel area.
+- [ ] Verify lock restrictions, abort/cancel does not reorder, no dragging from checkbox/deploy button, order persists after close/reopen.
+- [ ] Verify production and unknown sections are isolated from staging; no real deployments triggered by drag.
+
+All source changes are committed but GUI functionality remains unaccepted until actual Windows testing.
