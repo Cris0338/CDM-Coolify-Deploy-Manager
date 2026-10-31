@@ -90,7 +90,7 @@ No personalized clones, API tokens, private SSH keys, local test output or backu
 
 ## GitHub Release downloads
 
-The official single-file generic CDM.exe will be downloadable from [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases) after the corresponding GitHub Release is actually published. `PACKAGE_RELEASE.ps1` locally prepares the generic EXE, documentation ZIP and SHA256 file without uploading them. See [RELEASE_GUIDE.md](RELEASE_GUIDE.md) and the [31 October checkpoint](PROJECT_STATUS_2026-10-31.md).
+**CDM 2.2.1 is published as a [GitHub pre-release](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/tag/v2.2.1).** Download the [clean generic CDM.exe](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/download/v2.2.1/CDM.exe), the [ZIP with documents](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/download/v2.2.1/CDM-2.2.1-win-x64.zip), or [SHA256 checksums](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/download/v2.2.1/CDM-2.2.1-SHA256.txt). No personal credential-bearing clones are published. See [RELEASE_GUIDE.md](RELEASE_GUIDE.md) and [ROADMAP.md](ROADMAP.md) for the frozen 2.2.1 release scope and future field tests.
 
 ## Voluntary support — buy Cris0338 a beer 🍺
 
