@@ -178,12 +178,18 @@ try {
     Write-Host 'PASS: disposable clone staged a profile update and exited; checking detached helper.'
     $pending = Join-Path $smoke '.CDM-Smoke-Test.exe.pending'
     $updaterError = "$pending.updater-error.txt"
+    $updaterStarted = "$pending.updater-started.txt"
     $deadline = [DateTime]::UtcNow.AddSeconds(65)
     while ((Test-Path -LiteralPath $pending) -and [DateTime]::UtcNow -lt $deadline) {
         Start-Sleep -Milliseconds 250
     }
     if (Test-Path -LiteralPath $pending) {
-        throw "Detached helper did not apply the staged clone after exit. $((Get-Content $updaterError -ErrorAction SilentlyContinue) -join ' ')"
+        $started = Test-Path -LiteralPath $updaterStarted
+        $errorDetail = (Get-Content -LiteralPath $updaterError -ErrorAction SilentlyContinue) -join ' '
+        if ([string]::IsNullOrWhiteSpace($errorDetail)) {
+            $errorDetail = 'No helper error file was produced.'
+        }
+        throw "Detached updater did not apply disposable profile. Helper started=$started. $errorDetail"
     }
     $updatedMarker = Join-Path $smoke 'pending-applied.txt'
     $verifySaved = Start-Process -FilePath $clone -ArgumentList ('--verify-saved-self-test-clone "' + $updatedMarker + '"') -Wait -PassThru
