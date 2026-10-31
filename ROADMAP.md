@@ -12,11 +12,11 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Actual owner personal clone connects to Coolify; SSH observed stable for more than 14 minutes.
 - [x] Version, Git source revision and UTC build timestamp shown in About and testable in generic/personalized EXEs.
 - [x] Release notes, license and generic-asset packaging safeguards prepared.
-- [ ] Publish **v2.2.1 as GitHub pre-release**, with generic EXE, ZIP and SHA256; verify exact tag and attached assets after publication.
+- [x] Publish **v2.2.1 as GitHub pre-release** on 2026-10-31, with exactly three approved generic assets (EXE, ZIP and SHA256); verified the tag and each uploaded asset on GitHub.
 
-**Tested binary source revision:** `56ec905c0b6894898a78fc9a92eba93b7925593a`. No personal clone, key or API token belongs in GitHub. Development changes after this revision are documentation-only.
+**Distributed binary source revision:** `3ad03bb74cfbfbd84f19a04c677892b1c693662f` (tag `v2.2.1`); SHA256 `4B50975A82F6F542388B033DDB20B266C9A0F430FAF39BDC2423C56628E3915B`. The earlier `56ec905c0b68` build was separately tested, and the final release packaging independently passed all smoke tests. No personal clone, key or API token belongs in GitHub. Later commits document the release without modifying its executable code.
 
-## Phase 2 — Future field validation, no automatic changes
+## Phase 2 — Field validation deferred to future ordinary usage (CDM development closed)
 
 - [ ] Perform a deliberately confirmed real staging deploy in normal use; record outcome.
 - [ ] Exercise actual SSH reconnect on spontaneous disconnect, if it recurs; inspect exit code/stderr.
