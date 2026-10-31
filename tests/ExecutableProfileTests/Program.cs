@@ -21,13 +21,17 @@ try
         ServerLabel = "contabo", ServerUrl = "https://coolify.example.com",
         ReadToken = "secret-read-and-deploy-token", DeployToken = "secret-read-and-deploy-token",
         SshPrivateKey = "test-SSH-private-key", SshKnownHosts = "test-host-key",
-        Overrides = new() { ["app123"] = DeploymentGroup.Staging }
+        Overrides = new() { ["app123"] = DeploymentGroup.Staging },
+        LockedPositions = new(StringComparer.OrdinalIgnoreCase) { "app123" },
+        BlockedDeploys = new(StringComparer.OrdinalIgnoreCase) { "app987" }
     };
     ExecutableProfile.Build(template, first, settings);
     Check(ExecutableProfile.TryReadFile(first, out var loaded), "Clone contains a readable profile");
     Check(loaded!.ReadToken == settings.ReadToken && loaded.SshPrivateKey == settings.SshPrivateKey,
         "Credentials survive serialization without Windows DPAPI");
     Check(loaded.Overrides["app123"] == DeploymentGroup.Staging, "User card state survives");
+    Check(loaded.LockedPositions.Contains("app123") && loaded.BlockedDeploys.Contains("app987"),
+        "Position and deployment locks persist in the personalized executable");
     var firstBytes = File.ReadAllBytes(first);
     Check(firstBytes.AsSpan(0, binary.Length).SequenceEqual(binary), "Base executable bytes are unchanged");
 

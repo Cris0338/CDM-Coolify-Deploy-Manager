@@ -64,3 +64,9 @@ Some Windows builds of `ssh-keyscan.exe` advertise `sntrup761x25519-sha512@opens
 Some Windows installations grant newly created temporary files inherited permissions to extra local groups (for example `CodexSandboxUsers`). Windows OpenSSH refuses SSH identity files readable by these groups and exits with code 255. Before starting the managed tunnel, CDM now runs the built-in `icacls.exe` on its own temporary `identity` file: inherited grants are removed and only the current user's Windows SID gets an explicit full-control grant. The command runs automatically, without elevation or modifying existing SSH keys. An `icacls` failure is reported explicitly and prevents SSH startup. The disposable private key is removed when the tunnel stops. If authentication still fails, the wizard displays the original OpenSSH stderr.
 
 The SSH fingerprint verification dialog uses the application's dark-themed buttons (including Copy / Yes / No).
+
+## UI workflow (31 October 2026 feature branch)
+
+Choose a project from the dropdown and type in its first search row to filter project names. Stage deployment now has two separate actions: check one or more staging cards and deploy **selected**, or deploy **all** staging cards within the chosen project. Both actions ask for confirmation. Right-click any card to lock its placement or disable deployment; these flags are embedded in the personalized EXE and persist across restart. The blank drag-and-drop region moves a card to the **end of its own section** (not to another classification group). A three-second branded splash is shown only on normal startup.
+
+Important: publishing a newly rebuilt generic CDM.exe does **not** automatically replace an existing portable personalized clone. Do not delete an existing working clone before testing an upgrade path.

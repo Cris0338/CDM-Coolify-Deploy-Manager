@@ -62,3 +62,16 @@ The dashboard includes 14 locale catalogs. The new 2.2.0 guided setup still need
 ### Domainless and offline-friendly installations
 
 CDM can administer a Coolify instance on a private LAN, e.g. `http://192.168.1.50:8000`, without a domain, public DNS, Let's Encrypt or public Internet exposure. A Docker application managed by Coolify can use Docker-internal networking or explicit host port mappings rather than a public domain. For HTTP over a public server IP, choose the managed SSH tunnel rather than transmitting the bearer token in cleartext. Private VPN address ranges are also accepted for direct HTTP access, when the VPN itself provides a secure network path.
+
+## Desktop UI improvements (feature branch, 31 October 2026)
+
+- Searchable project dropdown (replaces redundant project tabs). Search applications separately.
+- Staging cards have selection checkboxes. **Deploy selected staging** uses only checked applications; **Deploy ALL staging** uses all non-blocked staging applications in the current project filter. Both require explicit confirmation before any API deployment. Neither runs automatically.
+- Right-click a card to lock its position and/or block deployment. Both flags are saved inside the personalized EXE; locked deployments are omitted from both batch actions and explicitly skipped if already queued.
+- Drag/drop features an animated card transition and an additional blank drop target in each section for moving cards to the end. Free persistent empty cells and positional grid occupancy are **not** yet implemented.
+- Wizard exposes a copyable manual `authorized_keys` command when the user has no preexisting SSH alias.
+- The wizard's title-bar close button uses vector geometry. The dashboard shows the configured SSH username and host under the title.
+- New Windows icon (neon rocket in multiple sizes) and animated splash. A 3-second splash is displayed on normal app startup, but never during local smoke-test commands.
+- The original generic `CDM.exe` stays credential-free; existing personalized clones are not automatically upgraded by compiling a new generic template. Preserve your working clone until its update path is tested.
+
+No GitHub Actions. Run `BUILD_PORTABLE.ps1` locally; don't publish a release or run a real staging deployment until the Windows UI and safety checks pass.
