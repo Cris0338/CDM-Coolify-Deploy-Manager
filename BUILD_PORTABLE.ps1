@@ -35,16 +35,18 @@ if ($LASTEXITCODE -ne 0) { throw "Build failed (exit $LASTEXITCODE)." }
 
 $published = Join-Path $destination 'CoolifyDeployManager.exe'
 if (-not (Test-Path $published)) { throw "Executable not found: $published" }
-# Move-Item -Force does not reliably overwrite an existing EXE in Windows PowerShell.
-# File.Replace is atomic and preserves the previous executable if replacement fails.
+# PowerShell 5.1 does not consistently overwrite EXEs via Move-Item -Force,
+# and File.Replace can reject the path. Copy-Item works for a closed executable.
 try {
-    if ([IO.File]::Exists($exe)) {
-        [IO.File]::Replace($published, $exe, $null)
-    } else {
-        [IO.File]::Move($published, $exe)
+    Copy-Item -LiteralPath $published -Destination $exe -Force -ErrorAction Stop
+    $sourceHash = (Get-FileHash -LiteralPath $published -Algorithm SHA256).Hash
+    $targetHash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash
+    if ($sourceHash -ne $targetHash) {
+        throw "The copied CDM.exe does not match the freshly published executable."
     }
+    Remove-Item -LiteralPath $published -Force -ErrorAction Stop
 }
-catch [IO.IOException] {
+catch {
     throw "Cannot update portable\CDM.exe. Close CDM if it is running, then rerun BUILD_PORTABLE.ps1. Details: $($_.Exception.Message)"
 }
 $extra = @(Get-ChildItem $destination -File | Where-Object Name -ne 'CDM.exe')
