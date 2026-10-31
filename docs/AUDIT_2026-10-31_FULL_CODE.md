@@ -70,3 +70,7 @@ Original `SettingsStore.Save` launched `ExecutableProfile.ScheduleReplaceOnExit`
 ## Audit limitations
 
 Static inspection can reveal control-flow and data-flow risks; it cannot prove Windows kernel file-sharing behavior, PowerShell execution policy under every account, HTTPS peer security, correct Coolify API response structure, or GUI visuals. Any new source changes remain *unverified* until the owner runs the Windows integration tests.
+
+## Additional static consistency checks
+
+Verified all six WPF XAML files against their code-behind: **no missing named event handlers**, **no missing dynamic `L.*` translation resource keys** in the English fallback, and **no mismatched/unclosed XML-like tags** in the simple static tag scan. Checked current `SettingsStore.Save` only stages updates, `App.OnExit` schedules the updater, and `ExecutableProfile.ScheduleReplaceOnExit` uses Unicode-encoded PowerShell with safe status markers. These checks are useful but **do not substitute for a Windows WPF compiler or the close-time smoke test**.
