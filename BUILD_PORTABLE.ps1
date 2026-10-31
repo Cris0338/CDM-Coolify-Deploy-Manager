@@ -22,14 +22,31 @@ Write-Host '== Embedded executable profile tests =='
 & $dotnet run --project $profileTests -c Release
 if ($LASTEXITCODE -ne 0) { throw "Executable profile tests failed (exit $LASTEXITCODE)." }
 
+# Avoid rebuilding while the published template is running and its file is locked.
+$exe = Join-Path $destination 'CDM.exe'
+$running = @(Get-Process -Name CDM -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe })
+if ($running.Count -gt 0) {
+    throw "Close the running portable\CDM.exe before rebuilding (PID: $($running.Id -join ', '))."
+}
+
 Write-Host '== Publish portable WPF Windows x64 executable =='
 & $dotnet publish $project -c Release -r win-x64 --self-contained true '-p:PublishSingleFile=true' '-p:IncludeNativeLibrariesForSelfExtract=true' '-p:EnableCompressionInSingleFile=true' '-p:DebugType=None' '-p:DebugSymbols=false' -o $destination
 if ($LASTEXITCODE -ne 0) { throw "Build failed (exit $LASTEXITCODE)." }
 
 $published = Join-Path $destination 'CoolifyDeployManager.exe'
-$exe = Join-Path $destination 'CDM.exe'
 if (-not (Test-Path $published)) { throw "Executable not found: $published" }
-Move-Item -LiteralPath $published -Destination $exe -Force
+# Move-Item -Force does not reliably overwrite an existing EXE in Windows PowerShell.
+# File.Replace is atomic and preserves the previous executable if replacement fails.
+try {
+    if ([IO.File]::Exists($exe)) {
+        [IO.File]::Replace($published, $exe, $null)
+    } else {
+        [IO.File]::Move($published, $exe)
+    }
+}
+catch [IO.IOException] {
+    throw "Cannot update portable\CDM.exe. Close CDM if it is running, then rerun BUILD_PORTABLE.ps1. Details: $($_.Exception.Message)"
+}
 $extra = @(Get-ChildItem $destination -File | Where-Object Name -ne 'CDM.exe')
 if ($extra.Count -gt 0) { Write-Warning "Additional files in portable/: $($extra.Name -join ', ')" }
 Write-Host '== Smoke test the published single-file EXE and a personalized clone =='
