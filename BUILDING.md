@@ -1,42 +1,31 @@
-# Building CDM from source
+# Building CDM locally
 
-## Requirements
-
-- Windows 10 or 11, x64
-- Microsoft .NET 10 SDK x64 (`dotnet --list-sdks` should show version 10.x)
-- PowerShell (bundled with Windows)
-- Windows OpenSSH Client only if using SSH connection modes
-
-No Visual Studio installation is required.
-
-## Build
-
-From the repository root:
+1. Windows 10/11 x64, .NET 10 SDK x64, PowerShell.
+2. Clone the repository and check out `feature/embedded-clone-20261031`.
+3. Run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\BUILD_PORTABLE.ps1
 ```
 
-The script runs the classification tests, validates localization JSON and placeholders, and publishes a Windows x64 self-contained single-file executable at:
+The script runs three offline test projects (classification, localization, executable profile), then publishes the Windows x64 self-contained single-file WPF application as **`portable\CDM.exe`**.
 
-`portable\CoolifyDeployManager.exe`
+No GitHub Actions, cloud build or automatic workflow is involved.
 
-The executable contains the .NET runtime but does not bundle `ssh.exe`.
+## Windows acceptance criteria before release
 
-## First connection
+- Fresh template opens the setup on startup, with no password dialog.
+- HTTPS with a trusted Coolify domain and a READ+DEPLOY token gives the dashboard.
+- SSH setup generates a key, checks a pinned host fingerprint and successfully creates its own tunnel.
+- Browser-based Coolify login works through localhost on the managed SSH tunnel.
+- A configured clone `CDM-user-server.exe` opens on a different Windows account/computer *without* an SSH alias or user settings file.
+- Opening the clone does not require a profile password.
+- Modifying settings and card order survives restart, after the prior process has exited.
+- Tests pass and the *published .NET single-file EXE* still starts after its profile is appended.
+- Read-only token tests never deploy anything; explicitly confirm one staging deployment before release.
 
-In Settings, choose one of the three connection modes:
+The self-contained .NET executable does not bundle Windows OpenSSH Client. It must be available on a machine using SSH mode. No guarantee is made that every Windows installation has it.
 
-1. **Public HTTPS** — trusted HTTPS domain for the Coolify dashboard.
-2. **Automatic SSH tunnel** — previously trusted OpenSSH host alias, local port and Coolify remote host/port.
-3. **Existing local tunnel** — only if an SSH tunnel has already been established externally.
+Do not publish personalized EXEs: they contain recoverable tokens/SSH private keys. The generic template contains no credentials. Executable profile integrity is checksum-protected but not encrypted or signed.
 
-In Coolify, enable API access and create a `read` token and a `deploy` token for the right team.
-
-The first time you save settings, CDM prompts for a portable-profile password (12 characters minimum) and writes encrypted `CDM.profile` next to the EXE. Existing DPAPI-protected Windows settings are migrated at first launch after upgrading and the previous settings JSON is deleted after verification.
-
-Move the EXE and `CDM.profile` together for portable use, then unlock the profile with its password. The EXE is never rewritten with secrets. An SSH connection also requires SSH keys/configuration on the destination computer.
-
-## Release validation
-
-A successful build is not enough for a public binary release. Follow [CHECKLIST_TEST_WPF.md](CHECKLIST_TEST_WPF.md), test a staging deployment and independently verify application health. Do not upload user-specific settings or secrets.
+The program may create temporary key material while an SSH tunnel is running, and a temporary pending EXE while saving changes. Application settings are not permanently written to AppData.

@@ -31,9 +31,9 @@ try
     var firstBytes = File.ReadAllBytes(first);
     Check(firstBytes.AsSpan(0, binary.Length).SequenceEqual(binary), "Base executable bytes are unchanged");
 
-    loaded.ServerLabel = "new-server";
+    loaded.ServerLabel = "coolify";
     ExecutableProfile.Build(first, second, loaded);
-    Check(ExecutableProfile.TryReadFile(second, out var updated) && updated!.ServerLabel == "new-server",
+    Check(ExecutableProfile.TryReadFile(second, out var updated) && updated!.ServerLabel == "coolify",
         "Clone can be rebuilt from another clone");
     Check(new FileInfo(first).Length == new FileInfo(second).Length,
         "Reconfiguring a clone replaces the embedded profile rather than nesting it");

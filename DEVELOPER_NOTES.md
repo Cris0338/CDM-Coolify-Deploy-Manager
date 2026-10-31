@@ -1,27 +1,26 @@
-# CDM developer notes
+# CDM developer notes (2.2.0)
 
-CDM is built on .NET 10 and Windows Presentation Foundation (WPF). C# and the repository documentation use English as the source language.
+CDM uses .NET 10 Windows Presentation Foundation (WPF). All source code and technical docs are written in English.
 
-## Source layout
+## Layout
 
-- `src/CoolifyDeployManager/App.xaml` — application-wide dark theme, styles and brushes.
-- `MainWindow.xaml(.cs)` — dashboard, projects, card layout, filters, deployment queue and activity log.
-- `SettingsWindow.xaml(.cs)` — HTTPS and SSH connection modes, token entry, language selection.
-- `Services/CoolifyApi.cs` — Coolify API client, discovery, deployment and status polling.
-- `Services/SshTunnel.cs` — managed Windows OpenSSH process with host-key verification.
-- `Services/SettingsStore.cs` — user settings and Windows DPAPI-protected API tokens.
-- `Models.cs` — application models, staging/production classifier and user settings.
-- `Loc.cs` — localization lookup with English fallback and Windows culture detection.
-- `Localization/*.json` — embedded locale catalogs; English is the canonical set.
-- `tests/ClassifierTests` — offline classification checks.
-- `tests/LocalizationTests` — locale schema and formatting-placeholder validation.
+- `MainWindow.xaml(.cs)` — project dashboard, staging queue, cards, current state.
+- `SettingsWindow.xaml(.cs)` — single-token onboarding, HTTPS, SSH key setup, in-browser login.
+- `Services/CoolifyApi.cs` — REST API requests and deployment status polling.
+- `Services/SshTunnel.cs` — owned Windows OpenSSH process; ephemeral key and known_hosts files; host pinning; localhost-only forward.
+- `Services/ExecutableProfile.cs` — binary trailer reader/writer on a published PE single-file EXE, SHA256 integrity check, background self-update after process exit.
+- `Services/SettingsStore.cs` — legacy Windows DPAPI settings read/migration and new in-EXE profile saves. Never writes new AppData configuration.
+- `Models.cs`, `Loc.cs`, `Localization/*.json` — models, classifier, embedded translations.
+- `tests/ExecutableProfileTests`, `tests/ClassifierTests`, `tests/LocalizationTests` — offline checks.
 
-## SSH behavior
+## Portable profile and security
 
-The managed SSH mode launches the Windows `ssh.exe` client with `BatchMode=yes`, `StrictHostKeyChecking=yes`, `ExitOnForwardFailure=yes`, an explicit `127.0.0.1` local bind and `-N -T`. The application owns and terminates only the process it started; it does not adopt arbitrary existing local listeners. API tokens are never passed as SSH command-line arguments.
+Binary trailer: `[UTF-8 JSON settings][SHA256 (32)][Int64 little-endian payload length][CDMPF01!]`. Profile limit 1 MiB. SHA256 detects corruption but does not protect against a malicious editor or hide credentials. The own EXE is copied without existing trailer, then a new trailer is appended, keeping the template clean.
 
-## Releasing
+The run-time settings clone is rebuilt to a hidden pending file; a hidden PowerShell helper waits for the process to exit and atomically replaces the clone. A configured clone can be copied to another Windows PC.
 
-Use `BUILD_PORTABLE.ps1`, verify the Windows CI build, and follow the manual acceptance checklist before publishing a binary release. CDM is an independent, unofficial Coolify client.
+The SSH tunnel uses `BatchMode=yes`, `StrictHostKeyChecking=yes`, `ExitOnForwardFailure=yes`, an explicit localhost bind, a private key and pinned host key materialized only for the tunnel lifetime. Never forward a token over plain public HTTP.
 
-Contributions: [CONTRIBUTING.md](CONTRIBUTING.md).
+## Release rules
+
+**No GitHub Actions in any project.** All builds and tests are local, using `BUILD_PORTABLE.ps1`. Do not publish source or personal clone files containing credentials. Validate a published EXE on Windows before tagging or merging a release; no Windows SDK is available in the authoring environment for this branch.

@@ -180,7 +180,7 @@ public partial class SettingsWindow : Window
             using var process = new Process { StartInfo = new ProcessStartInfo("ssh-keyscan.exe") {
                 UseShellExecute = false, CreateNoWindow = true,
                 RedirectStandardOutput = true, RedirectStandardError = true } };
-            foreach (var arg in new[] { "-T", "5", "-p", port.ToString(), host })
+            foreach (var arg in new[] { "-T", "5", "-t", "ed25519", "-p", port.ToString(), host })
                 process.StartInfo.ArgumentList.Add(arg);
             process.Start();
             string stdout = await process.StandardOutput.ReadToEndAsync();
@@ -217,7 +217,12 @@ public partial class SettingsWindow : Window
             next.ReadToken = ReadToken.Password.Trim();
             next.DeployToken = next.ReadToken;
             if (next.ReadToken.Length == 0) throw new ArgumentException("Create one Coolify API token with READ + DEPLOY permissions.");
-            if (mode == ConnectionMode.Https) _ = CoolifyApi.NormalizeUrl(next.ServerUrl);
+            if (mode == ConnectionMode.Https)
+            {
+                _ = CoolifyApi.NormalizeUrl(next.ServerUrl);
+                if (!next.ServerUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    throw new ArgumentException("Direct Coolify connections must use HTTPS. Use managed SSH for IP-only access.");
+            }
             else
             {
                 var tunnelSettings = BuildSshConnection();

@@ -2,67 +2,59 @@
 
 **Created by [Cris0338](https://github.com/Cris0338)** · © 2026 Cris0338 · [MIT License](LICENSE)
 
-CDM is an **independent, unofficial** desktop application for managing [Coolify](https://coolify.io/) applications and deployments on Windows 10/11 (x64). It is not affiliated with or endorsed by Coolify.
+CDM is an **independent, unofficial** Windows 10/11 (x64) desktop tool for managing [Coolify](https://coolify.io/) deployments. It is not affiliated with Coolify.
 
-## Features
+## Dashboard
 
-- Automatically discover Coolify projects, environments, applications and deployment history through the REST API.
-- Navigate by project; distinguish staging, production and unclassified applications using names, branches and environments.
-- View running/health indicators, latest deployment time, deployment result and commit.
-- Reorder application cards; preserve ordering per project.
-- Start individual deployments or a sequential staging queue. **Stopping the local queue does not cancel deployments already started on Coolify.**
-- Dark WPF dashboard, custom title bar, activity log, API connection guide and settings.
-- Connect with verified public HTTPS, an automatically managed Windows OpenSSH tunnel, or an already-running localhost tunnel.
-- Encrypt all settings and API tokens in a portable, password-protected `CDM.profile` next to the executable (AES-256-GCM and PBKDF2-SHA256).
-- Localized interface with automatic Windows language detection and manual language selection.
+- Project and environment discovery through Coolify REST API.
+- Staging, production and unclassified application cards, status, branches and recent deploys.
+- Sequential staging deployments, confirmations and activity log.
+- Integrated connection setup and localized dashboard (English, French and Italian complete for the legacy UI; other languages are previews).
 
-## Languages
+## Your own portable executable (2.2.0 development preview)
 
-CDM currently offers **14 interface languages**:
+The distributed **`CDM.exe` is an unconfigured template**. On its first launch, it opens the guided connection setup. After verifying the connection and the token, it creates and launches:
 
-| Translation status | Languages |
-| --- | --- |
-| Complete catalogs | English, Français, Italiano |
-| Community preview (partial; missing strings fall back to English) | Español, Deutsch, Português (Brasil), Nederlands, Polski, Türkçe, Русский, Українська, 日本語, 한국어, 简体中文 |
+`CDM-<WindowsUser>-<ServerLabel>.exe`
 
-English is the source language for all code, technical messages, documentation and translation identifiers.
+The configured clone contains the server address, one READ+DEPLOY token, selected language, application layout and — for SSH mode — a dedicated private SSH key plus the pinned server host key. It needs **no profile password, user configuration file or prior SSH alias** on the next Windows computer. You can copy just the clone EXE.
 
-Translations live in `src/CoolifyDeployManager/Localization/*.json` and are embedded in the portable EXE. See [LOCALIZATION.md](LOCALIZATION.md) to contribute translations or improve existing ones. Preview translations have not yet undergone native-speaker review.
+If settings or card order changes, CDM stages a new executable and atomically replaces the previous clone after it closes using a short-lived hidden PowerShell helper. The original `CDM.exe` is never modified.
 
-## Build from source (Windows)
+**Important security property:** these are *portable credentials*, not password-protected secrets. Anyone with the personalized EXE can extract the API token and embedded SSH key. Never distribute your personal clone or commit it to a repository. Revoke the token and SSH key if it is exposed. Appending embedded settings invalidates any pre-existing Authenticode signature; this project does not sign personalized clones.
 
-Requires the **.NET 10 SDK x64**. Visual Studio is not required.
+## Guided setup
+
+1. Pick a server label (e.g., `contabo`) and **HTTPS** or **managed SSH**.
+2. **HTTPS:** enter the trusted Coolify URL and open the dashboard in your browser.
+3. **Managed SSH:** enter VPS host/IP, SSH user and port. Generate a dedicated ED25519 SSH key. Authorize the *public* key using an existing SSH alias if you have one; otherwise add it to the VPS user's `~/.ssh/authorized_keys`. Scan and compare the server's SSH host key fingerprint to a trusted fingerprint.
+4. For managed SSH, clicking **Open Coolify in browser** opens the panel through CDM's own localhost tunnel, not over public HTTP.
+5. In Coolify **Keys & Tokens → API Tokens**, generate **one token with READ and DEPLOY only**. Do not select Root, Write or Read Sensitive Data.
+6. Paste the token into CDM. The setup performs a read-only API request to `/api/v1/version` and checks the connection. It never starts a deployment to test permissions.
+7. CDM creates and launches the personal clone, closing the original window.
+
+**No OAuth API grant is assumed.** Coolify's OAuth login providers do not expose a documented native-app authorization-code token flow for CDM. Browser login plus token copy is the supported path.
+
+**Windows OpenSSH Client** (`ssh.exe`, `ssh-keygen.exe`, `ssh-keyscan.exe`) is used for SSH mode. These Windows executables are *not* bundled into CDM. Public HTTPS mode requires no SSH client. The SSH key's first authorization still requires someone with access to the VPS; CDM cannot invent access rights.
+
+## Build locally — no GitHub Actions
+
+Requires **.NET 10 SDK x64** on Windows; Visual Studio is optional.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\BUILD_PORTABLE.ps1
 ```
 
-The build script runs classification and localization checks, then publishes `portable\CoolifyDeployManager.exe` as a self-contained single-file Windows x64 executable. See [BUILDING.md](BUILDING.md).
+Runs classification, localization and embedded-profile tests locally, then publishes a self-contained `portable\CDM.exe`. This is the only supported build workflow; there are no GitHub Actions in this development branch.
 
-## Connecting to Coolify
-
-**Public HTTPS:** Use the Coolify dashboard hostname with a valid trusted TLS certificate. CDM does not disable certificate validation.
-
-**Automatic SSH tunnel:** Configure key-based Windows OpenSSH (for example, `ssh my-server`), then choose *Automatic SSH tunnel* in Settings and enter the SSH alias, local port and remote Coolify host/port. Windows OpenSSH Client is required and is not included inside the EXE. Host keys are verified.
-
-**External tunnel:** Choose this only when you already manage an SSH tunnel yourself.
-
-In Coolify, enable API access and create separate `read` and `deploy` tokens with permissions for the appropriate team. Do not share these tokens.
-
-## Truly portable settings (version 2.1.2 preview)
-
-After first setup, CDM stores all configuration and API tokens in **`CDM.profile` next to `CoolifyDeployManager.exe`**. This profile is protected with a user-chosen password using AES-256-GCM and PBKDF2-SHA256 (600,000 iterations); its contents are not embedded in the EXE.
-
-To move CDM to a different Windows PC, copy the **EXE and `CDM.profile` together** and enter the profile password. The EXE's filename does not change. CDM shows *Portable · Configured* in its title bar when credentials are present.
-
-Existing users can migrate their DPAPI-protected settings from `%LOCALAPPDATA%\CoolifyDeployManager\settings.json` on the same Windows account. The old settings file is removed **after** the encrypted portable profile has been written and verified. Other Windows artifacts and traces are outside CDM's control. SSH-based connections still need an appropriate OpenSSH configuration and keys on the destination computer.
-
-**Important:** Losing the profile password means losing access to the encrypted data. Create new Coolify API tokens if you cannot recover your profile. Never commit `CDM.profile` to GitHub.
+See [BUILDING.md](BUILDING.md), [CDM_SETUP_GUIDE.md](CDM_SETUP_GUIDE.md), [CHANGELOG_2.2.0.md](CHANGELOG_2.2.0.md), and [CHECKLIST_TEST_WPF.md](CHECKLIST_TEST_WPF.md).
 
 ## Project status
 
-Version **2.1.2 (portable profile preview)** is in development. WPF 2.1.0 compiled successfully on Windows 10 x64 with .NET 10 SDK 10.0.403 and passed all eight existing classification tests. The localization refactor and new translations require the automated Windows build and UI acceptance checks before a packaged GitHub Release.
+**Version 2.2.0 is a source-code development preview, not a verified Windows build.** The source has not yet passed Windows compilation or end-to-end single-file clone startup testing. In particular, the .NET single-file host's behavior with appended profile bytes must be verified on a published EXE before release. No public binary release is claimed.
 
-**CDM currently stores one Coolify server profile at a time.** Multi-server profiles are planned, not implemented.
+CDM manages one Coolify server per clone. To manage several servers, create separate personal clones.
 
-See [CHANGELOG_2.1.1.md](CHANGELOG_2.1.1.md), [CONTRIBUTING.md](CONTRIBUTING.md) and [LICENSE](LICENSE).
+## Languages
+
+The dashboard includes 14 locale catalogs. The new 2.2.0 guided setup still needs complete localization and native-speaker review. See [LOCALIZATION.md](LOCALIZATION.md).

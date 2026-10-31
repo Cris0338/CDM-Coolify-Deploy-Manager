@@ -26,9 +26,11 @@ Write-Host '== Publish portable WPF Windows x64 executable =='
 & $dotnet publish $project -c Release -r win-x64 --self-contained true '-p:PublishSingleFile=true' '-p:IncludeNativeLibrariesForSelfExtract=true' '-p:EnableCompressionInSingleFile=true' '-p:DebugType=None' '-p:DebugSymbols=false' -o $destination
 if ($LASTEXITCODE -ne 0) { throw "Build failed (exit $LASTEXITCODE)." }
 
-$exe = Join-Path $destination 'CoolifyDeployManager.exe'
-if (-not (Test-Path $exe)) { throw "Executable not found: $exe" }
-$extra = @(Get-ChildItem $destination -File | Where-Object Name -ne 'CoolifyDeployManager.exe')
+$published = Join-Path $destination 'CoolifyDeployManager.exe'
+$exe = Join-Path $destination 'CDM.exe'
+if (-not (Test-Path $published)) { throw "Executable not found: $published" }
+Move-Item -LiteralPath $published -Destination $exe -Force
+$extra = @(Get-ChildItem $destination -File | Where-Object Name -ne 'CDM.exe')
 if ($extra.Count -gt 0) { Write-Warning "Additional files in portable/: $($extra.Name -join ', ')" }
 Write-Host '== Published executable =='
 Get-Item $exe | Select-Object FullName, @{N='MB';E={[math]::Round($_.Length / 1MB, 2)}} | Format-List
