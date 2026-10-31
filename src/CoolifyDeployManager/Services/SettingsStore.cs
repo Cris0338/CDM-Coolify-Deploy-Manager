@@ -11,7 +11,6 @@ internal static class SettingsStore
 {
     private static UserSettings? cached;
     private static bool isClone;
-    private static bool updaterStarted;
     private static string? stagedPath;
 
     public static bool HasPortableProfile => isClone;
@@ -56,13 +55,22 @@ internal static class SettingsStore
             "." + Path.GetFileName(ExecutableProfile.OwnPath) + ".pending");
 
         ExecutableProfile.Build(ExecutableProfile.OwnPath, pending, normalized);
-        if (!updaterStarted)
-        {
-            ExecutableProfile.ScheduleReplaceOnExit(pending);
-            updaterStarted = true;
-        }
         stagedPath = pending;
         cached = normalized;
+    }
+
+    // During a running session, every Save replaces the complete staged EXE,
+    // without spawning a short-lived updater that can exhaust its retries
+    // before the owner has finished using CDM. Only the application Exit
+    // event schedules the on-disk replacement, when Windows is about to
+    // release the executable. A crash leaves .pending recoverable.
+    internal static string? StagedPathForDiagnostics => stagedPath;
+
+    internal static void SchedulePendingAtExit()
+    {
+        if (!isClone || stagedPath is null) return;
+        ExecutableProfile.ScheduleReplaceOnExit(stagedPath);
+        stagedPath = null;
     }
 
     private static UserSettings Normalize(UserSettings value)
