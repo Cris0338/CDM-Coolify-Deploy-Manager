@@ -53,7 +53,7 @@
       </Setter>
     </Style>
     <DataTemplate x:Key="ApplicationCard">
-      <Border Width="345" MinHeight="267" CornerRadius="13" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" Margin="0,0,14,14" Padding="16" AllowDrop="True" Drop="Card_Drop" Loaded="Card_Loaded">
+      <Border Width="345" MinHeight="267" CornerRadius="13" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" Margin="0,0,14,14" Padding="16" AllowDrop="True" DragOver="Card_DragOver" Drop="Card_Drop" PreviewMouseLeftButtonDown="Card_PreviewMouseLeftButtonDown" PreviewMouseMove="Card_PreviewMouseMove" Loaded="Card_Loaded">
         <Border.ContextMenu>
           <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" Style="{StaticResource DarkCardContextMenu}">
             <MenuItem Style="{StaticResource DarkCardMenuItem}" Header="{DynamicResource L.LockPosition}" IsCheckable="True" IsChecked="{Binding PositionLocked, Mode=OneWay}" Click="TogglePositionLock_Click"/>
@@ -102,16 +102,20 @@
         <StackPanel MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Cursor="SizeAll">
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
             <Border Width="35" Height="35" Background="#433662" CornerRadius="10" Margin="0,0,12,0">
-              <Image Source="Assets/CDMOfficial.ico" Width="31" Height="31" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+              <Image Source="Assets/CDMLogo.png" Width="31" Height="31" Stretch="Uniform" RenderOptions.BitmapScalingMode="Fant" SnapsToDevicePixels="True"/>
             </Border>
             <TextBlock Text="Coolify Deploy Manager" FontSize="21" FontWeight="Bold" VerticalAlignment="Center"/>
             <Border Background="#352C4B" CornerRadius="8" Margin="10,0,0,0" Padding="8,4"><TextBlock Text="WPF 2.2.0" FontSize="11" Foreground="{StaticResource Purple}"/></Border>
-            <Border Background="{StaticResource Surface}" CornerRadius="8" Margin="10,0,0,0" Padding="8,4">
-              <TextBlock x:Name="ProfileBadge" Text="{DynamicResource L.VaultNotConfigured}" FontSize="11" Foreground="{StaticResource Green}"/>
-            </Border>
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="10,0,0,0" MaxWidth="310">
+              <Border Background="{StaticResource Surface}" CornerRadius="8" HorizontalAlignment="Left" Padding="8,4">
+                <TextBlock x:Name="ProfileBadge" Text="{DynamicResource L.VaultNotConfigured}" FontSize="11" Foreground="{StaticResource Green}"/>
+              </Border>
+              <TextBlock x:Name="ProfileIdentity" Foreground="{StaticResource Green}" FontSize="11"
+                         Margin="2,5,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"
+                         Visibility="Collapsed"/>
+            </StackPanel>
           </StackPanel>
           <TextBlock Text="{DynamicResource L.Subtitle}" Foreground="{StaticResource Muted}" FontSize="12" Margin="47,3,0,0"/>
-          <TextBlock x:Name="ProfileIdentity" Foreground="{StaticResource Green}" FontSize="11" Margin="47,4,0,0" Visibility="Collapsed"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
           <Ellipse x:Name="ConnectionDot" Width="9" Height="9" Fill="{StaticResource Red}" Margin="0,0,7,0"/>
@@ -123,7 +127,7 @@
           <Border Background="{StaticResource Line}" Width="1" Margin="13,5"/>
           <Button Content="—" Style="{StaticResource ActionButton}" Width="36" Padding="0" Click="Minimize_Click" ToolTip="Minimize"/>
           <Button Content="□" Style="{StaticResource ActionButton}" Width="36" Padding="0" Margin="4,0,0,0" Click="Maximize_Click" ToolTip="Maximize / Restore"/>
-          <Button Content="✕" Style="{StaticResource ActionButton}" Width="36" Padding="0" Margin="4,0,0,0" Background="#76303D" Click="CloseWindow_Click" ToolTip="Close"/>
+          <Button Style="{StaticResource ActionButton}" Width="36" Height="34" Padding="0" Margin="4,0,0,0" Background="#76303D" Click="CloseWindow_Click" ToolTip="Close"><Path Data="M 1,1 L 11,11 M 11,1 L 1,11" Width="12" Height="12" Stroke="White" StrokeThickness="2" Stretch="Uniform"/></Button>
         </StackPanel>
       </Grid>
     </Border>
