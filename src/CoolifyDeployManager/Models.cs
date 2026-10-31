@@ -17,6 +17,7 @@ internal sealed record LatestDeploy(DateTimeOffset? When, string Status, string 
 internal sealed class UserSettings
 {
     public string ServerUrl { get; set; } = "";
+    public string ServerLabel { get; set; } = "coolify";
     public string Language { get; set; } = "system";
     public string ReadToken { get; set; } = "";
     public string DeployToken { get; set; } = "";
@@ -24,6 +25,10 @@ internal sealed class UserSettings
     public Dictionary<string, List<string>> CardOrders { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public ConnectionMode ConnectionMode { get; set; } = ConnectionMode.Https;
     public string SshHost { get; set; } = "";
+    public string SshUsername { get; set; } = "";
+    public int SshPort { get; set; } = 22;
+    public string SshPrivateKey { get; set; } = "";
+    public string SshKnownHosts { get; set; } = "";
     public int SshLocalPort { get; set; } = 18000;
     public string SshRemoteHost { get; set; } = "127.0.0.1";
     public int SshRemotePort { get; set; } = 8000;
@@ -35,10 +40,11 @@ internal sealed class UserSettings
 
     public UserSettings Copy() => new()
     {
-        Language = Language, ServerUrl = ServerUrl, ReadToken = ReadToken, DeployToken = DeployToken,
+        Language = Language, ServerUrl = ServerUrl, ServerLabel = ServerLabel, ReadToken = ReadToken, DeployToken = DeployToken,
         Overrides = new(Overrides, StringComparer.OrdinalIgnoreCase),
         CardOrders = CardOrders.ToDictionary(k => k.Key, k => new List<string>(k.Value), StringComparer.OrdinalIgnoreCase),
-        ConnectionMode = ConnectionMode, SshHost = SshHost, SshLocalPort = SshLocalPort,
+        ConnectionMode = ConnectionMode, SshHost = SshHost, SshUsername = SshUsername, SshPort = SshPort,
+        SshPrivateKey = SshPrivateKey, SshKnownHosts = SshKnownHosts, SshLocalPort = SshLocalPort,
         SshRemoteHost = SshRemoteHost, SshRemotePort = SshRemotePort
     };
 }

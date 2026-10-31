@@ -49,21 +49,21 @@ public partial class MainWindow : Window
         UnknownCount.Text = Loc.F("ApplicationsCount", 0);
         InventoryCount.Text = Loc.F("ApplicationsCount", 0);
         UpdateProfileStatus();
-        AddLog("Coolify Deploy Manager WPF 2.1.2 · Startup.");
+        AddLog("Coolify Deploy Manager WPF 2.2.0 · Startup.");
     }
 
     private void UpdateProfileStatus()
     {
         var status = Loc.T(SettingsStore.HasPortableProfile && settings.IsConfigured
             ? "VaultConfigured" : "VaultNotConfigured");
-        Title = Loc.T("AppTitle") + " 2.1.2 · " + status;
+        Title = Loc.T("AppTitle") + " 2.2.0 · " + status;
         ProfileBadge.Text = status;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         if (settings.IsConfigured) await RefreshAsync();
-        else AddLog(Loc.T("ConfigureFirst"));
+        else Dispatcher.BeginInvoke(new Action(() => OpenSettings()));
     }
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -331,6 +331,7 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
+        if (SettingsStore.LaunchedClone) return;
         ssh.Stop();
         settings = dlg.Result;
         Loc.Apply(settings.Language);

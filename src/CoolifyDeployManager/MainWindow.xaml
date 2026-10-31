@@ -1,5 +1,5 @@
 <!-- Copyright (c) 2026 Cris0338. Licensed under the MIT License. -->
-<Window x:Class="CoolifyDeployManager.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Title="Coolify Deploy Manager 2.1.2" WindowStyle="None" ResizeMode="CanResize" Background="{StaticResource Canvas}" Foreground="{StaticResource Primary}" Width="1500" Height="920" MinWidth="850" MinHeight="570" Icon="Assets/AppIcon.ico" Loaded="Window_Loaded" Closing="Window_Closing" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen">
+<Window x:Class="CoolifyDeployManager.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Title="Coolify Deploy Manager 2.2.0" WindowStyle="None" ResizeMode="CanResize" Background="{StaticResource Canvas}" Foreground="{StaticResource Primary}" Width="1500" Height="920" MinWidth="850" MinHeight="570" Icon="Assets/AppIcon.ico" Loaded="Window_Loaded" Closing="Window_Closing" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen">
   <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="7" GlassFrameThickness="0" CornerRadius="0"/></shell:WindowChrome.WindowChrome>
   <Window.Resources>
     <DataTemplate x:Key="ApplicationCard">
@@ -46,7 +46,7 @@
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
             <Border Width="35" Height="35" Background="#433662" CornerRadius="10" Margin="0,0,12,0"><TextBlock Text="↟" Foreground="{StaticResource Purple}" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
             <TextBlock Text="Coolify Deploy Manager" FontSize="21" FontWeight="Bold" VerticalAlignment="Center"/>
-            <Border Background="#352C4B" CornerRadius="8" Margin="10,0,0,0" Padding="8,4"><TextBlock Text="WPF 2.1.2" FontSize="11" Foreground="{StaticResource Purple}"/></Border>
+            <Border Background="#352C4B" CornerRadius="8" Margin="10,0,0,0" Padding="8,4"><TextBlock Text="WPF 2.2.0" FontSize="11" Foreground="{StaticResource Purple}"/></Border>
             <Border Background="{StaticResource Surface}" CornerRadius="8" Margin="10,0,0,0" Padding="8,4">
               <TextBlock x:Name="ProfileBadge" Text="{DynamicResource L.VaultNotConfigured}" FontSize="11" Foreground="{StaticResource Green}"/>
             </Border>
