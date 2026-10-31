@@ -69,3 +69,9 @@ CDM è **completamente gratuito**. Se ti piace e vuoi sostenere il suo sviluppo,
 **[Offri una birra tramite PayPal.Me](https://www.paypal.com/paypalme/Cris0338/)**
 
 Il messaggio è tradotto nella finestra «Informazioni» dell'applicazione secondo la lingua selezionata. Il pulsante Sponsor di GitHub porta alla stessa pagina. Non è richiesto alcun pagamento per utilizzare, scaricare o condividere CDM.
+
+## File CDM personale smarrito o rubato
+
+Se perdi il clone personale `.exe`, un file `.pending` o un backup `.bak`, revoca **entrambe le credenziali**: in Coolify vai a **Keys & Tokens → API Tokens** e scegli **Revoke token** per il token usato da CDM; se usavi il tunnel SSH, entra nel VPS con un accesso indipendente e rimuovi da `~/.ssh/authorized_keys` **solo la chiave pubblica di CDM**, dopo averla identificata con la copia della chiave o l'impronta. Poi rigenera token e chiave SSH con il `CDM.exe` generico.
+
+**Revocare il token API non disabilita la chiave SSH.** Procedura completa: [guida alla configurazione e recupero](CDM_SETUP_GUIDE.md#if-a-personalized-cdm-clone-is-lost-or-stolen).
