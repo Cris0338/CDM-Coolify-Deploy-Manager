@@ -8,14 +8,28 @@
     <AssemblyName>CoolifyDeployManager</AssemblyName>
     <RootNamespace>CoolifyDeployManager</RootNamespace>
     <ApplicationIcon>Assets\CDMOfficial.ico</ApplicationIcon>
-    <Version>2.2.0</Version>
+    <Version>2.2.1</Version>
     <Authors>Cris0338</Authors>
     <Copyright>Copyright © 2026 Cris0338</Copyright>
     <Product>Coolify Deploy Manager</Product>
     <Description>Coolify deployment dashboard for Windows. Independent, unofficial application by Cris0338.</Description>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
+    <!-- Values are provided by BUILD_PORTABLE.ps1; direct IDE builds retain
+         explicit local/unknown metadata rather than inventing a Git SHA. -->
+    <CDMSourceCommit Condition="'$(CDMSourceCommit)' == ''">local</CDMSourceCommit>
+    <CDMBuildUtc Condition="'$(CDMBuildUtc)' == ''">unspecified</CDMBuildUtc>
   </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CDM.SourceCommit</_Parameter1>
+      <_Parameter2>$(CDMSourceCommit)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CDM.BuildUtc</_Parameter1>
+      <_Parameter2>$(CDMBuildUtc)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\CDMOfficial.ico" />
     <Resource Include="Assets\CDMLogo.png" />
