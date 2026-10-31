@@ -222,5 +222,7 @@
   "SetupAliasEntryHint": "Enter the name of your existing Windows SSH alias (for example, contabo), then authorize the dedicated CDM key.",
   "SupportTitle": "🍺 Buy Cris0338 a beer!",
   "SupportDescription": "CDM is free. If you like it and want to support its development, choose any amount. It is entirely voluntary.",
-  "SupportOpenPayPal": "Support via PayPal.Me"
+  "SupportOpenPayPal": "Support via PayPal.Me",
+  "Guide6": "6 · Lost or stolen personal executable",
+  "Guide6Body": "A personalized CDM clone (.exe), .pending file or .bak backup contains API tokens and, if configured, a private SSH key.\n1. Sign in to Coolify in your browser: Keys & Tokens → API Tokens → Revoke token. Revoke every token used by the lost clone.\n2. If SSH tunneling was enabled, use your VPS provider's console or a separate working SSH key. Sign in as the SAME SSH user configured in CDM and open: nano ~/.ssh/authorized_keys. Identify CDM's public-key line by comparing it with the saved public key or its fingerprint; delete ONLY that line and save. Do not remove other keys. If unsure which line is CDM's, do not delete one at random.\n3. Generate a new Coolify API token and a new dedicated SSH key using the generic CDM executable.\nIMPORTANT: Revoking an API token does not revoke SSH access; both credentials must be invalidated separately."
 }
