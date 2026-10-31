@@ -71,6 +71,8 @@ internal static class SettingsStore
         value.CardOrders = (value.CardOrders ?? new()).ToDictionary(
             pair => pair.Key, pair => pair.Value ?? new List<string>(),
             StringComparer.OrdinalIgnoreCase);
+        value.LockedPositions = new(value.LockedPositions ?? new(), StringComparer.OrdinalIgnoreCase);
+        value.BlockedDeploys = new(value.BlockedDeploys ?? new(), StringComparer.OrdinalIgnoreCase);
         value.Language ??= "system";
         value.ReadToken ??= "";
         value.DeployToken = string.IsNullOrWhiteSpace(value.DeployToken)

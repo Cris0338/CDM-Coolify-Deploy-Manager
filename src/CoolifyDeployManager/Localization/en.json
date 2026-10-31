@@ -206,5 +206,12 @@
   "SetupHostMatches": "Yes, matches",
   "SetupManualAuthorizeLabel": "No existing SSH alias? Copy this command and run it in the server terminal (as the SSH user):",
   "SetupCopyManualAuthorize": "Copy VPS command",
-  "ProfileIdentity": "User: {0}  ·  VPS: {1}"
+  "ProfileIdentity": "User: {0}  ·  VPS: {1}",
+  "LockPosition": "Lock card position",
+  "LockDeploy": "Block deployments",
+  "SelectForDeploy": "Select for batch deployment",
+  "AllStaging": "Deploy ALL staging",
+  "NoSelectedStaging": "Select at least one staging application using the checkboxes.",
+  "DeploySkippedLocked": "Skipped (deployment locked): {0}",
+  "SearchProjects": "Search projects..."
 }

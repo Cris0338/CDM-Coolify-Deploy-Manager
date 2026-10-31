@@ -23,6 +23,8 @@ internal sealed class UserSettings
     public string DeployToken { get; set; } = "";
     public Dictionary<string, DeploymentGroup> Overrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, List<string>> CardOrders { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public HashSet<string> LockedPositions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public HashSet<string> BlockedDeploys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public ConnectionMode ConnectionMode { get; set; } = ConnectionMode.Https;
     public string SshHost { get; set; } = "";
     public string SshUsername { get; set; } = "";
@@ -43,6 +45,8 @@ internal sealed class UserSettings
         Language = Language, ServerUrl = ServerUrl, ServerLabel = ServerLabel, ReadToken = ReadToken, DeployToken = DeployToken,
         Overrides = new(Overrides, StringComparer.OrdinalIgnoreCase),
         CardOrders = CardOrders.ToDictionary(k => k.Key, k => new List<string>(k.Value), StringComparer.OrdinalIgnoreCase),
+        LockedPositions = new(LockedPositions, StringComparer.OrdinalIgnoreCase),
+        BlockedDeploys = new(BlockedDeploys, StringComparer.OrdinalIgnoreCase),
         ConnectionMode = ConnectionMode, SshHost = SshHost, SshUsername = SshUsername, SshPort = SshPort,
         SshPrivateKey = SshPrivateKey, SshKnownHosts = SshKnownHosts, SshLocalPort = SshLocalPort,
         SshRemoteHost = SshRemoteHost, SshRemotePort = SshRemotePort

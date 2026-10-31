@@ -206,5 +206,12 @@
   "SetupHostMatches": "Oui, identiques",
   "SetupManualAuthorizeLabel": "Pas d'alias SSH existant ? Copiez cette commande dans le terminal du serveur (avec l'utilisateur SSH) :",
   "SetupCopyManualAuthorize": "Copier la commande VPS",
-  "ProfileIdentity": "Utilisateur : {0}  ·  VPS : {1}"
+  "ProfileIdentity": "Utilisateur : {0}  ·  VPS : {1}",
+  "LockPosition": "Bloquer la position",
+  "LockDeploy": "Bloquer les déploiements",
+  "SelectForDeploy": "Sélectionner pour le déploiement groupé",
+  "AllStaging": "Déployer TOUS les staging",
+  "NoSelectedStaging": "Sélectionnez au moins une application staging avec les cases à cocher.",
+  "DeploySkippedLocked": "Ignoré (déploiement bloqué) : {0}",
+  "SearchProjects": "Rechercher un projet..."
 }

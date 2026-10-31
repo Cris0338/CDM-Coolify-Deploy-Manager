@@ -3,16 +3,23 @@
   <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="7" GlassFrameThickness="0" CornerRadius="0"/></shell:WindowChrome.WindowChrome>
   <Window.Resources>
     <DataTemplate x:Key="ApplicationCard">
-      <Border Width="345" MinHeight="267" CornerRadius="13" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" Margin="0,0,14,14" Padding="16" AllowDrop="True" Drop="Card_Drop">
+      <Border Width="345" MinHeight="267" CornerRadius="13" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" Margin="0,0,14,14" Padding="16" AllowDrop="True" Drop="Card_Drop" Loaded="Card_Loaded">
+        <Border.ContextMenu>
+          <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" Background="{StaticResource Surface}" Foreground="{StaticResource Primary}">
+            <MenuItem Header="{DynamicResource L.LockPosition}" IsCheckable="True" IsChecked="{Binding PositionLocked, Mode=OneWay}" Click="TogglePositionLock_Click"/>
+            <MenuItem Header="{DynamicResource L.LockDeploy}" IsCheckable="True" IsChecked="{Binding DeployLocked, Mode=OneWay}" Click="ToggleDeployLock_Click"/>
+          </ContextMenu>
+        </Border.ContextMenu>
         <Border.Style>
           <Style TargetType="Border"><Setter Property="BorderBrush" Value="{StaticResource Line}"/><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="{StaticResource Purple}"/></Trigger></Style.Triggers></Style>
         </Border.Style>
         <Grid>
           <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
           <Grid Grid.Row="0" Margin="0,0,0,10">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" MaxHeight="45" ToolTip="{Binding FullDescription}"/>
-            <Border Grid.Column="1" Background="{StaticResource Hover}" CornerRadius="6" Padding="8,6" Margin="8,0,0,0" Cursor="SizeAll" ToolTip="{DynamicResource L.DragTooltip}" PreviewMouseLeftButtonDown="Grip_Down" PreviewMouseMove="Grip_Move">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" Visibility="{Binding SelectionVisibility}" Margin="0,2,10,0" VerticalAlignment="Top" ToolTip="{DynamicResource L.SelectForDeploy}"/>
+            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" MaxHeight="45" ToolTip="{Binding FullDescription}"/>
+            <Border Grid.Column="2" Background="{StaticResource Hover}" CornerRadius="6" Padding="8,6" Margin="8,0,0,0" Cursor="SizeAll" ToolTip="{DynamicResource L.DragTooltip}" PreviewMouseLeftButtonDown="Grip_Down" PreviewMouseMove="Grip_Move">
               <TextBlock Text="⠿" FontSize="17" Foreground="{StaticResource Muted}" IsHitTestVisible="False"/>
             </Border>
           </Grid>
@@ -30,7 +37,7 @@
             <TextBlock Text="{Binding LastDeploy}" FontSize="12" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
             <TextBlock Text="{Binding LastStatus}" Margin="0,4,0,0" FontSize="11" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
           </StackPanel>
-          <Button Grid.Row="4" Style="{StaticResource ActionButton}" Background="{Binding DeployBrush}" Content="{Binding DeployCaption}" Click="Deploy_Click" Tag="{Binding}"/>
+          <Button Grid.Row="4" Style="{StaticResource ActionButton}" Background="{Binding DeployBrush}" Content="{Binding DeployCaption}" Click="Deploy_Click" Tag="{Binding}" IsEnabled="{Binding CanDeploy}"/>
         </Grid>
       </Border>
     </DataTemplate>
@@ -73,23 +80,31 @@
         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
           <TextBlock Text="{DynamicResource L.Project}" Foreground="{StaticResource Muted}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-          <ComboBox x:Name="ProjectSelector" Width="240" SelectionChanged="ProjectSelector_SelectionChanged" Margin="0,0,12,0" DisplayMemberPath="Name" SelectedValuePath="Uuid"/>
+          <Grid Width="260" Margin="0,0,12,0">
+            <Button x:Name="ProjectPickerButton" Style="{StaticResource ActionButton}" Content="{DynamicResource L.AllProjects}" Click="ProjectPicker_Click" HorizontalContentAlignment="Left" Width="260"/>
+            <Popup x:Name="ProjectPickerPopup" PlacementTarget="{Binding ElementName=ProjectPickerButton}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+              <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Purple}" BorderThickness="1" CornerRadius="9" Padding="10" Width="330">
+                <StackPanel>
+                  <TextBox x:Name="ProjectSearchBox" TextChanged="ProjectSearchBox_TextChanged" ToolTip="{DynamicResource L.SearchProjects}" Margin="0,0,0,8"/>
+                  <ListBox x:Name="ProjectPickerList" SelectionChanged="ProjectPickerList_SelectionChanged" DisplayMemberPath="Name" Background="{StaticResource Surface}" Foreground="{StaticResource Primary}" BorderThickness="0" MaxHeight="310"/>
+                </StackPanel>
+              </Border>
+            </Popup>
+          </Grid>
           <TextBlock x:Name="InventoryCount" Text="0 applications" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal">
           <Button Style="{StaticResource ActionButton}" Background="{StaticResource Blue}" Content="{DynamicResource L.SelectedStaging}" Click="Batch_Click" Margin="0,0,8,0"/>
+          <Button Style="{StaticResource ActionButton}" Background="{StaticResource Hover}" Content="{DynamicResource L.AllStaging}" Click="BatchAll_Click" Margin="0,0,8,0"/>
           <Button x:Name="CancelButton" Style="{StaticResource ActionButton}" Content="{DynamicResource L.StopQueue}" Click="Cancel_Click" IsEnabled="False"/>
         </StackPanel>
       </Grid>
     </Border>
     <Border Grid.Row="2" Background="{StaticResource Canvas}" Padding="22,13">
       <Grid>
-        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="300"/><ColumnDefinition Width="168"/></Grid.ColumnDefinitions>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,18,0">
-          <TabControl x:Name="ProjectTabs" SelectionChanged="ProjectTabs_SelectionChanged" BorderThickness="0" Background="Transparent" Height="41"/>
-        </ScrollViewer>
-        <TextBox x:Name="SearchBox" Grid.Column="1" TextChanged="Search_Changed" Margin="0,0,9,0" ToolTip="{DynamicResource L.SearchHint}"/>
-        <ComboBox x:Name="StatusFilter" Grid.Column="2" SelectionChanged="Filter_Changed" SelectedIndex="0">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="170"/></Grid.ColumnDefinitions>
+        <TextBox x:Name="SearchBox" Grid.Column="0" TextChanged="Search_Changed" Margin="0,0,9,0" ToolTip="{DynamicResource L.SearchHint}"/>
+        <ComboBox x:Name="StatusFilter" Grid.Column="1" SelectionChanged="Filter_Changed" SelectedIndex="0">
           <ComboBoxItem Content="{DynamicResource L.All}"/><ComboBoxItem Content="{DynamicResource L.RunningFilter}"/><ComboBoxItem Content="{DynamicResource L.Problems}"/><ComboBoxItem Content="{DynamicResource L.Unclassified}"/>
         </ComboBox>
       </Grid>

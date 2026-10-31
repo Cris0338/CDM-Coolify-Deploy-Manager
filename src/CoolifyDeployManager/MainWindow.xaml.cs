@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private bool busy;
     private bool rebuilding;
     private string selectedProjectUuid = "ALL";
+    private readonly List<ProjectChoice> projectChoices = new();
     private Point dragOrigin;
     private string? dragUuid;
 
@@ -41,8 +42,7 @@ public partial class MainWindow : Window
         clock = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         clock.Tick += (_, _) => { foreach (var card in allCards.Values) card.UpdateClock(); CheckTunnelState(); };
         clock.Start();
-        ProjectTabs.Items.Add(new TabItem { Header = Loc.T("AllProjects"), Tag = "ALL" });
-        ProjectTabs.SelectedIndex = 0;
+        ProjectPickerButton.Content = Loc.T("AllProjects");
         LogBox.Text = "";
         StageCount.Text = Loc.F("ApplicationsCount", 0);
         ProductionCount.Text = Loc.F("ApplicationsCount", 0);
@@ -190,7 +190,11 @@ public partial class MainWindow : Window
             foreach (var app in inventory.Applications)
             {
                 var group = Classifier.Classify(app, settings);
-                var card = new AppCardView(app, group);
+                var card = new AppCardView(app, group)
+                {
+                    PositionLocked = settings.LockedPositions.Contains(app.Uuid),
+                    DeployLocked = settings.BlockedDeploys.Contains(app.Uuid)
+                };
                 latest.Values.TryGetValue(app.Uuid, out var info);
                 card.UpdateDeploy(info);
                 allCards[app.Uuid] = card;
@@ -211,47 +215,48 @@ public partial class MainWindow : Window
     }
     private void RebuildNavigation()
     {
-        rebuilding = true;
-        try
-        {
-            var choices = new List<ProjectChoice> { new("ALL", Loc.T("AllProjects")) };
-            choices.AddRange(inventory.Projects.Select(p => new ProjectChoice(p.Uuid, p.Name)));
-            ProjectSelector.ItemsSource = choices;
-            ProjectTabs.Items.Clear();
-            foreach (var choice in choices)
-            {
-                var count = choice.Uuid == "ALL" ? inventory.Applications.Count : inventory.Applications.Count(a => a.ProjectUuid == choice.Uuid);
-                ProjectTabs.Items.Add(new TabItem { Header = $"{choice.Name}  {count}", Tag = choice.Uuid });
-            }
-            if (!choices.Any(c => c.Uuid == selectedProjectUuid)) selectedProjectUuid = "ALL";
-            ProjectSelector.SelectedValue = selectedProjectUuid;
-            foreach (TabItem item in ProjectTabs.Items)
-                if ((string)item.Tag == selectedProjectUuid) { ProjectTabs.SelectedItem = item; break; }
-        }
-        finally { rebuilding = false; }
+        projectChoices.Clear();
+        projectChoices.Add(new("ALL", Loc.T("AllProjects")));
+        projectChoices.AddRange(inventory.Projects.Select(p => new ProjectChoice(p.Uuid, p.Name)));
+        if (!projectChoices.Any(c => c.Uuid == selectedProjectUuid)) selectedProjectUuid = "ALL";
+        ProjectPickerButton.Content = projectChoices.First(x => x.Uuid == selectedProjectUuid).Name +
+            "  ▾";
+        FilterProjectChoices();
     }
+
+    private void FilterProjectChoices()
+    {
+        var search = ProjectSearchBox?.Text?.Trim() ?? "";
+        ProjectPickerList.ItemsSource = projectChoices
+            .Where(x => search.Length == 0 || x.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
     private void ChangeProject(string uuid)
     {
         if (rebuilding) return;
         selectedProjectUuid = uuid;
-        rebuilding = true;
-        try
-        {
-            ProjectSelector.SelectedValue = uuid;
-            foreach (TabItem item in ProjectTabs.Items)
-                if ((string)item.Tag == uuid) { ProjectTabs.SelectedItem = item; break; }
-        }
-        finally { rebuilding = false; }
+        var choice = projectChoices.FirstOrDefault(x => x.Uuid == uuid);
+        ProjectPickerButton.Content = (choice?.Name ?? Loc.T("AllProjects")) + "  ▾";
+        ProjectPickerPopup.IsOpen = false;
         RenderCards();
     }
-    private void ProjectTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+
+    private void ProjectPicker_Click(object sender, RoutedEventArgs e)
     {
-        if (rebuilding || e.Source != ProjectTabs || ProjectTabs.SelectedItem is not TabItem tab) return;
-        ChangeProject((string)tab.Tag);
+        ProjectSearchBox.Text = "";
+        ProjectPickerPopup.IsOpen = !ProjectPickerPopup.IsOpen;
+        if (ProjectPickerPopup.IsOpen)
+            Dispatcher.BeginInvoke(new Action(() => { ProjectSearchBox.Focus(); Keyboard.Focus(ProjectSearchBox); }));
     }
-    private void ProjectSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void ProjectSearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (rebuilding || ProjectSelector.SelectedItem is not ProjectChoice choice) return;
+        if (ProjectPickerList is not null) FilterProjectChoices();
+    }
+    private void ProjectPickerList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ProjectPickerList.SelectedItem is not ProjectChoice choice) return;
+        ProjectPickerList.SelectedItem = null;
         ChangeProject(choice.Uuid);
     }
     private void Search_Changed(object sender, TextChangedEventArgs e) { if (IsLoaded) RenderCards(); }
@@ -292,7 +297,7 @@ public partial class MainWindow : Window
     private void Grip_Down(object sender, MouseButtonEventArgs e)
     {
         dragOrigin = e.GetPosition(this);
-        dragUuid = (sender as FrameworkElement)?.DataContext is AppCardView c ? c.Uuid : null;
+        dragUuid = (sender as FrameworkElement)?.DataContext is AppCardView c && !c.PositionLocked ? c.Uuid : null;
     }
     private void Grip_Move(object sender, MouseEventArgs e)
     {
@@ -308,7 +313,8 @@ public partial class MainWindow : Window
     {
         if (busy || SearchBox.Text.Length > 0 || StatusFilter.SelectedIndex != 0 || !e.Data.GetDataPresent("CDM_CardUuid")) return;
         if (e.Data.GetData("CDM_CardUuid") is not string sourceUuid || (sender as FrameworkElement)?.DataContext is not AppCardView destination) return;
-        if (!allCards.TryGetValue(sourceUuid, out var source) || source.Group != destination.Group || sourceUuid == destination.Uuid) return;
+        if (!allCards.TryGetValue(sourceUuid, out var source) || source.Group != destination.Group ||
+            source.PositionLocked || destination.PositionLocked || sourceUuid == destination.Uuid) return;
         if (selectedProjectUuid != "ALL" && source.App.ProjectUuid != selectedProjectUuid) return;
         var order = FilterAndOrder(destination.Group).Select(c => c.Uuid).ToList();
         order.Remove(sourceUuid);
@@ -330,6 +336,40 @@ public partial class MainWindow : Window
         RenderCards();
         AddLog(Loc.T("OrderSaved"));
     }
+    private void TogglePositionLock_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as MenuItem)?.DataContext is not AppCardView card) return;
+        var old = card.PositionLocked;
+        card.PositionLocked = !old;
+        if (card.PositionLocked) settings.LockedPositions.Add(card.Uuid);
+        else settings.LockedPositions.Remove(card.Uuid);
+        try { SettingsStore.Save(settings); }
+        catch (Exception ex)
+        {
+            card.PositionLocked = old;
+            if (old) settings.LockedPositions.Add(card.Uuid);
+            else settings.LockedPositions.Remove(card.Uuid);
+            MessageBox.Show(this, ex.Message, Loc.T("VaultSaveFailed"), MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void ToggleDeployLock_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as MenuItem)?.DataContext is not AppCardView card) return;
+        var old = card.DeployLocked;
+        card.DeployLocked = !old;
+        if (card.DeployLocked) { settings.BlockedDeploys.Add(card.Uuid); card.IsSelected = false; }
+        else settings.BlockedDeploys.Remove(card.Uuid);
+        try { SettingsStore.Save(settings); }
+        catch (Exception ex)
+        {
+            card.DeployLocked = old;
+            if (old) settings.BlockedDeploys.Add(card.Uuid);
+            else settings.BlockedDeploys.Remove(card.Uuid);
+            MessageBox.Show(this, ex.Message, Loc.T("VaultSaveFailed"), MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
     private void Settings_Click(object sender, RoutedEventArgs e) => OpenSettings();
     private async void OpenSettings()
@@ -353,8 +393,16 @@ public partial class MainWindow : Window
         UpdateProfileStatus();
         foreach (var app in inventory.Applications)
         {
-            var card = new AppCardView(app, Classifier.Classify(app, settings));
-            if (allCards.TryGetValue(app.Uuid, out var former)) card.UpdateDeploy(former.Latest);
+            var card = new AppCardView(app, Classifier.Classify(app, settings))
+            {
+                PositionLocked = settings.LockedPositions.Contains(app.Uuid),
+                DeployLocked = settings.BlockedDeploys.Contains(app.Uuid)
+            };
+            if (allCards.TryGetValue(app.Uuid, out var former))
+            {
+                card.UpdateDeploy(former.Latest);
+                card.IsSelected = former.IsSelected;
+            }
             allCards[app.Uuid] = card;
         }
         RebuildNavigation();
@@ -376,6 +424,7 @@ public partial class MainWindow : Window
     private async void Deploy_Click(object sender, RoutedEventArgs e)
     {
         if (busy || (sender as FrameworkElement)?.Tag is not AppCardView card) return;
+        if (card.DeployLocked) return;
         var title = Loc.T(card.Group == DeploymentGroup.Production ? "ConfirmationProd" : "ConfirmationTitle");
         var text = Loc.F("ConfirmationText", card.Name, card.App.Project, card.App.Environment, card.Branch).Replace("\\n", "\n");
         if (card.Group == DeploymentGroup.Unknown)
@@ -391,51 +440,36 @@ public partial class MainWindow : Window
     private async void Batch_Click(object sender, RoutedEventArgs e)
     {
         if (busy || !settings.IsConfigured) return;
-        var candidates = allCards.Values.Where(c => c.Group == DeploymentGroup.Staging &&
+        var selected = allCards.Values.Where(c => c.Group == DeploymentGroup.Staging &&
+            c.IsSelected && !c.DeployLocked &&
             (selectedProjectUuid == "ALL" || c.App.ProjectUuid == selectedProjectUuid))
             .OrderBy(c => c.App.Project).ThenBy(c => c.Name).ToList();
-        if (candidates.Count == 0) { MessageBox.Show(this, Loc.T("NoStage")); return; }
-        var selected = ShowBatchSelector(candidates);
-        if (selected is null || selected.Count == 0) return;
-        var projectLabel = selectedProjectUuid == "ALL" ? Loc.T("AllProjectsUpper") : candidates.First().App.Project;
-        if (MessageBox.Show(this, Loc.F("BatchConfirm", selected.Count, projectLabel).Replace("\\n", "\n"),
-                Loc.T("BatchConfirmTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+        if (selected.Count == 0) { MessageBox.Show(this, Loc.T("NoSelectedStaging")); return; }
+        await ConfirmAndDeployStagingAsync(selected);
+    }
+
+    private async void BatchAll_Click(object sender, RoutedEventArgs e)
+    {
+        if (busy || !settings.IsConfigured) return;
+        var all = allCards.Values.Where(c => c.Group == DeploymentGroup.Staging &&
+            !c.DeployLocked &&
+            (selectedProjectUuid == "ALL" || c.App.ProjectUuid == selectedProjectUuid))
+            .OrderBy(c => c.App.Project).ThenBy(c => c.Name).ToList();
+        if (all.Count == 0) { MessageBox.Show(this, Loc.T("NoStage")); return; }
+        await ConfirmAndDeployStagingAsync(all);
+    }
+
+    private async Task ConfirmAndDeployStagingAsync(List<AppCardView> selected)
+    {
+        var projectLabel = selectedProjectUuid == "ALL"
+            ? Loc.T("AllProjectsUpper") : selected.First().App.Project;
+        if (MessageBox.Show(this,
+            Loc.F("BatchConfirm", selected.Count, projectLabel).Replace("\\n", "\n"),
+            Loc.T("BatchConfirmTitle"), MessageBoxButton.YesNo,
+            MessageBoxImage.Question) != MessageBoxResult.Yes) return;
         await DeployQueueAsync(selected);
     }
-    private List<AppCardView>? ShowBatchSelector(List<AppCardView> apps)
-    {
-        var dialog = new Window
-        {
-            Title = Loc.T("BatchTitle"), Owner = this, Width = 650, Height = 550,
-            Background = (Brush)FindResource("Canvas"), Foreground = (Brush)FindResource("Primary"),
-            WindowStartupLocation = WindowStartupLocation.CenterOwner, ShowInTaskbar = false
-        };
-        var root = new DockPanel { Margin = new Thickness(20) };
-        var title = new TextBlock { Text = Loc.T("BatchHeading"), FontSize = 18, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 15) };
-        DockPanel.SetDock(title, Dock.Top); root.Children.Add(title);
-        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
-        DockPanel.SetDock(buttons, Dock.Bottom); root.Children.Add(buttons);
-        var selected = new List<AppCardView>();
-        var cancel = new Button { Content = Loc.T("Cancel"), Style = (Style)FindResource("ActionButton"), Margin = new Thickness(0, 0, 8, 0) };
-        cancel.Click += (_, _) => { dialog.DialogResult = false; dialog.Close(); };
-        var confirm = new Button { Content = Loc.T("ConfirmSelection"), Style = (Style)FindResource("ActionButton"), Background = (Brush)FindResource("Blue") };
-        buttons.Children.Add(cancel); buttons.Children.Add(confirm);
-        var checks = new List<(CheckBox checkbox, AppCardView card)>();
-        var list = new StackPanel();
-        foreach (var app in apps)
-        {
-            var checkbox = new CheckBox { Content = $"{app.App.Project} · {app.Name}", IsChecked = true, Margin = new Thickness(0, 0, 0, 12), Foreground = (Brush)FindResource("Primary") };
-            checks.Add((checkbox, app)); list.Children.Add(checkbox);
-        }
-        confirm.Click += (_, _) =>
-        {
-            selected = checks.Where(x => x.checkbox.IsChecked == true).Select(x => x.card).ToList();
-            dialog.DialogResult = true; dialog.Close();
-        };
-        root.Children.Add(new ScrollViewer { Content = list, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
-        dialog.Content = root;
-        return dialog.ShowDialog() == true ? selected : null;
-    }
+
     private async Task DeployQueueAsync(IReadOnlyList<AppCardView> cards)
     {
         if (busy) return;
@@ -449,6 +483,11 @@ public partial class MainWindow : Window
             foreach (var card in cards)
             {
                 operation.Token.ThrowIfCancellationRequested();
+                if (settings.BlockedDeploys.Contains(card.Uuid))
+                {
+                    AddLog(Loc.F("DeploySkippedLocked", card.Name));
+                    continue;
+                }
                 // Revalidate the SSH tunnel before each deployment, not just once per queue.
                 await EnsureConnectionAsync(operation.Token);
                 AddLog($"POST /deploy: {card.App.Project}/{card.Name} ({card.Uuid})");

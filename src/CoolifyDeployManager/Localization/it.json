@@ -206,5 +206,12 @@
   "SetupHostMatches": "Sì, corrisponde",
   "SetupManualAuthorizeLabel": "Non hai un alias SSH? Copia questo comando nella console del VPS (come utente SSH):",
   "SetupCopyManualAuthorize": "Copia comando VPS",
-  "ProfileIdentity": "Utente: {0}  ·  VPS: {1}"
+  "ProfileIdentity": "Utente: {0}  ·  VPS: {1}",
+  "LockPosition": "Blocca posizione",
+  "LockDeploy": "Blocca deploy",
+  "SelectForDeploy": "Seleziona per deploy multiplo",
+  "AllStaging": "Deploy TUTTI gli staging",
+  "NoSelectedStaging": "Seleziona almeno uno staging usando le caselle sulle card.",
+  "DeploySkippedLocked": "Saltato (deploy bloccato): {0}",
+  "SearchProjects": "Cerca progetto..."
 }

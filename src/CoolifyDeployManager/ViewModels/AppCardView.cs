@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
+using System.Windows;
 
 namespace CoolifyDeployManager;
 
@@ -30,6 +31,14 @@ internal sealed class AppCardView : INotifyPropertyChanged
     public bool Running => RunningLabel == "RUNNING";
     public bool HasProblem => RunningLabel == "STOPPED" || HealthLabel == "UNHEALTHY";
     public bool Busy { get; set; }
+    public Visibility SelectionVisibility => Group == DeploymentGroup.Staging ? Visibility.Visible : Visibility.Collapsed;
+    private bool isSelected;
+    public bool IsSelected { get => isSelected; set { if (isSelected == value) return; isSelected = value; Changed(); } }
+    private bool positionLocked;
+    public bool PositionLocked { get => positionLocked; set { if (positionLocked == value) return; positionLocked = value; Changed(); } }
+    private bool deployLocked;
+    public bool DeployLocked { get => deployLocked; set { if (deployLocked == value) return; deployLocked = value; Changed(); Changed(nameof(CanDeploy)); } }
+    public bool CanDeploy => Group != DeploymentGroup.Unknown && !DeployLocked;
     public AppCardView(CoolifyApplication app, DeploymentGroup group)
     {
         App = app; Group = group;
