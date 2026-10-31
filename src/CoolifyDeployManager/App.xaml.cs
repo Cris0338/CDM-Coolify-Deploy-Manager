@@ -57,11 +57,10 @@ public partial class App : Application
                         throw new InvalidDataException("Clone upgrade failed to preserve embedded credentials.");
                     var backup = target + "." + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".bak";
                     File.Copy(target, backup, overwrite: false);
-                    // Windows may retain a transient image/antivirus handle just
-                    // after a smoke-test clone exits. Move the completed EXE into
-                    // place on the same volume; never write directly into the
-                    // destination while it may still be in use.
-                    // The original stays intact on any sharing violation.
+                    // Windows can transiently lock an EXE after it exits.
+                    // The replacement is atomic and stays on the same volume;
+                    // the timestamped backup above is already recoverable.
+                    // Exhausted retries must fail rather than report success.
                     const int maxAttempts = 40;
                     for (int attempt = 0; ; attempt++)
                     {
