@@ -174,7 +174,7 @@
   "SetupRemoteHost": "Indirizzo Coolify sul VPS",
   "SetupGenerateKey": "1. Genera chiave SSH dedicata",
   "SetupCopyPublic": "Copia chiave pubblica",
-  "SetupAuthorizeHelp": "2. Autorizza la chiave pubblica sul VPS. Se SSH è già configurato in Windows, usa il suo alias; altrimenti aggiungi la chiave in ~/.ssh/authorized_keys.",
+  "SetupAuthorizeHelp": "2. Autorizza la chiave pubblica SSH dedicata sul VPS:",
   "SetupAuthorizeAlias": "Autorizza tramite alias SSH",
   "SetupScanHost": "3. Verifica impronta SSH del VPS",
   "SetupSshInitial": "Servono una chiave dedicata e l'identità del server verificata.",
@@ -204,7 +204,7 @@
   "SetupHostCopied": "Copiato",
   "SetupHostNoMatch": "No, annulla",
   "SetupHostMatches": "Sì, corrisponde",
-  "SetupManualAuthorizeLabel": "Non hai un alias SSH? Copia questo comando nella console del VPS (come utente SSH):",
+  "SetupManualAuthorizeLabel": "Copia il comando e incollalo nel terminale del VPS, collegato con l'utente SSH indicato sopra. Prima genera la chiave dedicata.",
   "SetupCopyManualAuthorize": "Copia comando VPS",
   "ProfileIdentity": "Utente: {0}  ·  VPS: {1}",
   "LockPosition": "Blocca posizione",
@@ -215,5 +215,9 @@
   "DeploySkippedLocked": "Saltato (deploy bloccato): {0}",
   "SearchProjects": "Cerca progetto...",
   "DropToEnd": "Trascina qui per spostare una card alla fine di questa sezione",
-  "LockedPositionPrevented": "Spostamento annullato: la posizione di un'altra card è bloccata."
+  "LockedPositionPrevented": "Spostamento annullato: la posizione di un'altra card è bloccata.",
+  "SetupHasAliasQuestion": "Hai già un alias SSH funzionante configurato su questo PC Windows?",
+  "SetupHasAliasYes": "Sì, ho un alias",
+  "SetupHasAliasNo": "No, non ce l'ho",
+  "SetupAliasEntryHint": "Inserisci il nome del tuo alias SSH Windows (per esempio contabo) e autorizza la chiave dedicata di CDM."
 }

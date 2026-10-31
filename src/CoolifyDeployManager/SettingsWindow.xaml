@@ -63,14 +63,24 @@
               </StackPanel>
               <TextBox x:Name="PublicKeyText" IsReadOnly="True" TextWrapping="Wrap" Height="60" VerticalScrollBarVisibility="Auto"/>
               <TextBlock Text="{DynamicResource L.SetupAuthorizeHelp}" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,8"/>
-              <TextBlock Text="{DynamicResource L.SetupManualAuthorizeLabel}" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,6"/>
-              <DockPanel Margin="0,0,0,12" LastChildFill="True">
-                <Button DockPanel.Dock="Right" Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupCopyManualAuthorize}" Click="CopyManualCommand_Click" Margin="8,0,0,0" MinWidth="125"/>
-                <TextBox x:Name="ManualAuthorizeCommand" IsReadOnly="True" TextWrapping="Wrap" Height="65" VerticalScrollBarVisibility="Auto"/>
-              </DockPanel>
-              <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBox x:Name="ExistingSshAlias" Width="175" ToolTip="Existing SSH alias, e.g. contabo"/>
-                <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupAuthorizeAlias}" Click="AuthorizeKey_Click" Margin="8,0,0,0"/>
+              <TextBlock Text="{DynamicResource L.SetupHasAliasQuestion}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"/>
+              <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                <RadioButton x:Name="HasSshAliasNo" GroupName="SshAuthorization" Content="{DynamicResource L.SetupHasAliasNo}" IsChecked="True" Checked="AuthorizationMode_Changed" Foreground="{StaticResource Primary}" Margin="0,0,26,0"/>
+                <RadioButton x:Name="HasSshAliasYes" GroupName="SshAuthorization" Content="{DynamicResource L.SetupHasAliasYes}" Checked="AuthorizationMode_Changed" Foreground="{StaticResource Primary}"/>
+              </StackPanel>
+              <StackPanel x:Name="ManualAuthorizationSection">
+                <TextBlock Text="{DynamicResource L.SetupManualAuthorizeLabel}" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                <DockPanel Margin="0,0,0,12" LastChildFill="True">
+                  <Button x:Name="ManualCopyButton" DockPanel.Dock="Right" Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupCopyManualAuthorize}" Click="CopyManualCommand_Click" Margin="8,0,0,0" MinWidth="125" IsEnabled="False"/>
+                  <TextBox x:Name="ManualAuthorizeCommand" IsReadOnly="True" TextWrapping="Wrap" Height="65" VerticalScrollBarVisibility="Auto"/>
+                </DockPanel>
+              </StackPanel>
+              <StackPanel x:Name="AliasAuthorizationSection" Visibility="Collapsed">
+                <TextBlock Text="{DynamicResource L.SetupAliasEntryHint}" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,7"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                  <TextBox x:Name="ExistingSshAlias" Width="175" ToolTip="Existing SSH alias, e.g. contabo"/>
+                  <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupAuthorizeAlias}" Click="AuthorizeKey_Click" Margin="8,0,0,0"/>
+                </StackPanel>
               </StackPanel>
               <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupScanHost}" Click="ScanHostKey_Click" HorizontalAlignment="Left"/>
               <TextBlock x:Name="SshStatus" Text="{DynamicResource L.SetupSshInitial}" FontSize="11" Foreground="{StaticResource Warning}" TextWrapping="Wrap" Margin="0,7,0,0"/>

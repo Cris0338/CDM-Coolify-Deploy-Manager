@@ -174,7 +174,7 @@
   "SetupRemoteHost": "Coolify address on VPS",
   "SetupGenerateKey": "1. Generate dedicated SSH key",
   "SetupCopyPublic": "Copy public key",
-  "SetupAuthorizeHelp": "2. Authorize the public key on the VPS. If Windows SSH is already configured, use its alias; otherwise add the key manually to ~/.ssh/authorized_keys.",
+  "SetupAuthorizeHelp": "2. Authorize the dedicated SSH public key on the VPS:",
   "SetupAuthorizeAlias": "Authorize using SSH alias",
   "SetupScanHost": "3. Scan and verify VPS host fingerprint",
   "SetupSshInitial": "Dedicated key and verified server identity are required.",
@@ -204,7 +204,7 @@
   "SetupHostCopied": "Copied",
   "SetupHostNoMatch": "No, cancel",
   "SetupHostMatches": "Yes, matches",
-  "SetupManualAuthorizeLabel": "No existing SSH alias? Copy this command and run it in the server terminal (as the SSH user):",
+  "SetupManualAuthorizeLabel": "Copy the command below and execute it in the VPS terminal, logged in as the SSH user shown above. First generate the dedicated key.",
   "SetupCopyManualAuthorize": "Copy VPS command",
   "ProfileIdentity": "User: {0}  ·  VPS: {1}",
   "LockPosition": "Lock card position",
@@ -215,5 +215,9 @@
   "DeploySkippedLocked": "Skipped (deployment locked): {0}",
   "SearchProjects": "Search projects...",
   "DropToEnd": "Drop here to move a card to the end of this section",
-  "LockedPositionPrevented": "Move cancelled: another card has a locked position."
+  "LockedPositionPrevented": "Move cancelled: another card has a locked position.",
+  "SetupHasAliasQuestion": "Do you already have a working SSH alias configured on this Windows PC?",
+  "SetupHasAliasYes": "Yes, I have an alias",
+  "SetupHasAliasNo": "No, I do not",
+  "SetupAliasEntryHint": "Enter the name of your existing Windows SSH alias (for example, contabo), then authorize the dedicated CDM key."
 }

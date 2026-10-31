@@ -28,7 +28,9 @@ public partial class SettingsWindow : Window
         ReadToken.Password = original.ReadToken;
         SshAlias.Text = original.SshHost;
         SshUsername.Text = original.SshUsername;
-        ExistingSshAlias.Text = original.SshHost;
+        // A VPS hostname is NOT necessarily a Windows SSH alias.
+        // Keep "No alias" as the safe, portable default.
+        ExistingSshAlias.Text = "";
         SshPort.Text = original.SshPort.ToString();
         LocalPort.Text = original.SshLocalPort.ToString();
         RemotePort.Text = original.SshRemotePort.ToString();
@@ -45,6 +47,20 @@ public partial class SettingsWindow : Window
         SshStatus.Text = privateKey.Length > 0
             ? Loc.T("SetupSshLoaded") : Loc.T("SetupGenerateHint");
         UpdateMode();
+        UpdateAuthorizationMode();
+    }
+
+    private void AuthorizationMode_Changed(object sender, RoutedEventArgs e) =>
+        UpdateAuthorizationMode();
+
+    private void UpdateAuthorizationMode()
+    {
+        if (HasSshAliasYes is null || ManualAuthorizationSection is null ||
+            AliasAuthorizationSection is null) return;
+
+        bool hasAlias = HasSshAliasYes.IsChecked == true;
+        ManualAuthorizationSection.Visibility = hasAlias ? Visibility.Collapsed : Visibility.Visible;
+        AliasAuthorizationSection.Visibility = hasAlias ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void Mode_Changed(object sender, SelectionChangedEventArgs e) => UpdateMode();
@@ -207,6 +223,7 @@ public partial class SettingsWindow : Window
         if (parts.Length < 2 || parts[0] != "ssh-ed25519")
         {
             ManualAuthorizeCommand.Text = "";
+            if (ManualCopyButton is not null) ManualCopyButton.IsEnabled = false;
             return;
         }
         var key = parts[0] + " " + parts[1];
@@ -215,6 +232,7 @@ public partial class SettingsWindow : Window
             ManualAuthorizeCommand.Text = "";
             return;
         }
+        if (ManualCopyButton is not null) ManualCopyButton.IsEnabled = true;
         ManualAuthorizeCommand.Text = "umask 077; mkdir -p ~/.ssh; touch ~/.ssh/authorized_keys; " +
             $"grep -qxF '{key}' ~/.ssh/authorized_keys || printf '%s\\n' '{key}' >> ~/.ssh/authorized_keys";
     }

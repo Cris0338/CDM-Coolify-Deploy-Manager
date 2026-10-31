@@ -174,7 +174,7 @@
   "SetupRemoteHost": "Adresse Coolify sur le VPS",
   "SetupGenerateKey": "1. Générer une clé SSH dédiée",
   "SetupCopyPublic": "Copier la clé publique",
-  "SetupAuthorizeHelp": "2. Autorisez la clé publique sur le VPS. Si SSH est déjà configuré sous Windows, utilisez son alias ; sinon ajoutez la clé dans ~/.ssh/authorized_keys.",
+  "SetupAuthorizeHelp": "2. Autorisez la clé publique SSH dédiée sur le VPS :",
   "SetupAuthorizeAlias": "Autoriser via un alias SSH",
   "SetupScanHost": "3. Vérifier l'empreinte SSH du VPS",
   "SetupSshInitial": "Une clé dédiée et une identité de serveur vérifiée sont nécessaires.",
@@ -204,7 +204,7 @@
   "SetupHostCopied": "Copié",
   "SetupHostNoMatch": "Non, annuler",
   "SetupHostMatches": "Oui, identiques",
-  "SetupManualAuthorizeLabel": "Pas d'alias SSH existant ? Copiez cette commande dans le terminal du serveur (avec l'utilisateur SSH) :",
+  "SetupManualAuthorizeLabel": "Copiez cette commande et exécutez-la dans le terminal du VPS, connecté avec l'utilisateur SSH indiqué plus haut. Générez d'abord la clé dédiée.",
   "SetupCopyManualAuthorize": "Copier la commande VPS",
   "ProfileIdentity": "Utilisateur : {0}  ·  VPS : {1}",
   "LockPosition": "Bloquer la position",
@@ -215,5 +215,9 @@
   "DeploySkippedLocked": "Ignoré (déploiement bloqué) : {0}",
   "SearchProjects": "Rechercher un projet...",
   "DropToEnd": "Déposez ici pour déplacer une carte à la fin de cette section",
-  "LockedPositionPrevented": "Déplacement annulé : une autre carte a une position verrouillée."
+  "LockedPositionPrevented": "Déplacement annulé : une autre carte a une position verrouillée.",
+  "SetupHasAliasQuestion": "Avez-vous déjà un alias SSH fonctionnel sur ce PC Windows ?",
+  "SetupHasAliasYes": "Oui, j'ai un alias",
+  "SetupHasAliasNo": "Non, je n'en ai pas",
+  "SetupAliasEntryHint": "Saisissez votre alias SSH Windows existant (par exemple contabo), puis autorisez la clé dédiée à CDM."
 }
