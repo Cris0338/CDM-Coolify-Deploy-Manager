@@ -263,6 +263,11 @@ public partial class MainWindow : Window
     private void Search_Changed(object sender, TextChangedEventArgs e) { if (IsLoaded) RenderCards(); }
     private void Filter_Changed(object sender, SelectionChangedEventArgs e) { if (IsLoaded) RenderCards(); }
     private string OrderKey(DeploymentGroup group) => selectedProjectUuid + "|" + group;
+
+    private bool KeepsFixedPositions(IReadOnlyList<string> before, IReadOnlyList<string> after) =>
+        before.Count == after.Count &&
+        !before.Where((uuid, index) => settings.LockedPositions.Contains(uuid) &&
+            !uuid.Equals(after[index], StringComparison.OrdinalIgnoreCase)).Any();
     private IEnumerable<AppCardView> FilterAndOrder(DeploymentGroup group)
     {
         var text = SearchBox.Text?.Trim() ?? "";
@@ -331,11 +336,17 @@ public partial class MainWindow : Window
         if (!allCards.TryGetValue(sourceUuid, out var source) || source.Group != destination.Group ||
             source.PositionLocked || destination.PositionLocked || sourceUuid == destination.Uuid) return;
         if (selectedProjectUuid != "ALL" && source.App.ProjectUuid != selectedProjectUuid) return;
-        var order = FilterAndOrder(destination.Group).Select(c => c.Uuid).ToList();
+        var before = FilterAndOrder(destination.Group).Select(c => c.Uuid).ToList();
+        var order = new List<string>(before);
         order.Remove(sourceUuid);
         var position = order.IndexOf(destination.Uuid);
         if (position < 0) return;
         order.Insert(position, sourceUuid);
+        if (!KeepsFixedPositions(before, order))
+        {
+            AddLog(Loc.T("LockedPositionPrevented"));
+            return;
+        }
         var key = OrderKey(destination.Group);
         settings.CardOrders.TryGetValue(key, out var previous);
         settings.CardOrders[key] = order;
@@ -376,9 +387,15 @@ public partial class MainWindow : Window
             card.PositionLocked || card.Group != group) return;
         e.Handled = true;
         // Drop on an unused slot in this section appends within the same group.
-        var order = FilterAndOrder(group).Select(c => c.Uuid).ToList();
+        var before = FilterAndOrder(group).Select(c => c.Uuid).ToList();
+        var order = new List<string>(before);
         order.Remove(uuid);
         order.Add(uuid);
+        if (!KeepsFixedPositions(before, order))
+        {
+            AddLog(Loc.T("LockedPositionPrevented"));
+            return;
+        }
         var key = OrderKey(group);
         settings.CardOrders.TryGetValue(key, out var previous);
         settings.CardOrders[key] = order;

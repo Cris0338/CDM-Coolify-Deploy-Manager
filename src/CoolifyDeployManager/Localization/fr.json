@@ -214,5 +214,6 @@
   "NoSelectedStaging": "Sélectionnez au moins une application staging avec les cases à cocher.",
   "DeploySkippedLocked": "Ignoré (déploiement bloqué) : {0}",
   "SearchProjects": "Rechercher un projet...",
-  "DropToEnd": "Déposez ici pour déplacer une carte à la fin de cette section"
+  "DropToEnd": "Déposez ici pour déplacer une carte à la fin de cette section",
+  "LockedPositionPrevented": "Déplacement annulé : une autre carte a une position verrouillée."
 }
