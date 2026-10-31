@@ -71,19 +71,13 @@ internal sealed class SshTunnel : IAsyncDisposable
             "-L", $"127.0.0.1:{settings.SshLocalPort}:{settings.SshRemoteHost}:{settings.SshRemotePort}",
             settings.SshHost
         }) start.ArgumentList.Add(arg);
+        // Keep the stderr reader so that an early SSH failure can be shown in
+        // the wizard instead of the unhelpful "tunnel exited" message.
+        Task<string>? sshErrors = null;
         try
         {
             process = Process.Start(start) ?? throw new IOException("Unable to start ssh.exe.");
-            var ownedProcess = process;
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    string errors = await ownedProcess.StandardError.ReadToEndAsync();
-                    if (!string.IsNullOrWhiteSpace(errors)) StatusChanged?.Invoke("SSH: " + errors.Trim());
-                }
-                catch (Exception) { /* The process may exit while being disposed. */ }
-            });
+            sshErrors = process.StandardError.ReadToEndAsync();
         }
         catch (System.ComponentModel.Win32Exception ex)
         {
@@ -98,7 +92,16 @@ internal sealed class SshTunnel : IAsyncDisposable
             for (int attempt = 0; attempt < 25; attempt++)
             {
                 ct.ThrowIfCancellationRequested();
-                if (!IsRunning) throw new IOException("The SSH tunnel exited. Verify the SSH key, known_hosts and configured host alias.");
+                if (!IsRunning)
+                {
+                    var exitCode = process?.ExitCode;
+                    string detail;
+                    try { detail = sshErrors is null ? "" : (await sshErrors).Trim(); }
+                    catch (IOException) { detail = "Unable to read SSH error output."; }
+                    throw new IOException(
+                        $"SSH tunnel exited (ssh.exe code {exitCode})." +
+                        (detail.Length > 0 ? "\n\nOpenSSH: " + detail : "\nNo diagnostic output from OpenSSH."));
+                }
                 if (await HealthCheckAsync(settings.SshLocalPort, ct))
                 {
                     StatusChanged?.Invoke("SSH tunnel verified: " + LocalUrl);
