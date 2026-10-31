@@ -51,5 +51,8 @@
   "DaysAgo": "{0}日前",
   "AlreadyBusy": "別の処理を実行中です。",
   "SettingsSaved": "設定を保存しました（トークンは非表示）。",
-  "ErrorPrefix": "エラー: "
+  "ErrorPrefix": "エラー: ",
+  "SupportTitle": "🍺 Cris0338 にビールをおごる！",
+  "SupportDescription": "CDM は無料です。気に入って開発を応援したい場合は、好きな金額を選んで支援できます。支援は完全に任意です。",
+  "SupportOpenPayPal": "PayPal.Me で応援する"
 }

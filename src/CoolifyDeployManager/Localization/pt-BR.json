@@ -51,5 +51,8 @@
   "DaysAgo": "Há {0} dias",
   "AlreadyBusy": "Uma operação já está em andamento.",
   "SettingsSaved": "Configurações salvas (tokens ocultos).",
-  "ErrorPrefix": "ERRO: "
+  "ErrorPrefix": "ERRO: ",
+  "SupportTitle": "🍺 Pague uma cerveja para Cris0338!",
+  "SupportDescription": "O CDM é gratuito. Se você gosta dele e quer apoiar o desenvolvimento, escolha o valor que desejar. A contribuição é totalmente voluntária.",
+  "SupportOpenPayPal": "Apoiar pelo PayPal.Me"
 }

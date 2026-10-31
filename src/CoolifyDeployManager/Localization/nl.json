@@ -51,5 +51,8 @@
   "DaysAgo": "{0} dagen geleden",
   "AlreadyBusy": "Er is al een bewerking actief.",
   "SettingsSaved": "Instellingen opgeslagen (tokens verborgen).",
-  "ErrorPrefix": "FOUT: "
+  "ErrorPrefix": "FOUT: ",
+  "SupportTitle": "🍺 Trakteer Cris0338 op een biertje!",
+  "SupportDescription": "CDM is gratis. Vind je het handig en wil je de ontwikkeling steunen? Kies zelf een bedrag. Een bijdrage is geheel vrijwillig.",
+  "SupportOpenPayPal": "Steunen via PayPal.Me"
 }

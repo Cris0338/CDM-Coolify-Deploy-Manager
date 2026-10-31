@@ -51,5 +51,8 @@
   "DaysAgo": "{0}일 전",
   "AlreadyBusy": "이미 작업이 진행 중입니다.",
   "SettingsSaved": "설정 저장됨 (토큰 숨김).",
-  "ErrorPrefix": "오류: "
+  "ErrorPrefix": "오류: ",
+  "SupportTitle": "🍺 Cris0338에게 맥주 한 잔 사주기!",
+  "SupportDescription": "CDM은 무료입니다. 마음에 들고 개발을 응원하고 싶다면 원하는 금액을 선택해 주세요. 후원은 전적으로 자발적입니다.",
+  "SupportOpenPayPal": "PayPal.Me로 후원하기"
 }

@@ -51,5 +51,8 @@
   "DaysAgo": "{0} 天前",
   "AlreadyBusy": "已有操作正在进行。",
   "SettingsSaved": "设置已保存（令牌已隐藏）。",
-  "ErrorPrefix": "错误："
+  "ErrorPrefix": "错误：",
+  "SupportTitle": "🍺 请 Cris0338 喝杯啤酒！",
+  "SupportDescription": "CDM 完全免费。如果你喜欢它并希望支持后续开发，可以自由选择任意金额。支持完全出于自愿。",
+  "SupportOpenPayPal": "通过 PayPal.Me 支持"
 }

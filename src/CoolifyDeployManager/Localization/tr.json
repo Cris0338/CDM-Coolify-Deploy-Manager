@@ -51,5 +51,8 @@
   "DaysAgo": "{0} gün önce",
   "AlreadyBusy": "Zaten bir işlem devam ediyor.",
   "SettingsSaved": "Ayarlar kaydedildi (tokenlar gizli).",
-  "ErrorPrefix": "HATA: "
+  "ErrorPrefix": "HATA: ",
+  "SupportTitle": "🍺 Cris0338'e bir bira ısmarla!",
+  "SupportDescription": "CDM ücretsizdir. Beğendiysen ve geliştirilmesine destek olmak istiyorsan istediğin tutarı seçebilirsin. Destek tamamen gönüllüdür.",
+  "SupportOpenPayPal": "PayPal.Me ile destek ol"
 }

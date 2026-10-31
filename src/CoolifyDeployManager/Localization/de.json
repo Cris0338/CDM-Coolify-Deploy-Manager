@@ -51,5 +51,8 @@
   "DaysAgo": "Vor {0} Tagen",
   "AlreadyBusy": "Es läuft bereits ein Vorgang.",
   "SettingsSaved": "Einstellungen gespeichert (Tokens verborgen).",
-  "ErrorPrefix": "FEHLER: "
+  "ErrorPrefix": "FEHLER: ",
+  "SupportTitle": "🍺 Spendiere Cris0338 ein Bier!",
+  "SupportDescription": "CDM ist kostenlos. Wenn es dir gefällt und du die Entwicklung unterstützen möchtest, wähle einen beliebigen Betrag. Das ist völlig freiwillig.",
+  "SupportOpenPayPal": "Über PayPal.Me unterstützen"
 }
