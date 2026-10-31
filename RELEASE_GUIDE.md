@@ -24,7 +24,7 @@ The script performs the full local build and smoke tests, checks that the binary
 
 For this **v2.2.1 pre-release**, the owner explicitly accepted the current Windows and live-SSH validation, deferring an intentional staging deployment and a second-PC portability test to normal future use. Label it **pre-release**, not a fully certified stable release. Do not imply these outstanding checks passed. For later stable releases, complete [CHECKLIST_TEST_WPF.md](CHECKLIST_TEST_WPF.md), including a deliberate staging deployment.
 
-**Source provenance:** the owner-tested Windows EXE reports source Git commit `56ec905c0b6894898a78fc9a92eba93b7925593a`. Target the tag `v2.2.1` at that exact commit if publishing this verified source revision. Later documentation commits do not change its executable code. After packaging, verify the advertised SHA256 checksum matches the actual three uploaded files. Never attach binaries from older 2.2.0 packages. Release tag, EXE binary, and license must agree.
+**Source provenance:** the owner's first accepted binary was built from `56ec905c0b6894898a78fc9a92eba93b7925593a`. Subsequent commits are documentation-only. **When running `PACKAGE_RELEASE.ps1` after pulling the final branch, stamp the generic EXE from that latest checked-out commit and tag `v2.2.1` at the SAME commit reported by its smoke test** (ideally the current `main` head). Do not tag the earlier tested SHA if the final packaged EXE instead identifies a newer documentation-only SHA. After packaging, compare SHA256 with the actual assets; never attach binaries from older 2.2.0 packages. Release tag, EXE binary, and license must agree.
 
 ## Publishing via GitHub web interface (manual)
 
@@ -36,6 +36,17 @@ For this **v2.2.1 pre-release**, the owner explicitly accepted the current Windo
 6. Use **Save draft** to check the files and release details. For 2.2.1, explicitly **mark as pre-release**, since real staging deployment and cross-PC validation remain pending. Then choose **Publish release** when the three generic assets are present and checked.
 
 GitHub's automatically generated Source code (zip) is NOT the Windows program; use the separately uploaded assets.
+
+## Optional GitHub CLI publication (only after packaging)
+
+If authenticated `gh` is installed on the same Windows computer, run this from the repository root **only after** the packaging script reports success, the working branch is the same source revision as `main`, and you have checked the three exact assets:
+
+```powershell
+$sha = (git rev-parse HEAD).Trim()
+gh release create v2.2.1 .\release-artifacts\CDM.exe .\release-artifacts\CDM-2.2.1-win-x64.zip .\release-artifacts\CDM-2.2.1-SHA256.txt --repo Cris0338/CDM-Coolify-Deploy-Manager --target $sha --title "CDM 2.2.1 - Windows portable (pre-release)" --notes-file .\RELEASE_NOTES_2.2.1.md --prerelease
+```
+
+Never use a wildcard such as `portable\*` or `release-artifacts\*` for uploads. Do not run this command twice without checking whether GitHub already created the tag/release. If `gh` is unavailable, use the GitHub web UI steps above.
 
 ## Easy links after publication
 
