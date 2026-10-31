@@ -119,7 +119,8 @@ public partial class App : Application
              e.Args[0] == "--verify-template-empty" ||
              e.Args[0] == "--save-self-test-clone" ||
              e.Args[0] == "--verify-saved-self-test-clone" ||
-             e.Args[0] == "--verify-health-viewmodel"))
+             e.Args[0] == "--verify-health-viewmodel" ||
+             e.Args[0] == "--verify-tunnel-recovery-policy"))
         {
             try
             {
@@ -162,6 +163,32 @@ public partial class App : Application
                         throw new InvalidDataException(
                             "An updater started before the disposable clone exited.");
                     File.WriteAllText(e.Args[1], "CDM-PENDING-STAGED");
+                }
+                else if (e.Args[0] == "--verify-tunnel-recovery-policy")
+                {
+                    static bool Eligible(ConnectionMode mode, bool configured,
+                        bool busy, bool running, bool recovering, bool closing) =>
+                        MainWindow.ShouldRecoverManagedTunnel(mode, configured,
+                            busy, running, recovering, closing);
+                    if (!Eligible(ConnectionMode.ManagedSshTunnel, true, false,
+                            false, false, false) ||
+                        Eligible(ConnectionMode.ManagedSshTunnel, true, false,
+                            true, false, false) ||
+                        Eligible(ConnectionMode.ManagedSshTunnel, true, true,
+                            false, false, false) ||
+                        Eligible(ConnectionMode.ManagedSshTunnel, false, false,
+                            false, false, false) ||
+                        Eligible(ConnectionMode.ManagedSshTunnel, true, false,
+                            false, true, false) ||
+                        Eligible(ConnectionMode.ManagedSshTunnel, true, false,
+                            false, false, true) ||
+                        Eligible(ConnectionMode.Https, true, false,
+                            false, false, false) ||
+                        Eligible(ConnectionMode.ExternalLocalTunnel, true, false,
+                            false, false, false))
+                        throw new InvalidDataException(
+                            "SSH auto-recovery policy unexpectedly enables or blocks a reconnect.");
+                    File.WriteAllText(e.Args[1], "CDM-TUNNEL-RECOVERY-POLICY-OK");
                 }
                 else if (e.Args[0] == "--verify-health-viewmodel")
                 {
