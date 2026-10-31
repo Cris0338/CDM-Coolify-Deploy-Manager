@@ -156,6 +156,10 @@ internal static class ExecutableProfile
             "catch { try { [IO.File]::WriteAllText($errorPath, " +
             "'CDM update helper failed: ' + $_.Exception.GetType().Name + " +
             "' - ' + $_.Exception.Message) } catch { }; exit 1 }";
+        // Windows PowerShell's -EncodedCommand avoids argument-boundary and
+        // quoting differences for paths containing spaces or apostrophes.
+        // This contains only local paths and code, never credential values.
+        var encodedCommand = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
         var start = new ProcessStartInfo("powershell.exe")
         {
             UseShellExecute = false,
@@ -165,7 +169,7 @@ internal static class ExecutableProfile
         foreach (var argument in new[]
         {
             "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
-            "-WindowStyle", "Hidden", "-Command", script
+            "-WindowStyle", "Hidden", "-EncodedCommand", encodedCommand
         }) start.ArgumentList.Add(argument);
         using var process = Process.Start(start)
             ?? throw new IOException("Unable to launch the detached profile-save helper.");
