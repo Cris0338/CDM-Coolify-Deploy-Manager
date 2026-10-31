@@ -1,93 +1,81 @@
 # CDM — Coolify Deploy Manager
 
-**Created by [Cris0338](https://github.com/Cris0338)** · © 2026 Cris0338 · [MIT License](LICENSE)
+**Created by [Cris0338](https://github.com/Cris0338)** · © 2026 Cris0338 · [CDM Free Redistribution License v1.0](LICENSE)  
+**Free to use, including at work · Free to share · Not for resale · Voluntary support welcome**
 
-CDM is an **independent, unofficial** Windows 10/11 (x64) desktop tool for managing [Coolify](https://coolify.io/) deployments. It is not affiliated with Coolify.
+CDM is an independent, unofficial **Windows 10/11 x64** application for managing [Coolify](https://coolify.io/) through its API. It is not affiliated with or endorsed by Coolify.
 
-## Dashboard
+## What CDM does
 
-- Project and environment discovery through Coolify REST API.
-- Staging, production and unclassified application cards, status, branches and recent deploys.
-- Sequential staging deployments, confirmations and activity log.
-- Integrated connection setup and localized dashboard (English, French and Italian complete for the legacy UI; other languages are previews).
+- Discovers projects, applications, branches, deployment histories, and health states.
+- Separates staging, production, and unclassified applications without deploying anything automatically.
+- Filters projects with a searchable dropdown; filters applications by name/status.
+- Provides per-card staging deploy, **Deploy selected staging** using checkboxes, and **Deploy ALL staging** in the current project. Each operation needs explicit confirmation; blocked deployments are skipped.
+- Provides a card context menu for persistent **Lock position** and **Block deployment** options.
+- Reorders cards within their own section with animated transitions; the blank drop target sends a card to the end of that section. **Arbitrary persistent empty grid cells are not implemented yet.**
+- Offers English, French and Italian complete translations, plus 11 languages with English fallback.
+- Opens with the official CDM logo, animated electron orbit, particle burst and transparent splash (approximately three seconds).
 
-## Your own portable executable (2.2.0 development preview)
+## Two different executables — the key concept
 
-The distributed **`CDM.exe` is an unconfigured template**. On every launch, it ignores all older user configuration files and opens a blank guided connection setup; it never connects automatically. After verifying the connection and the token, it creates and launches:
+| File | What it contains | Startup |
+| --- | --- | --- |
+| `CDM.exe` | Generic application, **no server configuration or credentials** | Always opens a blank setup wizard |
+| `CDM-<WindowsUser>-<ServerLabel>.exe` | Personalized clone with server, READ+DEPLOY token, language, SSH key/host fingerprint if SSH is enabled, and layout settings | Connects with its embedded profile automatically |
 
-`CDM-<WindowsUser>-<ServerLabel>.exe`
+**There is no persistent `settings.json`, `CDM.profile`, password vault, or DPAPI configuration.** CDM does **not** read or migrate settings from earlier releases or from Windows AppData. The personalized clone's profile is appended to the EXE itself. Its settings and UI locks are re-embedded when saved. The generic template stays empty on every launch.
 
-The configured clone contains the server address, one READ+DEPLOY token, selected language, application layout and — for SSH mode — a dedicated private SSH key plus the pinned server host key. It needs **no profile password, user configuration file or prior SSH alias** on the next Windows computer. You can copy just the clone EXE.
+**The profile is portable, NOT encrypted.** Anyone who obtains your personalized EXE (or a `.bak` copy) can extract its API token and private SSH key. Keep personal clones and their backups private. Distribute **only the generic `CDM.exe`**.
 
-If settings or card order changes, CDM stages a new executable and atomically replaces the previous clone after it closes using a short-lived hidden PowerShell helper. The original `CDM.exe` is never modified.
+## Configure a new clone
 
-**Important security property:** these are *portable credentials*, not password-protected secrets. Anyone with the personalized EXE can extract the API token and embedded SSH key. Never distribute your personal clone or commit it to a repository. Revoke the token and SSH key if it is exposed. Appending embedded settings invalidates any pre-existing Authenticode signature; this project does not sign personalized clones.
+1. Launch generic `CDM.exe`; choose a nickname, language, and connection mode.
+2. For a Coolify instance with trusted HTTPS, enter its URL. For a Coolify on a **private LAN/VPN**, an HTTP private IP or local hostname can be used without owning a domain.
+3. For a public IP exposing Coolify only via HTTP, choose **automatic SSH tunnel**: VPS address, SSH username/port and Coolify remote address/port.
+4. Click **Generate dedicated SSH key**. The wizard asks **Do you already have a working SSH alias on this PC?**
+   - **Yes:** enter the existing alias and click **Authorize using SSH alias**.
+   - **No:** copy the displayed one-line command and execute it in the VPS console as the intended SSH user.
+5. **Verify server fingerprint** by comparing with the VPS independently; the fingerprint and verification command have **Copy** buttons.
+6. Create **one Coolify API token with READ + DEPLOY** (not Root, Write or Read Sensitive Data). The wizard's API check only reads data; it does not deploy.
+7. Click **Verify and create/save**. After a successful check, the blank template creates and launches your personal clone.
 
-## Guided setup
+The clone does **not** require your former SSH alias on a new Windows computer, but managed SSH mode requires Windows OpenSSH Client installed (`ssh.exe`). No domain, public TLS certificate, external config file or password is required for SSH tunnel mode.
 
-1. Pick a server label (e.g., `contabo`) and **direct connection** (HTTPS or local LAN/VPN HTTP), or **managed SSH**.
-2. **Direct connection:** enter a trusted HTTPS Coolify URL, or a private LAN/VPN address such as `http://192.168.1.50:8000`. No public domain or DNS setup is required. Open the dashboard in your browser.
-3. **Managed SSH:** enter VPS host/IP, SSH user and port. Generate a dedicated ED25519 SSH key. Authorize the *public* key using an existing SSH alias if you have one; otherwise add it to the VPS user's `~/.ssh/authorized_keys`. Scan and compare the server's SSH host key fingerprint to a trusted fingerprint.
-4. For managed SSH, clicking **Open Coolify in browser** opens the panel through CDM's own localhost tunnel, not over public HTTP.
-5. In Coolify **Keys & Tokens → API Tokens**, generate **one token with READ and DEPLOY only**. Do not select Root, Write or Read Sensitive Data.
-6. Paste the token into CDM. The setup performs a read-only API request to `/api/v1/version` and checks the connection. It never starts a deployment to test permissions.
-7. CDM creates and launches the personal clone, closing the original window.
+For connection troubleshooting, see [CDM_SETUP_GUIDE.md](CDM_SETUP_GUIDE.md).
 
-**No OAuth API grant is assumed.** Coolify's OAuth login providers do not expose a documented native-app authorization-code token flow for CDM. Browser login plus token copy is the supported path.
+## Update an existing personalized clone
 
-**Windows OpenSSH Client** (`ssh.exe`, `ssh-keygen.exe`, `ssh-keyscan.exe`) is used for SSH mode. These Windows executables are *not* bundled into CDM. Public HTTPS mode requires no SSH client. The SSH key's first authorization still requires someone with access to the VPS; CDM cannot invent access rights.
+Building a new `CDM.exe` **does not automatically upgrade** an existing personalized EXE. Close your clone first, then from the repository root run:
 
-## Build locally — no GitHub Actions
+```powershell
+$clone = (Resolve-Path '.\portable\CDM-YourUser-YourServer.exe').Path
+Start-Process -FilePath '.\portable\CDM.exe' -ArgumentList ('--upgrade-clone "{0}"' -f $clone) -Wait
+```
 
-Requires **.NET 10 SDK x64** on Windows; Visual Studio is optional.
+Replace the filename with your actual clone name. The upgrade copies the embedded profile into the new EXE, verifies it and creates a timestamped `.bak` copy before replacement. It has a bounded retry for Windows file-sharing locks; the file must not still be running. **The backup also contains your credentials.** This functionality has passed the disposable-clone offline smoke test; independently verify real-clone updates before release.
+
+## Build on Windows (no cloud CI)
+
+Required: Windows x64, .NET 10 SDK x64, PowerShell, and the separately supplied **`CDM_Logo_Assets.zip`** in your Windows Downloads directory. The script verifies the approved splash PNG/ICO hashes; missing assets are now an error rather than silently reverting to the old icon.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\BUILD_PORTABLE.ps1
 ```
 
-Runs classification, localization and embedded-profile tests locally, then publishes a self-contained `portable\CDM.exe`. This is the only supported build workflow; there are no GitHub Actions in this development branch.
+The script runs local classification, localization, embedded-profile, template-startup and disposable-clone-upgrade tests; then publishes `portable\CDM.exe` as a self-contained single-file Windows executable. **No GitHub Actions** are used or permitted for this project.
 
-See [BUILDING.md](BUILDING.md), [CDM_SETUP_GUIDE.md](CDM_SETUP_GUIDE.md), [CHANGELOG_2.2.0.md](CHANGELOG_2.2.0.md), and [CHECKLIST_TEST_WPF.md](CHECKLIST_TEST_WPF.md).
+See [BUILDING.md](BUILDING.md), [DEVELOPER_NOTES.md](DEVELOPER_NOTES.md), and [CHECKLIST_TEST_WPF.md](CHECKLIST_TEST_WPF.md).
 
-## Project status
+## Validation status (31 October 2026)
 
-**Version 2.2.0 is a source-code development preview, not a verified Windows build.** The source has not yet passed Windows compilation or end-to-end single-file clone startup testing. In particular, the .NET single-file host's behavior with appended profile bytes must be verified on a published EXE before release. No public binary release is claimed.
+**Verified on Windows:** portable build, generic clean startup, serialized profile tests, personalized-clone startup and independent SSH tunnel/API connection; one live Coolify inventory of 30 applications was displayed. The logo/splash and EXE icon were rendered; Windows Explorer may cache old icons. The disposable clone upgrade smoke test has also passed.
 
-CDM manages one Coolify server per clone. To manage several servers, create separate personal clones.
+**Not yet certified for public release:** a real staging deployment and its monitoring, full usability review of all new card controls, and complete cross-machine portability testing. A successful build does not establish these behaviors.
 
-## Languages
+## Release and license
 
-The dashboard includes 14 locale catalogs. The new 2.2.0 guided setup still needs complete localization and native-speaker review. See [LOCALIZATION.md](LOCALIZATION.md).
+The source is visible and CDM may be used professionally, modified and shared **free of charge**. **Selling copies, paywalling downloads or distributing paid bundles containing CDM is prohibited** without separate authorization. Truly voluntary contributions to the creator are welcome. See the actual terms in [LICENSE](LICENSE). This custom license is **not an OSI open-source license**.
 
-### Domainless and offline-friendly installations
+The repository previously contained MIT-licensed historical versions. A change in licensing does not cancel any valid grants under those earlier versions. Old changelogs remain archival records and are not instructions for current configuration. Latest active documentation is linked above.
 
-CDM can administer a Coolify instance on a private LAN, e.g. `http://192.168.1.50:8000`, without a domain, public DNS, Let's Encrypt or public Internet exposure. A Docker application managed by Coolify can use Docker-internal networking or explicit host port mappings rather than a public domain. For HTTP over a public server IP, choose the managed SSH tunnel rather than transmitting the bearer token in cleartext. Private VPN address ranges are also accepted for direct HTTP access, when the VPN itself provides a secure network path.
-
-## Desktop UI improvements (feature branch, 31 October 2026)
-
-- Searchable project dropdown (replaces redundant project tabs). Search applications separately.
-- Staging cards have selection checkboxes. **Deploy selected staging** uses only checked applications; **Deploy ALL staging** uses all non-blocked staging applications in the current project filter. Both require explicit confirmation before any API deployment. Neither runs automatically.
-- Right-click a card to lock its position and/or block deployment. Both flags are saved inside the personalized EXE; locked deployments are omitted from both batch actions and explicitly skipped if already queued.
-- Drag/drop features an animated card transition and an additional blank drop target in each section for moving cards to the end. Free persistent empty cells and positional grid occupancy are **not** yet implemented.
-- Wizard exposes a copyable manual `authorized_keys` command when the user has no preexisting SSH alias.
-- The wizard's title-bar close button uses vector geometry. The dashboard shows the configured SSH username and host under the title.
-- New Windows icon (neon rocket in multiple sizes) and animated splash. A 3-second splash is displayed on normal app startup, but never during local smoke-test commands.
-- The original generic `CDM.exe` stays credential-free; existing personalized clones are not automatically upgraded by compiling a new generic template. Preserve your working clone until its update path is tested.
-
-No GitHub Actions. Run `BUILD_PORTABLE.ps1` locally; don't publish a release or run a real staging deployment until the Windows UI and safety checks pass.
-
-### Official 3-second CDM opening animation
-
-The startup shows the **approved transparent CDM logo**, while a luminous electron makes a depth-aware orbit behind/over the letters. At ~2.25 s the particle collision radiates outward; the splash fades at ~2.64 s and reveals the real dashboard by ~3 s. No network request or deploy is triggered by the animation. Local self-test/clone-upgrade commands bypass the splash.
-
-The two approved binary assets are delivered in **`CDM_Logo_Assets.zip`** (the exact logo PNG and an ICO derived from it). Download this archive to your Windows **Downloads** folder before building. `BUILD_PORTABLE.ps1` verifies the SHA256 of the ZIP and each extracted image, installs them under `src/CoolifyDeployManager/Assets`, and embeds them in `CDM.exe`. The logo and key art thus travel inside the one-file personalized clone; the archive is only needed during building. Builds without the ZIP use the existing vector logo fallback. The binary files are Git-ignored so that source-only branches remain small; build them into the clone on the PC with the ZIP.
-
-The launch sequence does not change any SSH keys, tokens, Coolify services or deployment settings.
-
-### One icon source for Windows, window title and taskbar
-
-The application now uses **only** `Assets/CDMOfficial.ico` for the compiled executable resource, dashboard and About window; the old `AppIcon.ico` is not referenced. The local build **requires** the approved assets and validates their SHA256 before compilation; missing or altered assets stop the build. Existing personalized clone EXEs still contain their old binaries until upgraded explicitly. Windows Explorer may cache icons by the old file path; refreshing Explorer or changing the clone filename can refresh the shell icon independently from updating its code. The official splash PNG is unchanged.
-
-### Clone upgrade on Windows
-
-An upgraded personalized EXE replaces the old clone only after a separate timestamped `.bak` file has been created and the completed replacement EXE has been validated. On Windows, executable image handles (including antivirus inspection immediately after the local smoke-test exits) can temporarily prevent replacement. CDM retries **only** file sharing/locking errors for up to ten seconds and then reports the failure; it does not silently delete or overwrite the previous profile. The offline BUILD_PORTABLE.ps1 smoke test exercises this upgrade path against a disposable clone, never against the user's real personalized executable.
+No personalized clones, API tokens, private SSH keys, local test output or backup copies belong in a public Git repository.

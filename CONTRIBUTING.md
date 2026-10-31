@@ -1,25 +1,27 @@
 # Contributing to CDM
 
-Thanks for helping make Coolify Deploy Manager accessible to more people.
+CDM is created and maintained by **Cris0338**. It uses the custom [CDM Free Redistribution License v1.0](LICENSE), not MIT. You can study, modify and share versions of CDM **for free**, but you may not sell copies or provide paid access without the original author's separate authorization.
 
-CDM is an independent, MIT-licensed Windows application created by **Cris0338**. Please keep source code, commit messages, tests and documentation in **English**, even when contributing another UI language.
+Please write C# source, technical documentation, comments and commit messages in English. UI translations are welcome in any supported language.
 
-## Development workflow
+## Workflow
 
-1. Fork the repository and create a descriptive branch.
-2. Make focused changes without introducing server-specific credentials, IP addresses, token values or personal configuration.
-3. Run the offline tests and the portable build using `BUILD_PORTABLE.ps1` on Windows.
-4. Open a pull request describing behavior, tests and any remaining limitations.
-5. For connection or deployment changes, clearly distinguish verified behavior from assumptions.
+1. Fork the repository or create a feature branch. Keep your work separate from the release branch until tested.
+2. Never commit personal EXEs, their `.bak` copies, Coolify tokens, private SSH keys, passwords, host-specific settings, or locally built outputs.
+3. Run `BUILD_PORTABLE.ps1` on Windows with the approved logo ZIP installed; verify classification, localization and clone-profile smoke tests.
+4. Test modified WPF windows locally. A passing build is not proof that SSH or deployment work end-to-end.
+5. Submit a pull request explaining the changes and which tests actually ran. Mark any unverified behavior explicitly.
 
 ## Translations
 
-Read [LOCALIZATION.md](LOCALIZATION.md). Each translation is stored in a UTF-8 JSON file. English is authoritative; preserve placeholders and safety-related wording. Native-speaker review is particularly welcome for Preview locales.
+See [LOCALIZATION.md](LOCALIZATION.md). The canonical language is English; preserve substitution placeholders and distinctions between production/staging, running/healthy, and local cancellation/server-side cancellation.
 
-## Security and releases
+## Security
 
-Never include `settings.json`, `CDM.profile`, personal `CDM-User-Server.exe` clones, API tokens, private SSH keys, passwords, local build output or server-specific files. Avoid turning off TLS certificate verification or SSH host-key checks. Release EXEs must be built and tested from reviewed source. Never create GitHub Actions workflows; builds and tests are local only.
+The generic `CDM.exe` is always blank. A personalized clone and its backups embed **recoverable** token/SSH credentials and must not be distributed. Do not silently disable TLS validation, relax host key pinning, expose tokens in logs or connect directly to public HTTP for bearer-token operations.
 
-## Project limitations
+## Release rules
 
-CDM currently manages one saved Coolify server profile. Multi-server support is planned. A finished Coolify deployment is not proof of application health.
+**NO GitHub Actions, no CI workflows, no cloud build and no automatic deployment.** Local Windows PowerShell scripts are the only supported build/test path. Do not tag, merge or publish executables before Windows UI acceptance and a deliberately initiated staging deployment test.
+
+Contributors must preserve the attribution and free-redistribution/no-sale terms in modified distributions. License questions and permission for paid distribution must be addressed to the copyright holder, not inferred from the repository's public visibility.

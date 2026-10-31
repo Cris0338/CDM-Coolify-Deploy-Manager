@@ -1,31 +1,48 @@
-# Building CDM locally
+# CDM — local Windows build
 
-1. Windows 10/11 x64, .NET 10 SDK x64, PowerShell.
-2. Clone the repository and check out `feature/embedded-clone-20261031`.
-3. Run:
+## Requirements
+
+- Windows 10/11 x64 with PowerShell 5.1 or later
+- .NET 10 SDK x64 at `%ProgramFiles%\dotnet\dotnet.exe`
+- Checked-out branch `feature/embedded-clone-20261031`
+- Approved `CDM_Logo_Assets.zip` saved in **Windows Downloads** (do not extract manually)
+- Windows OpenSSH Client only if you plan to use the managed SSH connection
+
+## Build and offline test
+
+From the repository root:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\BUILD_PORTABLE.ps1
 ```
 
-The script runs three offline test projects (classification, localization, executable profile), then publishes the Windows x64 self-contained single-file WPF application as **`portable\CDM.exe`**.
+The script checks the SHA256 of the artwork ZIP and both its PNG/ICO files, copies them to the ignored `Assets` directory, and runs the classification, localization, executable-profile and URL validation tests. It then builds the self-contained single-file Windows executable `portable\CDM.exe`. Final smoke tests verify that the generic template is blank and that a **disposable** personalized clone can start and be upgraded with its profile intact.
 
-No GitHub Actions, cloud build or automatic workflow is involved.
+The generic template is replaced on each successful build. **The real personalized clones alongside it are not modified or reconfigured.** Close `portable\CDM.exe` before compiling; Windows locks running executables. Other files in `portable\` are normal and may include private personal clones and their credential-bearing backups.
 
-## Windows acceptance criteria before release
+There is **no GitHub Actions workflow, cloud build, or automatic deployment**.
 
-- Fresh generic template ignores all older user settings and opens the blank setup on startup, with no password dialog and no automatic API requests.
-- HTTPS with a trusted URL **or LAN/VPN HTTP by private IP** and a READ+DEPLOY token gives the dashboard (no domain required).
-- SSH setup generates a key, checks a pinned host fingerprint and successfully creates its own tunnel.
-- Browser-based Coolify login works through localhost on the managed SSH tunnel.
-- A configured clone `CDM-user-server.exe` opens on a different Windows account/computer *without* an SSH alias or user settings file.
-- Opening the clone does not require a profile password.
-- Modifying settings and card order survives restart, after the prior process has exited.
-- Tests pass and the *published .NET single-file EXE* still starts after its profile is appended.
-- Read-only token tests never deploy anything; explicitly confirm one staging deployment before release.
+## Upgrade a real personal clone (explicit)
 
-The self-contained .NET executable does not bundle Windows OpenSSH Client. It must be available on a machine using SSH mode. No guarantee is made that every Windows installation has it.
+First close it, then:
 
-Do not publish personalized EXEs: they contain recoverable tokens/SSH private keys. The generic template contains no credentials. Executable profile integrity is checksum-protected but not encrypted or signed.
+```powershell
+$clone = (Resolve-Path '.\portable\CDM-YourUser-YourServer.exe').Path
+Start-Process -FilePath '.\portable\CDM.exe' -ArgumentList ('--upgrade-clone "{0}"' -f $clone) -Wait
+```
 
-The program may create temporary key material while an SSH tunnel is running, and a temporary pending EXE while saving changes. Application settings are not permanently written to AppData.
+The new generic EXE reads the explicitly named old clone and writes an updated clone with its embedded settings, after creating a timestamped backup. A clone's token/SSH private key exists in both the clone and backup. If Windows keeps the old EXE locked, the upgrader retries sharing violations for a bounded interval and then reports the failure.
+
+Do not publish or commit the personal clone. A released `CDM.exe` template contains no server credentials.
+
+## Windows acceptance before publishing
+
+See [CHECKLIST_TEST_WPF.md](CHECKLIST_TEST_WPF.md). Passing offline tests does not prove a real staging deploy or a cross-PC SSH session. Deployments must be tested only when deliberately triggered.
+
+## Historical storage behavior
+
+Previous releases may have used `settings.json`, DPAPI or `CDM.profile`. **CDM 2.2 does not use, read, import, migrate or overwrite them.** It stores ongoing settings only inside each personalized EXE. Temporary SSH files and staged EXE replacements are distinct from permanent configuration.
+
+## Licensing
+
+This development branch uses the [CDM Free Redistribution License v1.0](LICENSE), not MIT. Use, modification and free sharing are allowed; sale or paid distribution is restricted. No GitHub Actions.
