@@ -42,7 +42,7 @@ public partial class SettingsWindow : Window
             if ((string)item.Tag == original.Language) { LanguageChooser.SelectedItem = item; break; }
         LanguageChooser.SelectedItem ??= LanguageChooser.Items[0];
         SshStatus.Text = privateKey.Length > 0
-            ? "Dedicated SSH identity loaded from the EXE." : "Generate a new dedicated SSH identity.";
+            ? Loc.T("SetupSshLoaded") : Loc.T("SetupGenerateHint");
         UpdateMode();
     }
 
@@ -53,7 +53,7 @@ public partial class SettingsWindow : Window
         bool useSsh = ConnectionChooser.SelectedIndex == 1;
         SshFields.Visibility = useSsh ? Visibility.Visible : Visibility.Collapsed;
         UrlInput.IsEnabled = !useSsh;
-        UrlHint.Text = useSsh ? "CDM will open its own localhost tunnel." : "HTTPS must have a trusted certificate.";
+        UrlHint.Text = useSsh ? Loc.T("SetupSshHint") : Loc.T("SetupHttpsHint");
     }
 
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -130,7 +130,7 @@ public partial class SettingsWindow : Window
             var errors = await process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync();
             if (process.ExitCode != 0) throw new IOException("Unable to authorize the new key through this alias. " + errors);
-            SshStatus.Text = "Public key authorized using the existing SSH alias. Now verify the VPS fingerprint.";
+            SshStatus.Text = Loc.T("SetupKeyAuthorized");
         }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "Authorize CDM SSH key", MessageBoxButton.OK, MessageBoxImage.Warning); }
     }
@@ -155,7 +155,7 @@ public partial class SettingsWindow : Window
                 privateKey = await File.ReadAllTextAsync(path);
                 PublicKeyText.Text = (await File.ReadAllTextAsync(path + ".pub")).Trim();
                 knownHosts = "";
-                SshStatus.Text = "SSH key generated. Authorize the public key on the VPS, then scan its fingerprint.";
+                SshStatus.Text = Loc.T("SetupKeyGenerated");
             }
             finally { Directory.Delete(folder, recursive: true); }
         }
@@ -198,7 +198,7 @@ public partial class SettingsWindow : Window
             if (MessageBox.Show(this, message, "Confirm VPS identity", MessageBoxButton.YesNo, MessageBoxImage.Question)
                 != MessageBoxResult.Yes) return;
             knownHosts = string.Join("\n", lines);
-            SshStatus.Text = "VPS host key pinned. SSH identity can now be verified.";
+            SshStatus.Text = Loc.T("SetupHostPinned");
         }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "SSH host verification", MessageBoxButton.OK, MessageBoxImage.Warning); }
     }
@@ -238,7 +238,7 @@ public partial class SettingsWindow : Window
                     || string.IsNullOrWhiteSpace(next.SshPrivateKey) || string.IsNullOrWhiteSpace(next.SshKnownHosts))
                     throw new ArgumentException("Complete the dedicated SSH key setup and verify the VPS host key first.");
             }
-            SaveStatus.Text = "Verifying connection...";
+            SaveStatus.Text = Loc.T("SetupChecking");
             using var ct = new CancellationTokenSource(TimeSpan.FromSeconds(22));
             if (mode == ConnectionMode.ManagedSshTunnel)
                 await wizardTunnel.EnsureRunningAsync(next, ct.Token);
@@ -254,7 +254,7 @@ public partial class SettingsWindow : Window
         }
         catch (Exception ex)
         {
-            SaveStatus.Text = "Connection not verified";
+            SaveStatus.Text = Loc.T("SetupCheckFailed");
             MessageBox.Show(this, ex.Message, "CDM connection setup", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         finally { SaveButton.IsEnabled = true; }

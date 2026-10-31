@@ -1,76 +1,76 @@
 <!-- Copyright (c) 2026 Cris0338. Licensed under the MIT License. -->
-<Window x:Class="CoolifyDeployManager.SettingsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Title="CDM - Connection setup" WindowStyle="None" Background="{StaticResource Canvas}" Foreground="{StaticResource Primary}" Width="730" Height="830" MinWidth="620" MinHeight="660" WindowStartupLocation="CenterOwner" ResizeMode="CanResize" ShowInTaskbar="False">
+<Window x:Class="CoolifyDeployManager.SettingsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Title="{DynamicResource L.SetupTitle}" WindowStyle="None" Background="{StaticResource Canvas}" Foreground="{StaticResource Primary}" Width="730" Height="830" MinWidth="620" MinHeight="660" WindowStartupLocation="CenterOwner" ResizeMode="CanResize" ShowInTaskbar="False">
   <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="7" GlassFrameThickness="0" CornerRadius="0"/></shell:WindowChrome.WindowChrome>
   <Grid>
     <Grid.RowDefinitions><RowDefinition Height="46"/><RowDefinition Height="*"/></Grid.RowDefinitions>
     <Border Background="{StaticResource Header}" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
       <Grid Margin="16,0,6,0">
-        <TextBlock Text="CDM - Connection setup" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        <TextBlock Text="{DynamicResource L.SetupTitle}" FontWeight="SemiBold" VerticalAlignment="Center"/>
         <Button Content="✕" HorizontalAlignment="Right" Width="36" Style="{StaticResource ActionButton}" Background="#76303D" Click="Cancel_Click"/>
       </Grid>
     </Border>
     <Grid Grid.Row="1" Margin="28">
       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
       <StackPanel Margin="0,0,0,16">
-        <TextBlock Text="Configure your personal CDM" FontWeight="Bold" FontSize="22"/>
-        <TextBlock Text="One READ + DEPLOY token. No password or external profile. CDM creates your personal EXE." Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"/>
+        <TextBlock Text="{DynamicResource L.SetupHeading}" FontWeight="Bold" FontSize="22"/>
+        <TextBlock Text="{DynamicResource L.SetupIntro}" Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"/>
       </StackPanel>
       <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="0,0,8,0">
           <TextBlock Text="{DynamicResource L.Language}" FontWeight="SemiBold" Foreground="{StaticResource Purple}" Margin="0,0,0,5"/>
           <ComboBox x:Name="LanguageChooser" Margin="0,0,0,16"/>
-          <TextBlock Text="Server label (for the clone filename)" FontWeight="SemiBold" Foreground="{StaticResource Purple}" Margin="0,0,0,5"/>
+          <TextBlock Text="{DynamicResource L.SetupServerLabel}" FontWeight="SemiBold" Foreground="{StaticResource Purple}" Margin="0,0,0,5"/>
           <TextBox x:Name="ServerLabel" ToolTip="Example: contabo, coolify-production" Margin="0,0,0,5"/>
-          <TextBlock Text="Clone: CDM-WindowsUser-ServerLabel.exe" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,15"/>
+          <TextBlock Text="{DynamicResource L.SetupCloneHelp}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,15"/>
           <TextBlock Text="{DynamicResource L.ConnectionMode}" Foreground="{StaticResource Purple}" FontWeight="SemiBold" Margin="0,0,0,5"/>
           <ComboBox x:Name="ConnectionChooser" SelectionChanged="Mode_Changed" Margin="0,0,0,12">
             <ComboBoxItem Content="{DynamicResource L.HttpsMode}"/>
             <ComboBoxItem Content="{DynamicResource L.ManagedSshMode}"/>
           </ComboBox>
-          <TextBlock Text="Coolify dashboard URL (HTTPS mode)" Foreground="{StaticResource Muted}" Margin="0,0,0,5"/>
+          <TextBlock Text="{DynamicResource L.SetupDashboardUrl}" Foreground="{StaticResource Muted}" Margin="0,0,0,5"/>
           <TextBox x:Name="UrlInput" ToolTip="https://coolify.example.com"/>
           <StackPanel Orientation="Horizontal" Margin="0,7,0,14">
-            <Button Style="{StaticResource ActionButton}" Content="Open Coolify in browser" Click="OpenCoolify_Click"/>
+            <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupOpenBrowser}" Click="OpenCoolify_Click"/>
             <TextBlock x:Name="UrlHint" Foreground="{StaticResource Muted}" VerticalAlignment="Center" FontSize="11" Margin="12,0,0,0" TextWrapping="Wrap"/>
           </StackPanel>
           <Border x:Name="SshFields" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="14" CornerRadius="10" Margin="0,0,0,14">
             <StackPanel>
-              <TextBlock Text="Autonomous SSH connection" FontWeight="Bold" FontSize="15" Foreground="{StaticResource Purple}" Margin="0,0,0,8"/>
-              <TextBlock Text="VPS hostname or IP" Foreground="{StaticResource Muted}"/><TextBox x:Name="SshAlias" ToolTip="Example: 169.58.7.207"/>
+              <TextBlock Text="{DynamicResource L.SetupSshHeading}" FontWeight="Bold" FontSize="15" Foreground="{StaticResource Purple}" Margin="0,0,0,8"/>
+              <TextBlock Text="{DynamicResource L.SetupVpsHost}" Foreground="{StaticResource Muted}"/><TextBox x:Name="SshAlias" ToolTip="Example: 169.58.7.207"/>
               <Grid Margin="0,9,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="VPS SSH username" Foreground="{StaticResource Muted}"/><TextBox x:Name="SshUsername"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="SSH port" Foreground="{StaticResource Muted}"/><TextBox x:Name="SshPort"/></StackPanel>
+                <StackPanel><TextBlock Text="{DynamicResource L.SetupVpsUser}" Foreground="{StaticResource Muted}"/><TextBox x:Name="SshUsername"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="{DynamicResource L.SetupSshPort}" Foreground="{StaticResource Muted}"/><TextBox x:Name="SshPort"/></StackPanel>
               </Grid>
               <Grid Margin="0,9,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Local tunnel port" Foreground="{StaticResource Muted}"/><TextBox x:Name="LocalPort"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Coolify port on VPS" Foreground="{StaticResource Muted}"/><TextBox x:Name="RemotePort"/></StackPanel>
+                <StackPanel><TextBlock Text="{DynamicResource L.SetupLocalPort}" Foreground="{StaticResource Muted}"/><TextBox x:Name="LocalPort"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="{DynamicResource L.SetupCoolifyPort}" Foreground="{StaticResource Muted}"/><TextBox x:Name="RemotePort"/></StackPanel>
               </Grid>
-              <TextBlock Text="Coolify address on VPS" Foreground="{StaticResource Muted}" Margin="0,9,0,0"/><TextBox x:Name="RemoteHost"/>
+              <TextBlock Text="{DynamicResource L.SetupRemoteHost}" Foreground="{StaticResource Muted}" Margin="0,9,0,0"/><TextBox x:Name="RemoteHost"/>
               <StackPanel Orientation="Horizontal" Margin="0,12,0,6">
-                <Button Style="{StaticResource ActionButton}" Content="1. Generate dedicated SSH key" Click="GenerateKey_Click" Margin="0,0,8,0"/>
-                <Button Style="{StaticResource ActionButton}" Content="Copy public key" Click="CopyPublicKey_Click"/>
+                <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupGenerateKey}" Click="GenerateKey_Click" Margin="0,0,8,0"/>
+                <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupCopyPublic}" Click="CopyPublicKey_Click"/>
               </StackPanel>
               <TextBox x:Name="PublicKeyText" IsReadOnly="True" TextWrapping="Wrap" Height="60" VerticalScrollBarVisibility="Auto"/>
-              <TextBlock Text="2. Authorize the public key on the VPS. If Windows SSH is already configured, use its alias; otherwise add the key manually to ~/.ssh/authorized_keys." FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,8"/>
+              <TextBlock Text="{DynamicResource L.SetupAuthorizeHelp}" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,8"/>
               <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                 <TextBox x:Name="ExistingSshAlias" Width="175" ToolTip="Existing SSH alias, e.g. contabo"/>
-                <Button Style="{StaticResource ActionButton}" Content="Authorize using SSH alias" Click="AuthorizeKey_Click" Margin="8,0,0,0"/>
+                <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupAuthorizeAlias}" Click="AuthorizeKey_Click" Margin="8,0,0,0"/>
               </StackPanel>
-              <Button Style="{StaticResource ActionButton}" Content="3. Scan and verify VPS host fingerprint" Click="ScanHostKey_Click" HorizontalAlignment="Left"/>
-              <TextBlock x:Name="SshStatus" Text="Dedicated key and verified server identity are required." FontSize="11" Foreground="{StaticResource Warning}" TextWrapping="Wrap" Margin="0,7,0,0"/>
+              <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupScanHost}" Click="ScanHostKey_Click" HorizontalAlignment="Left"/>
+              <TextBlock x:Name="SshStatus" Text="{DynamicResource L.SetupSshInitial}" FontSize="11" Foreground="{StaticResource Warning}" TextWrapping="Wrap" Margin="0,7,0,0"/>
             </StackPanel>
           </Border>
-          <TextBlock Text="Coolify API token" FontWeight="Bold" Foreground="{StaticResource Purple}" Margin="0,8,0,6"/>
-          <TextBlock Text="In Coolify: Keys &amp; Tokens → API Tokens. Generate ONE token with READ and DEPLOY only. Do not select Root, Write or Read Sensitive Data." TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,0,0,9"/>
+          <TextBlock Text="{DynamicResource L.SetupTokenLabel}" FontWeight="Bold" Foreground="{StaticResource Purple}" Margin="0,8,0,6"/>
+          <TextBlock Text="{DynamicResource L.SetupTokenGuide}" TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,0,0,9"/>
           <PasswordBox x:Name="ReadToken" Margin="0,0,0,8"/>
-          <TextBlock Text="CDM tests only a read-only API request during setup. No deployment is started." Foreground="{StaticResource Muted}" TextWrapping="Wrap" FontSize="11" Margin="0,0,0,18"/>
-          <TextBlock Text="The clone contains usable credentials. Anyone with the EXE can extract them. Keep it private; revoke its token and SSH key if exposed." FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource Warning}"/>
+          <TextBlock Text="{DynamicResource L.SetupTokenCheck}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" FontSize="11" Margin="0,0,0,18"/>
+          <TextBlock Text="{DynamicResource L.SetupCredentialWarning}" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource Warning}"/>
         </StackPanel>
       </ScrollViewer>
       <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
         <TextBlock x:Name="SaveStatus" Text="" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,14,0"/>
         <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.Cancel}" Click="Cancel_Click" Width="100" Margin="0,0,8,0"/>
-        <Button x:Name="SaveButton" Style="{StaticResource ActionButton}" Background="{StaticResource Purple}" Content="Verify and create/save" Click="Save_Click"/>
+        <Button x:Name="SaveButton" Style="{StaticResource ActionButton}" Background="{StaticResource Purple}" Content="{DynamicResource L.SetupVerifySave}" Click="Save_Click"/>
       </StackPanel>
     </Grid>
   </Grid>
