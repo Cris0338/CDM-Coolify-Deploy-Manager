@@ -96,3 +96,16 @@ Second-patch source commits and root-cause notes are in [docs/UI_FIXES_2026-10-3
 - [ ] Verify production and unknown sections are isolated from staging; no real deployments triggered by drag.
 
 All source changes are committed but GUI functionality remains unaccepted until actual Windows testing.
+
+### Fourth-iteration owner acceptance — window chrome and terminal (2026-10-31)
+
+- [x] Third-iteration real Windows clone: owner confirmed card drag-and-drop works and About/status/logo accepted.
+- [ ] Fourth revision Windows compilation and executable smoke tests.
+- [ ] Card has no grip; reordering from body remains functional; right half of last card permits append; blank WrapPanel area can append.
+- [ ] No dedicated `DropToEnd`/drag-here bar visible in any section.
+- [ ] Drag the window from all non-button titlebar areas; cursor does not show a crosshair; buttons still click without dragging.
+- [ ] Maximize/restore icon is legible at normal and maximized size and changes glyph appropriately; double-click on titlebar toggles maximization.
+- [ ] Maximize respects taskbar work area; no hidden last lines of terminal or off-screen content (also test secondary monitor if available).
+- [ ] Dashboard and terminal scrollbars align with a 16px inset and are not clipped by window edges.
+- [ ] Splitter at top of status strip can resize log up/down, without breaking dashboard min height; hide/show restores last selected log height.
+- [ ] After latest real clone upgrade, inspect whether the settings `.pending` is consumed normally on close; preserve all personal backups.
