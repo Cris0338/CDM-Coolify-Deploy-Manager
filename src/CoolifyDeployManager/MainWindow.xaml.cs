@@ -9,6 +9,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Documents;
 
 namespace CoolifyDeployManager;
 
@@ -314,8 +316,68 @@ public partial class MainWindow : Window
     // One drag-and-drop implementation. A card can be picked up from any
     // non-interactive area; hovering over the left/right half of another card
     // inserts it before/after that card. Empty section space appends to the end.
-    private Border? dragSourceCard;
     private Border? insertionCueCard;
+    private CardDragPreview? dragPreview;
+    private AdornerLayer? dragPreviewLayer;
+
+    // An adorner is drawn inside WPF's own adorner layer. It never receives
+    // mouse hits and therefore cannot steal drop events from the cards below.
+    private sealed class CardDragPreview : Adorner
+    {
+        private readonly ImageBrush snapshot;
+        private readonly Size size;
+        private readonly Point grabOffset;
+        private Point pointer;
+
+        public CardDragPreview(UIElement host, Border card, Point grabOffset) : base(host)
+        {
+            IsHitTestVisible = false;
+            this.grabOffset = grabOffset;
+            size = new Size(card.ActualWidth, card.ActualHeight);
+            var bitmap = new RenderTargetBitmap(
+                Math.Max(1, (int)Math.Ceiling(size.Width)),
+                Math.Max(1, (int)Math.Ceiling(size.Height)),
+                96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(card);
+            snapshot = new ImageBrush(bitmap) { Stretch = Stretch.Fill };
+        }
+
+        public void Move(Point position)
+        {
+            pointer = position;
+            InvalidateVisual();
+        }
+
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            var bounds = new Rect(pointer.X - grabOffset.X, pointer.Y - grabOffset.Y,
+                size.Width, size.Height);
+            drawingContext.PushOpacity(0.8);
+            drawingContext.DrawRoundedRectangle(snapshot,
+                new Pen(Brushes.DodgerBlue, 2), bounds, 13, 13);
+            drawingContext.Pop();
+        }
+    }
+
+    private void ShowDragPreview(Border card, Point grabOffset, Point pointer)
+    {
+        dragPreviewLayer = AdornerLayer.GetAdornerLayer(DashboardRoot);
+        if (dragPreviewLayer is null) return;
+        dragPreview = new CardDragPreview(DashboardRoot, card, grabOffset);
+        dragPreview.Move(pointer);
+        dragPreviewLayer.Add(dragPreview);
+    }
+
+    private void UpdateDragPreview(DragEventArgs e) =>
+        dragPreview?.Move(e.GetPosition(DashboardRoot));
+
+    private void ClearDragPreview()
+    {
+        if (dragPreview is not null && dragPreviewLayer is not null)
+            dragPreviewLayer.Remove(dragPreview);
+        dragPreview = null;
+        dragPreviewLayer = null;
+    }
 
     private bool CanReorderCards => !busy &&
         string.IsNullOrWhiteSpace(SearchBox.Text) && StatusFilter.SelectedIndex == 0;
@@ -367,20 +429,19 @@ public partial class MainWindow : Window
 
         var uuid = dragUuid;
         dragUuid = null;
-        dragSourceCard = card;
-        // The drag loop must see hit tests on other cards, not captured mouse events.
+        // Use a snapshot of the actual card as the mouse-following drag image.
+        var grabOffset = e.GetPosition(card);
+        var pointer = e.GetPosition(DashboardRoot);
         Mouse.Capture(null);
-        card.BeginAnimation(OpacityProperty, null);
-        card.Opacity = 0.58;
         try
         {
+            ShowDragPreview(card, grabOffset, pointer);
             DragDrop.DoDragDrop(card, new DataObject("CDM_CardUuid", uuid), DragDropEffects.Move);
         }
         finally
         {
             ClearInsertionCue();
-            card.Opacity = 1;
-            dragSourceCard = null;
+            ClearDragPreview();
         }
         e.Handled = true;
     }
@@ -444,6 +505,7 @@ public partial class MainWindow : Window
 
     private void Card_DragOver(object sender, DragEventArgs e)
     {
+        UpdateDragPreview(e);
         e.Effects = DragDropEffects.None;
         if (sender is Border target && target.DataContext is AppCardView destination &&
             DraggedCardUuid(e) is string sourceUuid)
@@ -488,6 +550,7 @@ public partial class MainWindow : Window
 
     private void EmptyArea_DragOver(object sender, DragEventArgs e)
     {
+        UpdateDragPreview(e);
         e.Effects = DragDropEffects.None;
         ClearInsertionCue();
         if (sender is FrameworkElement element &&
