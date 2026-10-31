@@ -153,7 +153,7 @@
       <RowDefinition Height="Auto"/>
       <RowDefinition Height="*" MinHeight="100"/>
       <RowDefinition Height="Auto"/>
-      <RowDefinition Height="160" MinHeight="75"/>
+      <RowDefinition x:Name="LogRow" Height="160" MinHeight="75"/>
     </Grid.RowDefinitions>
     <!-- Full-height drag surface with native-size vector window buttons.
          Interactive buttons keep their own click behavior and never start dragging. -->
@@ -328,7 +328,7 @@
                 Style="{StaticResource ActionButton}" Click="ToggleLog_Click" Padding="10,5"/>
       </Grid>
     </Border>
-    <GridSplitter Grid.Row="4" Height="7" VerticalAlignment="Top"
+    <GridSplitter x:Name="LogSplitter" Grid.Row="4" Height="7" VerticalAlignment="Top"
                   HorizontalAlignment="Stretch" ResizeDirection="Rows"
                   ResizeBehavior="PreviousAndNext" ShowsPreview="True"
                   Background="{StaticResource Hover}" Cursor="SizeNS"
