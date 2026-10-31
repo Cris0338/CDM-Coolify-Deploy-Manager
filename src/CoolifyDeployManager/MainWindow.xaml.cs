@@ -311,151 +311,224 @@ public partial class MainWindow : Window
             TimeSpan.FromMilliseconds(210)) { EasingFunction = ease });
     }
 
-    // The grip is narrow: capture the card on mouse-down so a fast move outside it
-    // still starts the drag. Drop handlers use preview routing on individual cards so
-    // child controls and ItemsControl's empty-space handler cannot swallow a drop.
-    private void Card_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        dragUuid = null;
-        if (busy || SearchBox.Text.Length != 0 || StatusFilter.SelectedIndex != 0 ||
-            sender is not Border card || card.DataContext is not AppCardView model ||
-            model.PositionLocked || IsInteractiveCardElement(e.OriginalSource as DependencyObject, card))
-            return;
-        dragOrigin = e.GetPosition(this);
-        dragUuid = model.Uuid;
-        Mouse.Capture(card, CaptureMode.SubTree);
-    }
+    // One drag-and-drop implementation. A card can be picked up from any
+    // non-interactive area; hovering over the left/right half of another card
+    // inserts it before/after that card. Empty section space appends to the end.
+    private Border? dragSourceCard;
+    private Border? insertionCueCard;
+
+    private bool CanReorderCards => !busy &&
+        string.IsNullOrWhiteSpace(SearchBox.Text) && StatusFilter.SelectedIndex == 0;
+
     private static bool IsInteractiveCardElement(DependencyObject? source, DependencyObject card)
     {
         for (var node = source; node is not null && node != card;)
         {
-            if (node is System.Windows.Controls.Primitives.ButtonBase or TextBox or PasswordBox or ComboBox)
+            if (node is System.Windows.Controls.Primitives.ButtonBase
+                or TextBox or PasswordBox or ComboBox or MenuItem)
                 return true;
             node = node is Visual ? VisualTreeHelper.GetParent(node) : null;
         }
         return false;
     }
+
+    private void Card_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        dragUuid = null;
+        if (!CanReorderCards || sender is not Border card ||
+            card.DataContext is not AppCardView model || model.PositionLocked ||
+            IsInteractiveCardElement(e.OriginalSource as DependencyObject, card))
+            return;
+        dragUuid = model.Uuid;
+        dragOrigin = e.GetPosition(this);
+        Mouse.Capture(card, CaptureMode.SubTree);
+    }
+
     private void Card_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         dragUuid = null;
         if (Mouse.Captured == sender) Mouse.Capture(null);
     }
+
     private void Card_LostMouseCapture(object sender, MouseEventArgs e) => dragUuid = null;
-    private void Card_PreviewMouseMove(object sender, MouseEventArgs e) => StartCardDrag(sender, e);
-    private void Grip_Down(object sender, MouseButtonEventArgs e)
-    {
-        // Card_PreviewMouseLeftButtonDown already set the source and captured it.
-        // Do not reset the origin after capture, or the threshold becomes unreliable.
-    }
-    private void Grip_Move(object sender, MouseEventArgs e) => StartCardDrag(sender, e);
-    private void StartCardDrag(object sender, MouseEventArgs e)
+
+    private void Card_PreviewMouseMove(object sender, MouseEventArgs e)
     {
         if (e.LeftButton != MouseButtonState.Pressed)
         {
-            // Release only a capture created by this card's active drag, never
-            // a capture owned by an unrelated control during a normal hover.
-            if (dragUuid is not null && Mouse.Captured is Border captured &&
-                captured.DataContext is AppCardView)
-                Mouse.Capture(null);
+            if (dragUuid is not null && Mouse.Captured == sender) Mouse.Capture(null);
             dragUuid = null;
             return;
         }
-        if (dragUuid is null || busy || SearchBox.Text.Length != 0 || StatusFilter.SelectedIndex != 0) return;
-        var diff = e.GetPosition(this) - dragOrigin;
-        if (Math.Abs(diff.X) < SystemParameters.MinimumHorizontalDragDistance &&
-            Math.Abs(diff.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+        if (!CanReorderCards || dragUuid is null || sender is not Border card) return;
+        var delta = e.GetPosition(this) - dragOrigin;
+        if (Math.Abs(delta.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(delta.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+
         var uuid = dragUuid;
         dragUuid = null;
-        // Release capture BEFORE WPF's modal drag loop so hit testing can reach other cards.
+        dragSourceCard = card;
+        // The drag loop must see hit tests on other cards, not captured mouse events.
         Mouse.Capture(null);
-        DragDrop.DoDragDrop((DependencyObject)sender,
-            new DataObject("CDM_CardUuid", uuid), DragDropEffects.Move);
+        card.BeginAnimation(OpacityProperty, null);
+        card.Opacity = 0.58;
+        try
+        {
+            DragDrop.DoDragDrop(card, new DataObject("CDM_CardUuid", uuid), DragDropEffects.Move);
+        }
+        finally
+        {
+            ClearInsertionCue();
+            card.Opacity = 1;
+            dragSourceCard = null;
+        }
         e.Handled = true;
     }
+
+    private static string? DraggedCardUuid(DragEventArgs e) =>
+        e.Data.GetDataPresent("CDM_CardUuid")
+            ? e.Data.GetData("CDM_CardUuid") as string : null;
+
+    private bool TryPlanCardMove(DeploymentGroup group, string sourceUuid,
+        string? destinationUuid, bool insertAfter, out List<string> order)
+    {
+        order = new List<string>();
+        if (!CanReorderCards || !allCards.TryGetValue(sourceUuid, out var source) ||
+            source.PositionLocked || source.Group != group ||
+            (selectedProjectUuid != "ALL" && source.App.ProjectUuid != selectedProjectUuid))
+            return false;
+
+        if (destinationUuid is not null &&
+            (!allCards.TryGetValue(destinationUuid, out var destination) ||
+             destination.PositionLocked || destination.Group != group ||
+             sourceUuid.Equals(destinationUuid, StringComparison.OrdinalIgnoreCase)))
+            return false;
+
+        var before = FilterAndOrder(group).Select(c => c.Uuid).ToList();
+        if (!before.Contains(sourceUuid)) return false;
+        order = new List<string>(before);
+        order.Remove(sourceUuid);
+
+        if (destinationUuid is null)
+        {
+            order.Add(sourceUuid);
+        }
+        else
+        {
+            var targetIndex = order.FindIndex(id =>
+                id.Equals(destinationUuid, StringComparison.OrdinalIgnoreCase));
+            if (targetIndex < 0) return false;
+            order.Insert(targetIndex + (insertAfter ? 1 : 0), sourceUuid);
+        }
+
+        return KeepsFixedPositions(before, order);
+    }
+
+    private void SetInsertionCue(Border? card, bool insertAfter = false)
+    {
+        if (insertionCueCard?.Child is Grid previous)
+        {
+            foreach (var marker in previous.Children.OfType<Border>())
+                if (marker.Tag is "InsertBefore" or "InsertAfter")
+                    marker.Visibility = Visibility.Collapsed;
+        }
+        insertionCueCard = card;
+        if (card?.Child is not Grid grid) return;
+        foreach (var marker in grid.Children.OfType<Border>())
+            if (marker.Tag is "InsertBefore" or "InsertAfter")
+                marker.Visibility = marker.Tag.Equals(insertAfter ? "InsertAfter" : "InsertBefore")
+                    ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void ClearInsertionCue() => SetInsertionCue(null);
+
     private void Card_DragOver(object sender, DragEventArgs e)
     {
         e.Effects = DragDropEffects.None;
-        if (!busy && SearchBox.Text.Length == 0 && StatusFilter.SelectedIndex == 0 &&
-            e.Data.GetDataPresent("CDM_CardUuid") &&
-            e.Data.GetData("CDM_CardUuid") is string uuid &&
-            allCards.TryGetValue(uuid, out var source) && !source.PositionLocked &&
-            (sender as FrameworkElement)?.DataContext is AppCardView target &&
-            !target.PositionLocked && source.Group == target.Group && uuid != target.Uuid &&
-            (selectedProjectUuid == "ALL" || source.App.ProjectUuid == selectedProjectUuid))
-            e.Effects = DragDropEffects.Move;
+        if (sender is Border target && target.DataContext is AppCardView destination &&
+            DraggedCardUuid(e) is string sourceUuid)
+        {
+            var insertAfter = e.GetPosition(target).X >= target.ActualWidth / 2;
+            if (TryPlanCardMove(destination.Group, sourceUuid, destination.Uuid,
+                insertAfter, out _))
+            {
+                SetInsertionCue(target, insertAfter);
+                e.Effects = DragDropEffects.Move;
+            }
+            else ClearInsertionCue();
+        }
+        else ClearInsertionCue();
         e.Handled = true;
     }
+
+    private void Card_DragLeave(object sender, DragEventArgs e)
+    {
+        if (ReferenceEquals(sender, insertionCueCard)) ClearInsertionCue();
+    }
+
     private void Card_Drop(object sender, DragEventArgs e)
     {
-        if (busy || SearchBox.Text.Length > 0 || StatusFilter.SelectedIndex != 0 || !e.Data.GetDataPresent("CDM_CardUuid")) return;
-        e.Handled = true; // Do not treat a rejected drop on a locked card as an empty-area drop.
-        if (e.Data.GetData("CDM_CardUuid") is not string sourceUuid || (sender as FrameworkElement)?.DataContext is not AppCardView destination) return;
-        if (!allCards.TryGetValue(sourceUuid, out var source) || source.Group != destination.Group ||
-            source.PositionLocked || destination.PositionLocked || sourceUuid == destination.Uuid) return;
-        if (selectedProjectUuid != "ALL" && source.App.ProjectUuid != selectedProjectUuid) return;
-        var before = FilterAndOrder(destination.Group).Select(c => c.Uuid).ToList();
-        var order = new List<string>(before);
-        order.Remove(sourceUuid);
-        var position = order.IndexOf(destination.Uuid);
-        if (position < 0) return;
-        order.Insert(position, sourceUuid);
-        if (!KeepsFixedPositions(before, order))
+        // The card handles its own preview drop; it cannot fall through to the
+        // parent ItemsControl's append-to-end handler.
+        e.Handled = true;
+        if (sender is Border target && target.DataContext is AppCardView destination &&
+            DraggedCardUuid(e) is string sourceUuid)
         {
-            AddLog(Loc.T("LockedPositionPrevented"));
-            return;
+            var insertAfter = e.GetPosition(target).X >= target.ActualWidth / 2;
+            ClearInsertionCue();
+            CommitCardMove(destination.Group, sourceUuid, destination.Uuid, insertAfter);
+            e.Effects = DragDropEffects.Move;
         }
-        var key = OrderKey(destination.Group);
-        settings.CardOrders.TryGetValue(key, out var previous);
-        settings.CardOrders[key] = order;
-        try { SettingsStore.Save(settings); }
-        catch (Exception ex)
+        else
         {
-            if (previous is null) settings.CardOrders.Remove(key);
-            else settings.CardOrders[key] = previous;
-            MessageBox.Show(this, ex.Message, Loc.T("VaultSaveFailed"),
-                MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
+            ClearInsertionCue();
+            e.Effects = DragDropEffects.None;
         }
-        RenderCards();
-        AddLog(Loc.T("OrderSaved"));
     }
+
     private void EmptyArea_DragOver(object sender, DragEventArgs e)
     {
         e.Effects = DragDropEffects.None;
-        if (busy || SearchBox.Text.Length > 0 || StatusFilter.SelectedIndex != 0 ||
-            !e.Data.GetDataPresent("CDM_CardUuid")) return;
-        if (sender is not FrameworkElement element ||
-            !Enum.TryParse<DeploymentGroup>(element.Tag as string, out var group)) return;
-        if (e.Data.GetData("CDM_CardUuid") is string uuid &&
-            allCards.TryGetValue(uuid, out var card) &&
-            card.Group == group && !card.PositionLocked)
+        ClearInsertionCue();
+        if (sender is FrameworkElement element &&
+            Enum.TryParse<DeploymentGroup>(element.Tag as string, out var group) &&
+            DraggedCardUuid(e) is string sourceUuid &&
+            TryPlanCardMove(group, sourceUuid, null, false, out _))
             e.Effects = DragDropEffects.Move;
         e.Handled = true;
     }
 
     private void EmptyArea_Drop(object sender, DragEventArgs e)
     {
-        if (busy || SearchBox.Text.Length > 0 || StatusFilter.SelectedIndex != 0 ||
-            !e.Data.GetDataPresent("CDM_CardUuid")) return;
-        if (sender is not FrameworkElement element ||
-            !Enum.TryParse<DeploymentGroup>(element.Tag as string, out var group) ||
-            e.Data.GetData("CDM_CardUuid") is not string uuid ||
-            !allCards.TryGetValue(uuid, out var card) ||
-            card.PositionLocked || card.Group != group) return;
         e.Handled = true;
-        // Drop on an unused slot in this section appends within the same group.
-        var before = FilterAndOrder(group).Select(c => c.Uuid).ToList();
-        var order = new List<string>(before);
-        order.Remove(uuid);
-        order.Add(uuid);
-        if (!KeepsFixedPositions(before, order))
+        ClearInsertionCue();
+        if (sender is FrameworkElement element &&
+            Enum.TryParse<DeploymentGroup>(element.Tag as string, out var group) &&
+            DraggedCardUuid(e) is string sourceUuid)
         {
+            CommitCardMove(group, sourceUuid, null, false);
+            e.Effects = DragDropEffects.Move;
+        }
+        else e.Effects = DragDropEffects.None;
+    }
+
+    private void CommitCardMove(DeploymentGroup group, string sourceUuid,
+        string? destinationUuid, bool insertAfter)
+    {
+        if (!TryPlanCardMove(group, sourceUuid, destinationUuid, insertAfter,
+            out var planned))
+        {
+            // Locked positions retain their original visual index.
             AddLog(Loc.T("LockedPositionPrevented"));
             return;
         }
+
+        var before = FilterAndOrder(group).Select(c => c.Uuid).ToList();
+        if (before.SequenceEqual(planned, StringComparer.OrdinalIgnoreCase)) return;
+
         var key = OrderKey(group);
         settings.CardOrders.TryGetValue(key, out var previous);
-        settings.CardOrders[key] = order;
+        settings.CardOrders[key] = planned;
         try { SettingsStore.Save(settings); }
         catch (Exception ex)
         {
