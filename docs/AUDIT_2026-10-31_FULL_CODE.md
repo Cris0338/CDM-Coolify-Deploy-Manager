@@ -137,3 +137,17 @@ After correcting the name resolution conflict in `App.xaml.cs`, owner ran `BUILD
 - Disposable clone .pending staged; detached on-exit update completed; previous executable hash-confirmed in last-good backup; token, card order and position locks preserved.
 
 **Important qualification:** SSH recovery smoke covers eligibility logic *only*, not an actual SSH remote disconnect or recovery. Still necessary to explicitly upgrade and test user's private clone (only after closing it), observe first-minute behavior, and collect the SSH exit code/stderr if it happens. No staging deployment or production server changes were performed. The previous deferred-save end-to-end PASS remains confirmed.
+
+## 2026-10-31 — Compiled build provenance and dynamic About version (2.2.1)
+
+The user reported that the About window did not clearly identify the successive test builds. Found that `AboutVersion` in English, French and Italian JSON was hardcoded to `WPF · Version 2.2.0`, with an additional hardcoded 2.2.0 window title and startup log. A string updated only when someone remembers to edit translations cannot distinguish repeated patches.
+
+**Fix on the development branch:**
+- Bump `CoolifyDeployManager.csproj` version to **2.2.1**.
+- Add `BuildInfo.cs` which reads assembly version and `CDM.SourceCommit` / `CDM.BuildUtc` assembly metadata. No personal credentials involved.
+- `BUILD_PORTABLE.ps1` stamps a 12-character Git SHA and UTC build timestamp through MSBuild properties when publishing the generic EXE. Builds outside this script show explicitly `local` / `unspecified`, not an invented source identity.
+- The About WPF dialog displays localized dynamic version and nonsecret build details with a copy-to-clipboard action; main window title and startup diagnostic log use the same compiled version.
+- The script adds `--verify-build-info` executable smoke with exact SHA/date/version comparison for both published generic and disposable clone after upgrade. No real personal EXE needs to be opened.
+- EN, FR and IT locales now have formatted `AboutVersion` and `AboutBuild`; their key counts are 227. Preview locales fall back to English.
+
+**Status:** source, JSON and cross-file reference checks passed through GitHub inspection; **Windows build and new smoke have NOT yet been run**. No release/merge/tag, no personal clone upgrade.
