@@ -352,8 +352,12 @@ public partial class MainWindow : Window
     {
         if (e.LeftButton != MouseButtonState.Pressed)
         {
+            // Release only a capture created by this card's active drag, never
+            // a capture owned by an unrelated control during a normal hover.
+            if (dragUuid is not null && Mouse.Captured is Border captured &&
+                captured.DataContext is AppCardView)
+                Mouse.Capture(null);
             dragUuid = null;
-            if (Mouse.Captured is Border) Mouse.Capture(null);
             return;
         }
         if (dragUuid is null || busy || SearchBox.Text.Length != 0 || StatusFilter.SelectedIndex != 0) return;
