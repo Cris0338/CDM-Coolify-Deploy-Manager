@@ -6,7 +6,7 @@ English is the canonical language for source comments, technical documentation a
 | --- | --- |
 | English (`en`), Français (`fr`), Italiano (`it`) | Español (`es`), Deutsch (`de`), Português-BR (`pt-BR`), Nederlands (`nl`), Polski (`pl`), Türkçe (`tr`), Русский (`ru`), Українська (`uk`), 日本語 (`ja`), 한국어 (`ko`), 简体中文 (`zh-CN`) |
 
-On the 31 October 2026 Windows build, en/fr/it had **217/217 localization keys**; preview catalogs had **53/217** and fell back to English. The exact number can change as keys are added.
+On the 31 October 2026 Windows build, en/fr/it had **221/221 localization keys**; preview catalogs had **53/221** and fell back to English. The exact number can change as keys are added.
 
 To contribute:
 
