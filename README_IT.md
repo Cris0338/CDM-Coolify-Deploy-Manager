@@ -52,15 +52,15 @@ Sostituisci il nome di esempio con quello effettivo; viene creato un backup cont
 
 ## Stato al 31 ottobre 2026
 
-**Verificato su Windows:** build locale, clone personale, tunnel SSH indipendente, API Coolify e inventario di 30 applicazioni, verifica degli asset grafici, test di aggiornamento di clone temporaneo.
+**CDM 2.2.1 verificato su Windows:** build e test automatici superati, versione/commit/data identificabili nelle Informazioni, clone personale, API Coolify e tunnel SSH rimasto attivo per oltre 14 minuti senza disconnessioni osservate.
 
-**Da verificare prima del rilascio:** deploy reale di uno staging, tutti i controlli WPF aggiornati e portabilità su un secondo PC.
+**Pre-release accettata dall'autore:** resteranno da verificare il primo deploy reale di staging e la portabilità su un secondo PC. Per questo 2.2.1 è una versione preliminare, non una release stabile completamente collaudata.
 
 La documentazione tecnica completa è in [README.md](README.md), [CDM_SETUP_GUIDE.md](CDM_SETUP_GUIDE.md), [BUILDING.md](BUILDING.md) e [DEVELOPER_NOTES.md](DEVELOPER_NOTES.md).
 
 ## Scaricare CDM facilmente
 
-Dopo il rilascio, la pagina ufficiale sara [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases): bastera scaricare il generico `CDM.exe` oppure il pacchetto ZIP con guida italiana. Non esiste ancora una release pubblicata. `PACKAGE_RELEASE.ps1` prepara i file per il caricamento manuale, senza pubblicarli. Vedi [RELEASE_GUIDE.md](RELEASE_GUIDE.md) e il [punto del 31 ottobre](PROJECT_STATUS_2026-10-31.md).
+Dopo il rilascio, la pagina ufficiale sara [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases): bastera scaricare il generico `CDM.exe` oppure il pacchetto ZIP con guida italiana. La pubblicazione effettiva si verifica nella pagina GitHub Releases; `PACKAGE_RELEASE.ps1` prepara i file per il caricamento manuale, senza pubblicarli. Vedi [RELEASE_GUIDE.md](RELEASE_GUIDE.md) e il [punto del 31 ottobre](PROJECT_STATUS_2026-10-31.md).
 
 ## 🍺 Offri una birra a Cris0338!
 
