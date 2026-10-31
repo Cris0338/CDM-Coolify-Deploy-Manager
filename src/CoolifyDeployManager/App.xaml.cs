@@ -112,7 +112,11 @@ public partial class App : Application
         // executable can still start after the personalized trailer is appended.
         // No network calls, real credentials, or GitHub Actions are involved.
         if (e.Args.Length == 2 &&
-            (e.Args[0] == "--emit-self-test-clone" || e.Args[0] == "--verify-self-test-clone" || e.Args[0] == "--verify-template-empty"))
+            (e.Args[0] == "--emit-self-test-clone" ||
+             e.Args[0] == "--verify-self-test-clone" ||
+             e.Args[0] == "--verify-template-empty" ||
+             e.Args[0] == "--save-self-test-clone" ||
+             e.Args[0] == "--verify-saved-self-test-clone"))
         {
             try
             {
@@ -135,6 +139,31 @@ public partial class App : Application
                         !string.IsNullOrWhiteSpace(current.SshPrivateKey))
                         throw new InvalidDataException("Generic CDM.exe unexpectedly loaded credentials or configuration.");
                     File.WriteAllText(e.Args[1], "CDM-TEMPLATE-CLEAN");
+                }
+                else if (e.Args[0] == "--save-self-test-clone")
+                {
+                    if (!SettingsStore.HasPortableProfile ||
+                        SettingsStore.Load().ServerLabel != "smoke-test")
+                        throw new InvalidDataException("Only the disposable test clone can exercise pending saves.");
+                    var updated = SettingsStore.Load();
+                    updated.ServerLabel = "smoke-test-saved";
+                    updated.CardOrders["ALL|Staging"] = new List<string> { "test-b", "test-a" };
+                    updated.LockedPositions.Add("test-b");
+                    SettingsStore.Save(updated);
+                    File.WriteAllText(e.Args[1], "CDM-PENDING-STAGED");
+                }
+                else if (e.Args[0] == "--verify-saved-self-test-clone")
+                {
+                    var updated = SettingsStore.Load();
+                    if (!SettingsStore.HasPortableProfile ||
+                        updated.ServerLabel != "smoke-test-saved" ||
+                        updated.ReadToken != "__CDM_SELFTEST__" ||
+                        updated.DeployToken != "__CDM_SELFTEST__" ||
+                        !updated.CardOrders.TryGetValue("ALL|Staging", out var order) ||
+                        !order.SequenceEqual(new[] { "test-b", "test-a" }) ||
+                        !updated.LockedPositions.Contains("test-b"))
+                        throw new InvalidDataException("The deferred profile save lost configuration data.");
+                    File.WriteAllText(e.Args[1], "CDM-PENDING-APPLIED");
                 }
                 else
                 {
