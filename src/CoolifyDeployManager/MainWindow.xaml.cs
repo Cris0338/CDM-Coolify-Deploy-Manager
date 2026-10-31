@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Windows.Media.Animation;
 
 namespace CoolifyDeployManager;
 
@@ -294,6 +295,19 @@ public partial class MainWindow : Window
         InventoryCount.Text = Loc.F("VisibleCount", stage.Count + prod.Count + unknown.Count, inventory.Applications.Count);
         EmptyLabel.Visibility = stage.Count + prod.Count + unknown.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
+    private void Card_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Border card) return;
+        card.Opacity = 0;
+        var shift = new TranslateTransform(0, 12);
+        card.RenderTransform = shift;
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        card.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1,
+            TimeSpan.FromMilliseconds(210)) { EasingFunction = ease });
+        shift.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(12, 0,
+            TimeSpan.FromMilliseconds(210)) { EasingFunction = ease });
+    }
+
     private void Grip_Down(object sender, MouseButtonEventArgs e)
     {
         dragOrigin = e.GetPosition(this);
@@ -312,6 +326,7 @@ public partial class MainWindow : Window
     private void Card_Drop(object sender, DragEventArgs e)
     {
         if (busy || SearchBox.Text.Length > 0 || StatusFilter.SelectedIndex != 0 || !e.Data.GetDataPresent("CDM_CardUuid")) return;
+        e.Handled = true; // Do not treat a rejected drop on a locked card as an empty-area drop.
         if (e.Data.GetData("CDM_CardUuid") is not string sourceUuid || (sender as FrameworkElement)?.DataContext is not AppCardView destination) return;
         if (!allCards.TryGetValue(sourceUuid, out var source) || source.Group != destination.Group ||
             source.PositionLocked || destination.PositionLocked || sourceUuid == destination.Uuid) return;
@@ -336,6 +351,50 @@ public partial class MainWindow : Window
         RenderCards();
         AddLog(Loc.T("OrderSaved"));
     }
+    private void EmptyArea_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = DragDropEffects.None;
+        if (busy || SearchBox.Text.Length > 0 || StatusFilter.SelectedIndex != 0 ||
+            !e.Data.GetDataPresent("CDM_CardUuid")) return;
+        if (sender is not FrameworkElement element ||
+            !Enum.TryParse<DeploymentGroup>(element.Tag as string, out var group)) return;
+        if (e.Data.GetData("CDM_CardUuid") is string uuid &&
+            allCards.TryGetValue(uuid, out var card) &&
+            card.Group == group && !card.PositionLocked)
+            e.Effects = DragDropEffects.Move;
+        e.Handled = true;
+    }
+
+    private void EmptyArea_Drop(object sender, DragEventArgs e)
+    {
+        if (busy || SearchBox.Text.Length > 0 || StatusFilter.SelectedIndex != 0 ||
+            !e.Data.GetDataPresent("CDM_CardUuid")) return;
+        if (sender is not FrameworkElement element ||
+            !Enum.TryParse<DeploymentGroup>(element.Tag as string, out var group) ||
+            e.Data.GetData("CDM_CardUuid") is not string uuid ||
+            !allCards.TryGetValue(uuid, out var card) ||
+            card.PositionLocked || card.Group != group) return;
+        e.Handled = true;
+        // Drop on an unused slot in this section appends within the same group.
+        var order = FilterAndOrder(group).Select(c => c.Uuid).ToList();
+        order.Remove(uuid);
+        order.Add(uuid);
+        var key = OrderKey(group);
+        settings.CardOrders.TryGetValue(key, out var previous);
+        settings.CardOrders[key] = order;
+        try { SettingsStore.Save(settings); }
+        catch (Exception ex)
+        {
+            if (previous is null) settings.CardOrders.Remove(key);
+            else settings.CardOrders[key] = previous;
+            MessageBox.Show(this, ex.Message, Loc.T("VaultSaveFailed"),
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        RenderCards();
+        AddLog(Loc.T("OrderSaved"));
+    }
+
     private void TogglePositionLock_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as MenuItem)?.DataContext is not AppCardView card) return;

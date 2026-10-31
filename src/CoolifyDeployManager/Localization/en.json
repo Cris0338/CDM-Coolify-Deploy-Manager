@@ -213,5 +213,6 @@
   "AllStaging": "Deploy ALL staging",
   "NoSelectedStaging": "Select at least one staging application using the checkboxes.",
   "DeploySkippedLocked": "Skipped (deployment locked): {0}",
-  "SearchProjects": "Search projects..."
+  "SearchProjects": "Search projects...",
+  "DropToEnd": "Drop here to move a card to the end of this section"
 }

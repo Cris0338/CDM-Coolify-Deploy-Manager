@@ -213,5 +213,6 @@
   "AllStaging": "Deploy TUTTI gli staging",
   "NoSelectedStaging": "Seleziona almeno uno staging usando le caselle sulle card.",
   "DeploySkippedLocked": "Saltato (deploy bloccato): {0}",
-  "SearchProjects": "Cerca progetto..."
+  "SearchProjects": "Cerca progetto...",
+  "DropToEnd": "Trascina qui per spostare una card alla fine di questa sezione"
 }

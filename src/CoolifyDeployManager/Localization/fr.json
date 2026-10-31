@@ -213,5 +213,6 @@
   "AllStaging": "Déployer TOUS les staging",
   "NoSelectedStaging": "Sélectionnez au moins une application staging avec les cases à cocher.",
   "DeploySkippedLocked": "Ignoré (déploiement bloqué) : {0}",
-  "SearchProjects": "Rechercher un projet..."
+  "SearchProjects": "Rechercher un projet...",
+  "DropToEnd": "Déposez ici pour déplacer une carte à la fin de cette section"
 }
