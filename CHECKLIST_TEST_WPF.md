@@ -109,3 +109,15 @@ All source changes are committed but GUI functionality remains unaccepted until 
 - [ ] Dashboard and terminal scrollbars align with a 16px inset and are not clipped by window edges.
 - [ ] Splitter at top of status strip can resize log up/down, without breaking dashboard min height; hide/show restores last selected log height.
 - [ ] After latest real clone upgrade, inspect whether the settings `.pending` is consumed normally on close; preserve all personal backups.
+
+### Fifth regression: live health and pending save (2026-10-31)
+
+- [x] Owner reported a real deploy job finished, but CDM stayed red UNHEALTHY until manual Refresh (Coolify already green).
+- [x] Owner checked no CDM processes active while newer personal `.pending` remained unapplied.
+- [ ] Windows build smoke validates health view-model's unhealthy→healthy transition, keeping deployment history unchanged.
+- [ ] Disposable clone's actual close-time pending replacement completes and preserved token/card order/locks are verified by the build script.
+- [ ] Verify existing real personal `.pending` integrity and recover newer profile with an independent backup **before** upgrading personal EXE.
+- [ ] After another confirmed deployment, verify automatic health transition in the UI without pressing Refresh, including timeout when Coolify is not healthy.
+- [ ] Close/restart updated personalized EXE after changing card order; pending should be consumed and latest order retained; inspect `.pending.updater-error.txt` if a save fails.
+
+No real server action is part of the pending or health smoke tests; manual real deployment only with owner's explicit confirmation.
