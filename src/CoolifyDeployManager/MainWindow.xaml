@@ -1,5 +1,5 @@
 <!-- Copyright (c) 2026 Cris0338. Licensed under the CDM Free Redistribution License v1.0. -->
-<Window x:Class="CoolifyDeployManager.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Title="Coolify Deploy Manager 2.2.0" WindowStyle="None" ResizeMode="CanResize" Background="{StaticResource Canvas}" Foreground="{StaticResource Primary}" Width="1500" Height="920" MinWidth="850" MinHeight="570" Icon="Assets/CDMOfficial.ico" Loaded="Window_Loaded" Closing="Window_Closing" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen">
+<Window x:Class="CoolifyDeployManager.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Title="Coolify Deploy Manager 2.2.0" WindowStyle="None" ResizeMode="CanResize" Background="{StaticResource Canvas}" Foreground="{StaticResource Primary}" Width="1500" Height="920" MinWidth="850" MinHeight="570" Icon="Assets/CDMOfficial.ico" Loaded="Window_Loaded" Closing="Window_Closing" KeyDown="Window_KeyDown" StateChanged="Window_StateChanged" WindowStartupLocation="CenterScreen">
   <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="7" GlassFrameThickness="0" CornerRadius="0"/></shell:WindowChrome.WindowChrome>
   <Window.Resources>
     <!-- Own the entire menu template so Windows' light checkmark gutter never leaks into the dark UI. -->
@@ -95,9 +95,10 @@
             <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/><RowDefinition Height="Auto"/>
           </Grid.RowDefinitions>
+          <!-- The entire non-interactive card face initiates drag: no grip required. -->
           <Grid Grid.Row="0" Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}"
                       Visibility="{Binding SelectionVisibility}" Margin="0,2,10,0"
@@ -105,12 +106,6 @@
             <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="15"
                        FontWeight="SemiBold" TextWrapping="Wrap" MaxHeight="45"
                        ToolTip="{Binding FullDescription}"/>
-            <Border Grid.Column="2" Background="{StaticResource Hover}" CornerRadius="6"
-                    Padding="8,6" Margin="8,0,0,0" Cursor="SizeAll"
-                    ToolTip="{DynamicResource L.DragTooltip}">
-              <TextBlock Text="⠿" FontSize="17" Foreground="{StaticResource Muted}"
-                         IsHitTestVisible="False"/>
-            </Border>
           </Grid>
           <StackPanel Grid.Row="1" Margin="0,0,0,10">
             <TextBlock Text="{Binding Environment}" FontSize="11"
@@ -153,29 +148,35 @@
   </Window.Resources>
   <Grid x:Name="DashboardRoot" Background="{StaticResource Canvas}">
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*" MinHeight="100"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="160" MinHeight="75"/>
     </Grid.RowDefinitions>
-    <!-- Single titlebar layout: large transparent logo, title/subtitle, and
-         one vertical status column with unframed version text above both pills. -->
-    <Border Grid.Row="0" Background="{StaticResource Header}" Padding="20,10">
+    <!-- Full-height drag surface with native-size vector window buttons.
+         Interactive buttons keep their own click behavior and never start dragging. -->
+    <Border Grid.Row="0" Background="{StaticResource Header}" Padding="20,10"
+            PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" MinWidth="0"/>
           <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Grid MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Cursor="SizeAll" VerticalAlignment="Center">
+        <Grid VerticalAlignment="Center">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Source="Assets/CDMLogo.png" Width="88" Height="88" Margin="0,0,12,0"
-                 Stretch="Uniform" RenderOptions.BitmapScalingMode="Fant"
-                 SnapsToDevicePixels="True"/>
+          <Image Grid.Column="0" Source="Assets/CDMLogo.png" Width="88" Height="88"
+                 Margin="0,0,12,0" Stretch="Uniform"
+                 RenderOptions.BitmapScalingMode="Fant" SnapsToDevicePixels="True"/>
           <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
             <TextBlock Text="Coolify Deploy Manager" FontSize="21" FontWeight="Bold"/>
-            <TextBlock Text="{DynamicResource L.Subtitle}" Foreground="{StaticResource Muted}"
-                       FontSize="12" Margin="0,7,0,0"/>
+            <TextBlock Text="{DynamicResource L.Subtitle}"
+                       Foreground="{StaticResource Muted}" FontSize="12" Margin="0,7,0,0"/>
           </StackPanel>
           <StackPanel Grid.Column="2" VerticalAlignment="Center" MaxWidth="335">
             <TextBlock Text="WPF 2.2.0" FontSize="11" Foreground="{StaticResource Purple}"
@@ -187,7 +188,8 @@
             </Border>
             <Border Background="{StaticResource Surface}" CornerRadius="8"
                     HorizontalAlignment="Left" Padding="10,5" Margin="0,5,0,0"
-                    MaxWidth="335" Visibility="{Binding ElementName=ProfileIdentity, Path=Visibility}">
+                    MaxWidth="335"
+                    Visibility="{Binding ElementName=ProfileIdentity, Path=Visibility}">
               <TextBlock x:Name="ProfileIdentity" FontSize="11" Foreground="{StaticResource Green}"
                          TextTrimming="CharacterEllipsis"
                          ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"
@@ -197,15 +199,37 @@
         </Grid>
         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
           <Ellipse x:Name="ConnectionDot" Width="9" Height="9" Fill="{StaticResource Red}" Margin="0,0,7,0"/>
-          <TextBlock x:Name="ConnectionText" Text="{DynamicResource L.NotConnected}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" Margin="0,0,18,0"/>
-          <Button x:Name="RefreshButton" Style="{StaticResource ActionButton}" Content="{DynamicResource L.Refresh}" Background="{StaticResource Purple}" Click="Refresh_Click" Margin="0,0,8,0"/>
-          <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.Configuration}" Click="Settings_Click" Margin="0,0,8,0"/>
-          <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.ApiGuide}" Click="Guide_Click" Margin="0,0,8,0"/>
-          <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.About}" Click="About_Click"/>
+          <TextBlock x:Name="ConnectionText" Text="{DynamicResource L.NotConnected}"
+                     VerticalAlignment="Center" Foreground="{StaticResource Muted}" Margin="0,0,18,0"/>
+          <Button x:Name="RefreshButton" Style="{StaticResource ActionButton}"
+                  Content="{DynamicResource L.Refresh}" Background="{StaticResource Purple}"
+                  Click="Refresh_Click" Margin="0,0,8,0"/>
+          <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.Configuration}"
+                  Click="Settings_Click" Margin="0,0,8,0"/>
+          <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.ApiGuide}"
+                  Click="Guide_Click" Margin="0,0,8,0"/>
+          <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.About}"
+                  Click="About_Click"/>
           <Border Background="{StaticResource Line}" Width="1" Margin="13,5"/>
-          <Button Content="—" Style="{StaticResource ActionButton}" Width="36" Padding="0" Click="Minimize_Click" ToolTip="Minimize"/>
-          <Button Content="□" Style="{StaticResource ActionButton}" Width="36" Padding="0" Margin="4,0,0,0" Click="Maximize_Click" ToolTip="Maximize / Restore"/>
-          <Button Style="{StaticResource ActionButton}" Width="36" Height="34" Padding="0" Margin="4,0,0,0" Background="#76303D" Click="CloseWindow_Click" ToolTip="Close"><Path Data="M 1,1 L 11,11 M 11,1 L 1,11" Width="12" Height="12" Stroke="White" StrokeThickness="2" Stretch="Uniform"/></Button>
+          <Button Style="{StaticResource ActionButton}" Width="36" Height="34"
+                  Padding="0" Click="Minimize_Click" ToolTip="Minimize">
+            <Path Stroke="White" StrokeThickness="1.7" StrokeStartLineCap="Square"
+                  Data="M 2,9 H 14" Width="16" Height="16" Stretch="Uniform"/>
+          </Button>
+          <Button x:Name="MaximizeButton" Style="{StaticResource ActionButton}"
+                  Width="36" Height="34" Padding="0" Margin="4,0,0,0"
+                  Click="Maximize_Click" ToolTip="Maximize / Restore">
+            <Path x:Name="MaximizeGlyph" Stroke="White" StrokeThickness="1.5"
+                  StrokeLineJoin="Miter" Data="M 2,2 H 14 V 14 H 2 Z"
+                  Width="16" Height="16" Stretch="Uniform"/>
+          </Button>
+          <Button Style="{StaticResource ActionButton}" Width="36" Height="34"
+                  Padding="0" Margin="4,0,0,0" Background="#76303D"
+                  Click="CloseWindow_Click" ToolTip="Close">
+            <Path Data="M 1,1 L 11,11 M 11,1 L 1,11"
+                  Width="12" Height="12" Stroke="White" StrokeThickness="2"
+                  Stretch="Uniform"/>
+          </Button>
         </StackPanel>
       </Grid>
     </Border>
@@ -243,7 +267,7 @@
         </ComboBox>
       </Grid>
     </Border>
-    <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="22,5,8,0">
+    <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,16,0" Padding="22,5,0,0">
       <StackPanel>
         <!-- Section panels and their explicit end targets are transparent hit-test
              surfaces, even where no card occupies the last row. -->
@@ -260,15 +284,7 @@
               <ItemsPanelTemplate><WrapPanel Background="Transparent" MinHeight="70"/></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
           </ItemsControl>
-          <Border Tag="Staging" Height="52" Background="Transparent" CornerRadius="8"
-                  BorderBrush="{StaticResource Line}" BorderThickness="1"
-                  Margin="0,0,14,10" Padding="12,8" AllowDrop="True"
-                  PreviewDragOver="EmptyArea_DragOver" PreviewDrop="EmptyArea_Drop">
-            <TextBlock Text="{DynamicResource L.DropToEnd}" VerticalAlignment="Center"
-                       Foreground="{StaticResource Muted}" HorizontalAlignment="Center"
-                       IsHitTestVisible="False"/>
-          </Border>
-        </StackPanel>
+          </StackPanel>
         <StackPanel x:Name="ProductionSection" Margin="0,4,0,12">
           <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
             <Border Background="{StaticResource Red}" Width="4" CornerRadius="3" Margin="0,0,12,0"/>
@@ -282,15 +298,7 @@
               <ItemsPanelTemplate><WrapPanel Background="Transparent" MinHeight="70"/></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
           </ItemsControl>
-          <Border Tag="Production" Height="52" Background="Transparent" CornerRadius="8"
-                  BorderBrush="{StaticResource Line}" BorderThickness="1"
-                  Margin="0,0,14,10" Padding="12,8" AllowDrop="True"
-                  PreviewDragOver="EmptyArea_DragOver" PreviewDrop="EmptyArea_Drop">
-            <TextBlock Text="{DynamicResource L.DropToEnd}" VerticalAlignment="Center"
-                       Foreground="{StaticResource Muted}" HorizontalAlignment="Center"
-                       IsHitTestVisible="False"/>
-          </Border>
-        </StackPanel>
+          </StackPanel>
         <StackPanel x:Name="UnknownSection" Margin="0,4,0,12">
           <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
             <Border Background="{StaticResource Muted}" Width="4" CornerRadius="3" Margin="0,0,12,0"/>
@@ -304,34 +312,45 @@
               <ItemsPanelTemplate><WrapPanel Background="Transparent" MinHeight="70"/></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
           </ItemsControl>
-          <Border Tag="Unknown" Height="52" Background="Transparent" CornerRadius="8"
-                  BorderBrush="{StaticResource Line}" BorderThickness="1"
-                  Margin="0,0,14,10" Padding="12,8" AllowDrop="True"
-                  PreviewDragOver="EmptyArea_DragOver" PreviewDrop="EmptyArea_Drop">
-            <TextBlock Text="{DynamicResource L.DropToEnd}" VerticalAlignment="Center"
-                       Foreground="{StaticResource Muted}" HorizontalAlignment="Center"
-                       IsHitTestVisible="False"/>
-          </Border>
-        </StackPanel>
+          </StackPanel>
         <TextBlock x:Name="EmptyLabel" Text="{DynamicResource L.NoneMatch}" FontSize="15" Foreground="{StaticResource Muted}" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,20,0,20"/>
       </StackPanel>
     </ScrollViewer>
-    <Border Grid.Row="4" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="15,8" Background="{StaticResource Header}">
+    <!-- A splitter inside the status row resizes previous (dashboard) and next
+         (terminal) rows without changing the toolbar's height. -->
+    <Border Grid.Row="4" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0"
+            Padding="15,11,15,8" Background="{StaticResource Header}">
       <Grid>
         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-        <TextBlock x:Name="OperationText" Text="{DynamicResource L.Ready}" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/>
-        <Button Grid.Column="1" Content="{DynamicResource L.ToggleLog}" Style="{StaticResource ActionButton}" Click="ToggleLog_Click" Padding="10,5"/>
+        <TextBlock x:Name="OperationText" Text="{DynamicResource L.Ready}"
+                   Foreground="{StaticResource Muted}" VerticalAlignment="Center"/>
+        <Button Grid.Column="1" Content="{DynamicResource L.ToggleLog}"
+                Style="{StaticResource ActionButton}" Click="ToggleLog_Click" Padding="10,5"/>
       </Grid>
     </Border>
-    <Border x:Name="LogPanel" Grid.Row="5" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Background="#0C0F15" Height="150">
+    <GridSplitter Grid.Row="4" Height="7" VerticalAlignment="Top"
+                  HorizontalAlignment="Stretch" ResizeDirection="Rows"
+                  ResizeBehavior="PreviousAndNext" ShowsPreview="True"
+                  Background="{StaticResource Hover}" Cursor="SizeNS"
+                  Panel.ZIndex="3" ToolTip="Resize activity log"/>
+    <Border x:Name="LogPanel" Grid.Row="5" BorderBrush="{StaticResource Line}"
+            BorderThickness="0,1,0,0" Background="#0C0F15">
       <Grid Margin="16,9">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-          <TextBlock Text="{DynamicResource L.ActivityLog}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/>
-          <Button Content="{DynamicResource L.Copy}" Click="CopyLog_Click" Foreground="{StaticResource Purple}" Background="Transparent" BorderThickness="0" Margin="18,0,0,0" Cursor="Hand"/>
-          <Button Content="{DynamicResource L.Clear}" Click="ClearLog_Click" Foreground="{StaticResource Muted}" Background="Transparent" BorderThickness="0" Margin="12,0,0,0" Cursor="Hand"/>
+          <TextBlock Text="{DynamicResource L.ActivityLog}" FontSize="11" FontWeight="Bold"
+                     Foreground="{StaticResource Muted}" VerticalAlignment="Center"/>
+          <Button Content="{DynamicResource L.Copy}" Click="CopyLog_Click"
+                  Foreground="{StaticResource Purple}" Background="Transparent"
+                  BorderThickness="0" Margin="18,0,0,0" Cursor="Hand"/>
+          <Button Content="{DynamicResource L.Clear}" Click="ClearLog_Click"
+                  Foreground="{StaticResource Muted}" Background="Transparent"
+                  BorderThickness="0" Margin="12,0,0,0" Cursor="Hand"/>
         </StackPanel>
-        <TextBox Grid.Row="1" x:Name="LogBox" Background="Transparent" BorderThickness="0" Foreground="#AAB5C8" FontFamily="Consolas" FontSize="12" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+        <TextBox Grid.Row="1" x:Name="LogBox" Background="Transparent"
+                 BorderThickness="0" Foreground="#AAB5C8" FontFamily="Consolas"
+                 FontSize="12" IsReadOnly="True" TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto"/>
       </Grid>
     </Border>
   </Grid>
