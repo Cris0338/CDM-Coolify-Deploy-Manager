@@ -119,23 +119,56 @@ internal static class ExecutableProfile
         }) ?? throw new IOException("Cannot launch the personalized CDM executable.");
     }
 
-    // A running Windows PE cannot replace itself. The small detached PowerShell updater
-    // waits for this PID to exit, then atomically replaces the file with the staged clone.
-    // It never receives tokens or private keys on its command line.
-    public static void ScheduleReplaceOnExit(string stagedPath)
+    // Save-to-self is a two-phase operation: the live clone writes a complete,
+    // checksum-protected .pending EXE; this detached helper waits for that clone
+    // to exit and replaces it in the SAME directory. The helper retries only
+    // transient Windows file-lock errors; it never deletes an unapplied pending
+    // profile or passes credentials as command-line arguments.
+    public static void ScheduleReplaceOnExit(string pendingPath)
     {
         var target = OwnPath;
-        static string Quote(string s) => "'" + s.Replace("'", "''") + "'";
+        var absolutePending = Path.GetFullPath(pendingPath);
+        if (string.Equals(target, absolutePending, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(Path.GetDirectoryName(target),
+                Path.GetDirectoryName(absolutePending), StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("The staged clone must be beside the running clone.");
+
+        // Fail before the caller marks the helper as scheduled if the staged
+        // EXE does not contain a valid, configured, intact embedded profile.
+        if (!TryReadFile(absolutePending, out var saved) || saved?.IsConfigured != true)
+            throw new InvalidDataException("The staged clone does not contain valid settings.");
+
+        static string Quote(string value) => "'" + value.Replace("'", "''") + "'";
+        var updaterError = absolutePending + ".updater-error.txt";
+        // A single, bounded save helper. A previous failed save remains
+        // recoverable, and the next attempt clears its diagnostic on success.
         var script = "$ErrorActionPreference='Stop'; " +
+            $"$pending={Quote(absolutePending)}; $target={Quote(target)}; $errorFile={Quote(updaterError)}; " +
             $"Wait-Process -Id {Environment.ProcessId} -ErrorAction SilentlyContinue; " +
-            $"[System.IO.File]::Replace({Quote(stagedPath)}, {Quote(target)}, $null)";
+            "$last=$null; for($attempt=0; $attempt -lt 160; $attempt++) { " +
+            "try { [System.IO.File]::Replace($pending,$target,$null); " +
+            "Remove-Item -LiteralPath $errorFile -Force -ErrorAction SilentlyContinue; exit 0 } " +
+            "catch [System.IO.IOException] { $last=$_.Exception } " +
+            "catch [System.UnauthorizedAccessException] { $last=$_.Exception } " +
+            "Start-Sleep -Milliseconds 300 }; " +
+            "try { [System.IO.File]::WriteAllText($errorFile, " +
+            "'CDM could not finish the profile save after retrying Windows file locks: ' + $last.Message) } " +
+            "catch { }; exit 1";
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
-        var start = new ProcessStartInfo("powershell.exe") {
-            UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden
+        var start = new ProcessStartInfo("powershell.exe")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden
         };
-        foreach (var arg in new[] { "-NoProfile", "-NonInteractive", "-WindowStyle",
-            "Hidden", "-EncodedCommand", encoded }) start.ArgumentList.Add(arg);
-        using var updater = Process.Start(start)
-            ?? throw new IOException("Unable to schedule the embedded profile update.");
+        foreach (var argument in new[]
+        {
+            "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+            "-WindowStyle", "Hidden", "-EncodedCommand", encoded
+        }) start.ArgumentList.Add(argument);
+
+        using var process = Process.Start(start)
+            ?? throw new IOException("Unable to launch the detached profile-save helper.");
     }
+
 }
