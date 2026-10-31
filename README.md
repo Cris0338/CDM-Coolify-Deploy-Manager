@@ -1,5 +1,7 @@
 # CDM — Coolify Deploy Manager
 
+**[Guida rapida in italiano / Guida italiana](README_IT.md)**
+
 **Created by [Cris0338](https://github.com/Cris0338)** · © 2026 Cris0338 · [CDM Free Redistribution License v1.0](LICENSE)  
 **Free to use, including at work · Free to share · Not for resale · Voluntary support welcome**
 

@@ -19,8 +19,7 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,24">
             <Border Background="#433662" CornerRadius="14" Width="56" Height="56" Margin="0,0,14,0">
-                <TextBlock Text="↟" FontSize="34" Foreground="{StaticResource Purple}"
-                           VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <Image Source="Assets/CDMOfficial.ico" Width="53" Height="53" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
             </Border>
             <StackPanel VerticalAlignment="Center">
                 <TextBlock Text="Coolify Deploy Manager" FontSize="23" FontWeight="Bold" />

@@ -1,5 +1,7 @@
 # CDM WPF 2.1.0 — Dark theme and initial localization
 
+> **Historical record only.** This version may describe retired settings, encryption, build or MIT licensing. For CDM 2.2 use [README.md](README.md), [CDM_SETUP_GUIDE.md](CDM_SETUP_GUIDE.md) and the current [LICENSE](LICENSE).
+
 - Introduced custom dark title bars across WPF windows.
 - Improved dark theme contrast in Settings, including ComboBox controls.
 - Added English, French and Italian interface strings with Windows UI-language detection.
