@@ -90,3 +90,16 @@ Exception calling "Replace" with "3" arguments:
 **Targeted correction — not yet Windows-verified:** `ExecutableProfile.ScheduleReplaceOnExit` now passes a real full backup path `<personal-clone>.before-save.bak` to `File.Replace`. The same path is overwritten with the latest previously installed clone at each successful save, avoiding an unbounded collection of ordinary save backups. Both the backup and current clone contain real credentials; keep them private. The build includes a small isolated Windows PowerShell `File.Replace` compatibility proof using dummy `.txt` files **before** publishing and, in the end-to-end disposable-clone smoke, an SHA256 comparison proving the last-good backup is byte-identical to the pre-save personal clone. No network, real key, or production operation involved.
 
 This fixes a specific, source-grounded cause; **do not mark the close-time save fixed until the owner's Windows script prints all PASS lines**.
+
+## 2026-10-31 — Owner Windows acceptance: deferred save regression PASSED
+
+Owner's full local Windows `BUILD_PORTABLE.ps1` completed with `Build completed` and no failure. Generic EXE SHA256: `76F77AA16D001AFEED984C62C463CA605C20684FD86BFD518A442FF40FF98D79`, size approximately 64.55 MiB. Relevant PASS results:
+
+- Windows PowerShell `File.Replace` dummy-file compatibility with real backup path.
+- Generic `CDM.exe` contains no profile; WPF in-memory unhealthy→healthy update.
+- Disposable personalized clone starts and keeps embedded credentials after explicit upgrade.
+- Disposable clone stages profile changes and exits.
+- Close-time helper creates an SHA256-identical last-good backup of the original disposable EXE.
+- Close-time `.pending` is applied, retaining API token, card ordering and locked positions.
+
+**BLOCKER RESOLVED BY WINDOWS EVIDENCE:** Previous deferred-save failure due to `File.Replace($pending,$target,$null)` in Windows PowerShell, plus premature helper scheduling during the session, has now passed an end-to-end synthetic Windows test after architectural correction and valid backup path. The personal `CDM-Cris0338-coolify.exe` **has not been proven upgraded or validated** by this smoke; its explicit upgrade and manual UI/API/SSH acceptance are separate next steps. Existing HIGH/MEDIUM findings in the audit remain open; do not imply release security acceptance.
