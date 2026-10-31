@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cris0338. Licensed under the MIT License.
+// Copyright (c) 2026 Cris0338. Licensed under the CDM Free Redistribution License v1.0.
 // UI translations are embedded JSON resources. English is the canonical fallback.
 using System.Globalization;
 using System.Text.Json;

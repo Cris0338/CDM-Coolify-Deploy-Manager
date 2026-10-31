@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2026 Cris0338. Licensed under the MIT License. -->
+<!-- Copyright (c) 2026 Cris0338. Licensed under the CDM Free Redistribution License v1.0. -->
 <Window x:Class="CoolifyDeployManager.AboutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"

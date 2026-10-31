@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Cris0338. Licensed under the MIT License.
+# Copyright (c) 2026 Cris0338. Licensed under the CDM Free Redistribution License v1.0.
 # Build and test the standalone Windows x64 Coolify Deploy Manager executable.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
