@@ -113,7 +113,7 @@ internal static class ExecutableProfile
 
     public static void Launch(string executable)
     {
-        Process.Start(new ProcessStartInfo(executable) {
+        _ = Process.Start(new ProcessStartInfo(executable) {
             WorkingDirectory = Path.GetDirectoryName(executable)!,
             UseShellExecute = true
         }) ?? throw new IOException("Cannot launch the personalized CDM executable.");
