@@ -73,6 +73,18 @@ public partial class App : Application
         var dashboard = new MainWindow();
         MainWindow = dashboard;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
+        // Splash is deliberately skipped by the offline smoke-test entry points.
+        // The connection is established only after the dashboard becomes visible.
+        var splash = new SplashWindow();
+        splash.Show();
+        _ = ShowDashboardAfterSplashAsync(dashboard, splash);
+    }
+
+    private static async Task ShowDashboardAfterSplashAsync(MainWindow dashboard, Window splash)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        if (Application.Current is null) return;
         dashboard.Show();
+        splash.Close();
     }
 }

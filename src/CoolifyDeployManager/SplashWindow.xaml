@@ -1,0 +1,89 @@
+<!-- Copyright (c) 2026 Cris0338. Licensed under the MIT License. -->
+<Window x:Class="CoolifyDeployManager.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="680" Height="390" WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False" WindowStyle="None" ResizeMode="NoResize"
+        AllowsTransparency="True" Background="Transparent" Topmost="True"
+        Icon="Assets/AppIcon.ico">
+  <Window.Triggers>
+    <EventTrigger RoutedEvent="Loaded">
+      <BeginStoryboard>
+        <Storyboard>
+          <DoubleAnimation Storyboard.TargetName="PulseHalo" Storyboard.TargetProperty="Opacity"
+                           From="0.3" To="0.95" Duration="0:0:1.1" AutoReverse="True" RepeatBehavior="Forever"/>
+          <DoubleAnimation Storyboard.TargetName="ProgressLight"
+                           Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                           From="-110" To="340" Duration="0:0:1.7" RepeatBehavior="Forever"/>
+          <DoubleAnimation Storyboard.TargetName="RocketArt" Storyboard.TargetProperty="Opacity"
+                           From="0.65" To="1" Duration="0:0:1" AutoReverse="True" RepeatBehavior="Forever"/>
+        </Storyboard>
+      </BeginStoryboard>
+    </EventTrigger>
+  </Window.Triggers>
+  <Border CornerRadius="22" Background="#121827" BorderBrush="#634D9B" BorderThickness="1" ClipToBounds="True">
+    <Grid>
+      <Grid.Background>
+        <RadialGradientBrush Center="0.27,0.38" GradientOrigin="0.27,0.38" RadiusX="0.8" RadiusY="0.95">
+          <GradientStop Color="#283262" Offset="0"/>
+          <GradientStop Color="#161E32" Offset="0.45"/>
+          <GradientStop Color="#0E1421" Offset="1"/>
+        </RadialGradientBrush>
+      </Grid.Background>
+      <Canvas IsHitTestVisible="False">
+        <Ellipse x:Name="PulseHalo" Width="270" Height="270" Fill="#645C53F8" Opacity="0.45"
+                 Canvas.Left="40" Canvas.Top="50">
+          <Ellipse.Effect><BlurEffect Radius="90"/></Ellipse.Effect>
+        </Ellipse>
+        <Ellipse Width="170" Height="170" Fill="#38239CDE" Canvas.Left="420" Canvas.Top="0">
+          <Ellipse.Effect><BlurEffect Radius="65"/></Ellipse.Effect>
+        </Ellipse>
+        <Path Stroke="#255A87DA" StrokeThickness="1" Data="M 0,305 L 280,25 M 70,390 L 455,0 M 260,390 L 650,0 M 430,390 L 680,140"/>
+        <Ellipse Width="6" Height="6" Fill="#7CB9FF" Canvas.Left="70" Canvas.Top="80"/>
+        <Ellipse Width="4" Height="4" Fill="#BD8AFE" Canvas.Left="308" Canvas.Top="62"/>
+        <Ellipse Width="5" Height="5" Fill="#60E5F7" Canvas.Left="590" Canvas.Top="105"/>
+      </Canvas>
+      <Grid Margin="38,28">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="250"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Canvas Grid.Column="0" Width="250" Height="286" VerticalAlignment="Center" IsHitTestVisible="False">
+          <Ellipse Canvas.Left="8" Canvas.Top="23" Width="234" Height="234" Stroke="#826CF6" StrokeThickness="1.8" Fill="#122B3C6E"/>
+          <Ellipse Canvas.Left="30" Canvas.Top="46" Width="189" Height="189" Stroke="#3D8ED9" StrokeThickness="1" StrokeDashArray="4,5" Fill="Transparent"/>
+          <Ellipse Canvas.Left="55" Canvas.Top="71" Width="139" Height="139" Fill="#17214B84" Stroke="#53B5F9" StrokeThickness="1"/>
+          <Path x:Name="RocketArt" Data="M 127,78 C 155,92 169,123 167,154 L 127,196 L 88,154 C 87,123 100,92 127,78 Z"
+                Fill="#776AF1" Stroke="#D2CAFF" StrokeThickness="3"/>
+          <Path Data="M 127,92 C 146,104 151,127 146,144 L 107,144 C 103,126 111,104 127,92 Z"
+                Fill="#9F8BFF" Opacity=".5"/>
+          <Ellipse Canvas.Left="111" Canvas.Top="111" Width="32" Height="32" Fill="#0C2444" Stroke="#8AE6FD" StrokeThickness="3"/>
+          <Path Data="M 90,145 L 66,167 L 92,165 Z M 165,145 L 189,167 L 163,165 Z"
+                Fill="#407ECF" Stroke="#94BAFE" StrokeThickness="2"/>
+          <Path Data="M 115,192 L 126,232 L 139,192 Z" Fill="#F09DFF" Stroke="#F9D1FE" StrokeThickness="2"/>
+          <Path Data="M 121,193 L 127,216 L 133,193 Z" Fill="#72EAFB"/>
+          <Path Data="M 78,214 Q 127,250 179,214" Stroke="#4A9CF2" StrokeThickness="2" Fill="Transparent"/>
+        </Canvas>
+        <StackPanel Grid.Column="1" Margin="14,48,3,0">
+          <TextBlock Text="CDM" FontSize="16" FontWeight="SemiBold" Foreground="#A897FF" Margin="0,0,0,8"/>
+          <TextBlock Text="Coolify" FontSize="39" FontWeight="Bold" Foreground="#F6F7FF"/>
+          <TextBlock Text="Deploy Manager" FontSize="32" FontWeight="Bold" Foreground="#C4B9FA" Margin="0,-5,0,12"/>
+          <TextBlock Text="I tuoi progetti, ovunque." Foreground="#B7C7E3" FontSize="14" Margin="0,0,0,33"/>
+          <Border Height="7" Background="#26334C" CornerRadius="4" ClipToBounds="True" Width="275" HorizontalAlignment="Left">
+            <Canvas>
+              <Rectangle x:Name="ProgressLight" Width="130" Height="7" RadiusX="4" RadiusY="4">
+                <Rectangle.Fill>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#4979EF" Offset="0"/>
+                    <GradientStop Color="#AF76FA" Offset="0.5"/>
+                    <GradientStop Color="#4EE2EF" Offset="1"/>
+                  </LinearGradientBrush>
+                </Rectangle.Fill>
+                <Rectangle.RenderTransform><TranslateTransform X="-110"/></Rectangle.RenderTransform>
+              </Rectangle>
+            </Canvas>
+          </Border>
+          <TextBlock Text="Preparazione dashboard..." Foreground="#8FA7D1" FontSize="12" Margin="0,12,0,0"/>
+        </StackPanel>
+      </Grid>
+      <TextBlock Text="COOLIFY DEPLOY MANAGER  ·  2.2" FontSize="10" FontFamily="Consolas"
+                 Foreground="#7F94BB" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,19,13"/>
+    </Grid>
+  </Border>
+</Window>
