@@ -20,3 +20,7 @@ Repository: `Cris0338/CDM-Coolify-Deploy-Manager` — autore: Cris0338. Branch d
 - Da testare in futuro: deploy volontario staging, eventuale riconnessione reale SSH e secondo PC. Non mescolare nuovi interventi al rilascio congelato.
 
 Documento complementare: `docs/AUDIT_2026-10-31_FULL_CODE.md` (esiti dettagliati e problemi ancora aperti).
+
+## Consolidamento sul branch principale
+
+Il 31/10/2026 il branch `main` è stato avanzato con operazione **fast-forward** da `c9514ec55c96b35734cf23670d0ea5c4dee56f48` a `1ea1de7e55148cb7f605b57e3ef8881bf4eb04f9`, senza riscrittura della cronologia né merge artificiale. Diff verificato: 115 commit avanti, zero indietro. Gli otto commit successivi al sorgente provato dall'autore (`56ec905c0b68`) sono **solo documentazione**, senza modifiche al codice eseguibile. La sincronizzazione dei sorgenti con GitHub è quindi completata. La **GitHub Release con tre asset non è ancora pubblicata** e richiede il pacchetto generico presente sulla macchina Windows dell'autore.
