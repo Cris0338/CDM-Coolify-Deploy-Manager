@@ -194,5 +194,14 @@
   "SetupCheckFailed": "Connection not verified.",
   "SetupHttpDirectHint": "This address uses HTTP on a remote server. CDM can reach it, but your API token must not be sent unencrypted over the Internet. Connect through an SSH tunnel instead.",
   "SetupUseSshForHttp": "Use secure SSH tunnel for this address",
-  "SetupSshPrefilled": "VPS address and Coolify port filled in. Enter your SSH username, then set up the dedicated key."
+  "SetupSshPrefilled": "VPS address and Coolify port filled in. Enter your SSH username, then set up the dedicated key.",
+  "SetupVerifyHostTitle": "Verify SSH server identity",
+  "SetupVerifyHostIntro": "Before trusting this server, compare the SSH host key fingerprint with the one shown directly by the server.",
+  "SetupVerifyHostFingerprint": "Server fingerprint",
+  "SetupVerifyHostInstructions": "Open the server console at your hosting provider, or use an existing trusted SSH session. Run this command and compare the SHA256 fingerprints:",
+  "SetupVerifyHostCommand": "Command to run on the server",
+  "SetupVerifyHostCopyHint": "Select the text or click Copy",
+  "SetupHostCopied": "Copied",
+  "SetupHostNoMatch": "No, cancel",
+  "SetupHostMatches": "Yes, matches"
 }

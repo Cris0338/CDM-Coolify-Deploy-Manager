@@ -269,6 +269,104 @@ public partial class SettingsWindow : Window
         }
     }
 
+    // A standard MessageBox is not discoverably copyable. The verification
+    // dialog makes both the fingerprint and the VPS console command selectable
+    // and gives each its own explicit copy action.
+    private bool ConfirmHostFingerprint(string algorithm, string fingerprint, string command)
+    {
+        var dialog = new Window
+        {
+            Owner = this,
+            Title = Loc.T("SetupVerifyHostTitle"),
+            Width = 680,
+            Height = 425,
+            MinWidth = 570,
+            MinHeight = 410,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ResizeMode = ResizeMode.CanResize,
+            ShowInTaskbar = false
+        };
+        var root = new DockPanel { Margin = new Thickness(24) };
+        var actions = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 20, 0, 0)
+        };
+        DockPanel.SetDock(actions, Dock.Bottom);
+        var cancel = new Button
+        {
+            Content = Loc.T("SetupHostNoMatch"),
+            MinWidth = 110,
+            IsCancel = true,
+            Margin = new Thickness(0, 0, 12, 0)
+        };
+        cancel.Click += (_, _) => dialog.DialogResult = false;
+        var accept = new Button
+        {
+            Content = Loc.T("SetupHostMatches"),
+            MinWidth = 150
+        };
+        accept.Click += (_, _) => dialog.DialogResult = true;
+        actions.Children.Add(cancel);
+        actions.Children.Add(accept);
+        root.Children.Add(actions);
+
+        var body = new StackPanel();
+        body.Children.Add(new TextBlock
+        {
+            Text = Loc.T("SetupVerifyHostIntro"),
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 14)
+        });
+        AddCopyableVerificationRow(body,
+            Loc.T("SetupVerifyHostFingerprint") + " (" + algorithm + ")",
+            fingerprint);
+        body.Children.Add(new TextBlock
+        {
+            Text = Loc.T("SetupVerifyHostInstructions"),
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 10, 0, 12)
+        });
+        AddCopyableVerificationRow(body, Loc.T("SetupVerifyHostCommand"), command);
+        root.Children.Add(body);
+        dialog.Content = root;
+        return dialog.ShowDialog() == true;
+    }
+
+    private static void AddCopyableVerificationRow(StackPanel parent, string label, string value)
+    {
+        parent.Children.Add(new TextBlock
+        {
+            Text = label,
+            Margin = new Thickness(0, 0, 0, 5)
+        });
+        var line = new DockPanel { LastChildFill = true };
+        var copy = new Button
+        {
+            Content = Loc.T("Copy"),
+            MinWidth = 92,
+            Margin = new Thickness(10, 0, 0, 0)
+        };
+        DockPanel.SetDock(copy, Dock.Right);
+        copy.Click += (_, _) =>
+        {
+            Clipboard.SetText(value);
+            copy.Content = Loc.T("SetupHostCopied");
+        };
+        line.Children.Add(copy);
+        line.Children.Add(new TextBox
+        {
+            Text = value,
+            IsReadOnly = true,
+            TextWrapping = TextWrapping.Wrap,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            MinHeight = 40,
+            ToolTip = Loc.T("SetupVerifyHostCopyHint")
+        });
+        parent.Children.Add(line);
+    }
+
     private async void ScanHostKey_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -291,12 +389,9 @@ public partial class SettingsWindow : Window
                     "/etc/ssh/ssh_host_ecdsa_key.pub",
                 _ => "/etc/ssh/ssh_host_rsa_key.pub"
             };
-            var message = $"SSH host key: {parts[1]}\nSHA256:{fingerprint}\n\n" +
-                "Compare this fingerprint with the VPS through an independent trusted channel. " +
-                $"On the VPS, run:\nssh-keygen -lf {hostKeyPath}\n\nDoes it match?";
-            if (MessageBox.Show(this, message, "Confirm VPS SSH identity",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question)
-                != MessageBoxResult.Yes) return;
+            var fullFingerprint = "SHA256:" + fingerprint;
+            var command = $"ssh-keygen -lf {hostKeyPath} -E sha256";
+            if (!ConfirmHostFingerprint(parts[1], fullFingerprint, command)) return;
             knownHosts = string.Join("\n", lines);
             SshStatus.Text = Loc.T("SetupHostPinned");
         }

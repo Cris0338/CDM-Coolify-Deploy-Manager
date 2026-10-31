@@ -194,5 +194,14 @@
   "SetupCheckFailed": "Connexion non vérifiée.",
   "SetupHttpDirectHint": "Cette adresse utilise HTTP sur un serveur distant. CDM peut y accéder, mais le jeton API ne doit pas être transmis en clair sur Internet. Utilisez un tunnel SSH.",
   "SetupUseSshForHttp": "Utiliser un tunnel SSH pour cette adresse",
-  "SetupSshPrefilled": "Adresse du VPS et port Coolify renseignés. Saisissez l’utilisateur SSH, puis configurez la clé dédiée."
+  "SetupSshPrefilled": "Adresse du VPS et port Coolify renseignés. Saisissez l’utilisateur SSH, puis configurez la clé dédiée.",
+  "SetupVerifyHostTitle": "Vérifier l'identité du serveur SSH",
+  "SetupVerifyHostIntro": "Avant d'accepter ce serveur, comparez l'empreinte de sa clé SSH à celle affichée directement sur le serveur.",
+  "SetupVerifyHostFingerprint": "Empreinte du serveur",
+  "SetupVerifyHostInstructions": "Ouvrez la console du serveur chez votre hébergeur, ou utilisez une session SSH déjà fiable. Exécutez cette commande et comparez les empreintes SHA256 :",
+  "SetupVerifyHostCommand": "Commande à exécuter sur le serveur",
+  "SetupVerifyHostCopyHint": "Sélectionnez le texte ou cliquez sur Copier",
+  "SetupHostCopied": "Copié",
+  "SetupHostNoMatch": "Non, annuler",
+  "SetupHostMatches": "Oui, identiques"
 }

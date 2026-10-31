@@ -194,5 +194,14 @@
   "SetupCheckFailed": "Connessione non verificata.",
   "SetupHttpDirectHint": "Questo indirizzo utilizza HTTP su un server remoto. CDM può raggiungerlo, ma il token API non deve viaggiare in chiaro su Internet. Usa un tunnel SSH.",
   "SetupUseSshForHttp": "Usa un tunnel SSH per questo indirizzo",
-  "SetupSshPrefilled": "Indirizzo VPS e porta Coolify precompilati. Inserisci l'utente SSH e configura la chiave dedicata."
+  "SetupSshPrefilled": "Indirizzo VPS e porta Coolify precompilati. Inserisci l'utente SSH e configura la chiave dedicata.",
+  "SetupVerifyHostTitle": "Verifica identità del server SSH",
+  "SetupVerifyHostIntro": "Prima di autorizzare il server, confronta l'impronta della sua chiave SSH con quella ottenuta direttamente dal server.",
+  "SetupVerifyHostFingerprint": "Impronta del server",
+  "SetupVerifyHostInstructions": "Apri la console del VPS dal pannello del provider oppure usa una sessione SSH già affidabile. Esegui il comando e confronta le impronte SHA256:",
+  "SetupVerifyHostCommand": "Comando da eseguire sul server",
+  "SetupVerifyHostCopyHint": "Seleziona il testo oppure premi Copia",
+  "SetupHostCopied": "Copiato",
+  "SetupHostNoMatch": "No, annulla",
+  "SetupHostMatches": "Sì, corrisponde"
 }
