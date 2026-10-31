@@ -153,6 +153,14 @@ public partial class App : Application
                     updated.CardOrders["ALL|Staging"] = new List<string> { "test-b", "test-a" };
                     updated.LockedPositions.Add("test-b");
                     SettingsStore.Save(updated);
+                    // During the running clone the staged file must already be
+                    // complete, but the updater must not have been launched.
+                    var staged = SettingsStore.StagedPathForDiagnostics;
+                    if (staged is null || !File.Exists(staged))
+                        throw new InvalidDataException("The profile change was not staged.");
+                    if (File.Exists(staged + ".updater-started.txt"))
+                        throw new InvalidDataException(
+                            "An updater started before the disposable clone exited.");
                     File.WriteAllText(e.Args[1], "CDM-PENDING-STAGED");
                 }
                 else if (e.Args[0] == "--verify-health-viewmodel")
@@ -219,6 +227,34 @@ public partial class App : Application
         var splash = new SplashWindow();
         splash.Show();
         _ = ShowDashboardAfterSplashAsync(dashboard, splash);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        // The clone is already closing: only now spawn a detached helper to
+        // install its latest verified .pending profile. Generic CDM.exe and
+        // clones with no changes do not spawn a helper.
+        try
+        {
+            SettingsStore.SchedulePendingAtExit();
+        }
+        catch (Exception ex)
+        {
+            // Never delete the unapplied .pending and never log its contents.
+            var staged = SettingsStore.StagedPathForDiagnostics;
+            if (staged is not null)
+            {
+                try
+                {
+                    File.WriteAllText(staged + ".updater-error.txt",
+                        "Could not launch the CDM profile updater: " + ex.GetType().Name);
+                }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
+            e.ApplicationExitCode = 1;
+        }
+        base.OnExit(e);
     }
 
     private static async Task ShowDashboardAfterSplashAsync(MainWindow dashboard, Window splash)
