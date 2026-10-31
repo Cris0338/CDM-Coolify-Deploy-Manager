@@ -119,11 +119,11 @@ internal static class ExecutableProfile
         }) ?? throw new IOException("Cannot launch the personalized CDM executable.");
     }
 
-    // Save-to-self is a two-phase operation. The live clone writes a verified
-    // .pending EXE; a separate PowerShell process applies it after Windows
-    // releases the original image. It retries in a bounded loop instead of
-    // waiting indefinitely for a PID that may never signal. No credential
-    // content is included in subprocess arguments or diagnostics.
+    // A personal clone writes a verified .pending file while running.
+    // WPF App.OnExit launches this detached helper only when the app closes.
+    // Windows then releases the original executable, allowing one atomic
+    // replacement. A fixed, recoverable last-good backup avoids unbounded
+    // timestamped backups after every ordinary card edit.
     public static void ScheduleReplaceOnExit(string pendingPath)
     {
         var target = OwnPath;
@@ -132,33 +132,43 @@ internal static class ExecutableProfile
             !string.Equals(Path.GetDirectoryName(target), Path.GetDirectoryName(pending),
                 StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The staged clone must be beside the running clone.");
+
         if (!TryReadFile(pending, out var saved) || saved?.IsConfigured != true)
             throw new InvalidDataException("The staged clone does not contain valid settings.");
 
         static string PsLiteral(string value) => "'" + value.Replace("'", "''") + "'";
+        var backup = target + ".before-save.bak";
         var errorPath = pending + ".updater-error.txt";
         var statePath = pending + ".updater-started.txt";
-        // Status marker proves that the helper actually began executing.
-        // The helper deletes it when replacement completes successfully.
-        // If a retry limit expires, only a generic error is recorded.
+
+        // IMPORTANT: Windows PowerShell can marshal $null to an empty string
+        // for .NET string parameters. File.Replace(source, target, $null)
+        // then throws "The path is not of a legal form" on PS 5.1.
+        // ALWAYS supply the explicit, valid backup path. This backup holds
+        // credentials just like the personalized clone and remains private.
         var script = "$ErrorActionPreference='Stop'; " +
             $"$pending={PsLiteral(pending)}; $target={PsLiteral(target)}; " +
+            $"$backup={PsLiteral(backup)}; " +
             $"$errorPath={PsLiteral(errorPath)}; $statePath={PsLiteral(statePath)}; " +
             "try { [IO.File]::WriteAllText($statePath,'started'); " +
-            "$last=$null; for($attempt=0; $attempt -lt 200; $attempt++) { " +
-            "try { [IO.File]::Replace($pending,$target,$null); " +
+            "$last=$null; for($attempt=0; $attempt -lt 160; $attempt++) { " +
+            "try { [IO.File]::Replace($pending,$target,$backup); " +
+            "if(-not [IO.File]::Exists($backup)) { throw [IO.IOException]::new('Backup not created') }; " +
             "Remove-Item -LiteralPath $statePath,$errorPath -Force -ErrorAction SilentlyContinue; exit 0 } " +
-            "catch { if ($_.Exception -isnot [IO.IOException] -and " +
-            "$_.Exception -isnot [UnauthorizedAccessException]) { throw }; " +
-            "$last=$_.Exception }; Start-Sleep -Milliseconds 250 }; " +
-            "throw [IO.IOException]::new('Replacement still blocked after bounded retries: ' + " +
+            "catch { $actual=$_.Exception; " +
+            "if ($actual -is [System.Management.Automation.MethodInvocationException] " +
+            "-and $actual.InnerException) { $actual=$actual.InnerException }; " +
+            "if ($actual -isnot [IO.IOException] -and " +
+            "$actual -isnot [UnauthorizedAccessException]) { throw }; " +
+            "$last=$actual }; Start-Sleep -Milliseconds 300 }; " +
+            "throw [IO.IOException]::new('EXE busy after bounded retries: ' + " +
             "$last.GetType().Name) } " +
             "catch { try { [IO.File]::WriteAllText($errorPath, " +
             "'CDM update helper failed: ' + $_.Exception.GetType().Name + " +
             "' - ' + $_.Exception.Message) } catch { }; exit 1 }";
-        // Windows PowerShell's -EncodedCommand avoids argument-boundary and
-        // quoting differences for paths containing spaces or apostrophes.
-        // This contains only local paths and code, never credential values.
+
+        // Unicode-encoded PowerShell keeps apostrophes, accents and spaces
+        // in filesystem paths intact without passing profile credentials.
         var encodedCommand = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
         var start = new ProcessStartInfo("powershell.exe")
         {
