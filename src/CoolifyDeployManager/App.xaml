@@ -22,6 +22,29 @@
     <Style TargetType="TextBlock">
       <Setter Property="Foreground" Value="{StaticResource Primary}"/>
     </Style>
+    <!-- Ensure every WPF tooltip remains legible in the dark theme. -->
+    <Style TargetType="{x:Type ToolTip}">
+      <Setter Property="Background" Value="{StaticResource Surface}"/>
+      <Setter Property="Foreground" Value="{StaticResource Primary}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+      <Setter Property="Padding" Value="12,8"/>
+      <Setter Property="MaxWidth" Value="360"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="{x:Type ToolTip}">
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="1" CornerRadius="7"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                TextElement.Foreground="{TemplateBinding Foreground}"
+                                TextElement.FontFamily="Segoe UI"
+                                TextElement.FontSize="12"/>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
     <Style TargetType="TextBox">
       <Setter Property="Background" Value="{StaticResource Surface}"/>
       <Setter Property="Foreground" Value="{StaticResource Primary}"/>

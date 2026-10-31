@@ -47,11 +47,47 @@ public partial class SettingsWindow : Window
     }
 
     private void Mode_Changed(object sender, SelectionChangedEventArgs e) => UpdateMode();
+    private void UrlInput_TextChanged(object sender, TextChangedEventArgs e) => UpdateMode();
+
+    // An HTTP VPS endpoint is reachable, but not suitable for sending bearer tokens
+    // directly over the public Internet. Offer the verified SSH forwarding route.
+    private static bool TryGetRemoteHttp(string input, out Uri? endpoint)
+    {
+        endpoint = null;
+        var value = input.Trim();
+        if (value.Length == 0) return false;
+        if (!value.Contains("://", StringComparison.Ordinal))
+        {
+            // Accept common address-bar input such as 169.58.7.207:8000.
+            if (!value.Contains(':')) return false;
+            value = "http://" + value;
+        }
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var parsed) ||
+            parsed.Scheme != Uri.UriSchemeHttp || parsed.IsLoopback ||
+            parsed.Host.Length == 0 || parsed.UserInfo.Length > 0)
+            return false;
+        endpoint = parsed;
+        return true;
+    }
+
+    private void UseSshForUrl_Click(object sender, RoutedEventArgs e)
+    {
+        if (!TryGetRemoteHttp(UrlInput.Text, out var endpoint) || endpoint is null) return;
+        SshAlias.Text = endpoint.Host;
+        RemotePort.Text = endpoint.Port.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        RemoteHost.Text = "127.0.0.1";
+        ConnectionChooser.SelectedIndex = 1;
+        SshStatus.Text = Loc.T("SetupSshPrefilled");
+    }
+
     private void UpdateMode()
     {
-        if (SshFields is null || UrlInput is null || UrlHint is null) return;
+        if (SshFields is null || UrlInput is null || UrlHint is null ||
+            PublicHttpPanel is null || ConnectionChooser is null) return;
         bool useSsh = ConnectionChooser.SelectedIndex == 1;
         SshFields.Visibility = useSsh ? Visibility.Visible : Visibility.Collapsed;
+        PublicHttpPanel.Visibility = !useSsh && TryGetRemoteHttp(UrlInput.Text, out _)
+            ? Visibility.Visible : Visibility.Collapsed;
         UrlInput.IsEnabled = !useSsh;
         UrlHint.Text = useSsh ? Loc.T("SetupSshHint") : Loc.T("SetupHttpsHint");
     }

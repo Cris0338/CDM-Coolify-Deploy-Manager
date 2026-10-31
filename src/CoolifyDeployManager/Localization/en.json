@@ -191,5 +191,8 @@
   "SetupKeyAuthorized": "Public key authorized using the existing SSH alias. Now verify the VPS fingerprint.",
   "SetupHostPinned": "VPS host key pinned. SSH identity can now be verified.",
   "SetupChecking": "Verifying connection...",
-  "SetupCheckFailed": "Connection not verified."
+  "SetupCheckFailed": "Connection not verified.",
+  "SetupHttpDirectHint": "This address uses HTTP on a remote server. CDM can reach it, but your API token must not be sent unencrypted over the Internet. Connect through an SSH tunnel instead.",
+  "SetupUseSshForHttp": "Use secure SSH tunnel for this address",
+  "SetupSshPrefilled": "VPS address and Coolify port filled in. Enter your SSH username, then set up the dedicated key."
 }

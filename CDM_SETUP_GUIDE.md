@@ -46,3 +46,7 @@ CDM is an independent unofficial application, and browser login is not OAuth aut
 Previous CDM releases may have saved settings under `%LOCALAPPDATA%\CoolifyDeployManager\settings.json` or alongside the application in `CDM.profile`. **CDM 2.2.0 does not inspect, read, import, alter or delete these files.** The generic `CDM.exe` always opens a blank configuration wizard. Only a personalized clone can load settings, and only from its own executable trailer. To reuse old settings, enter them explicitly in the new wizard.
 
 The local build includes a regression smoke check that the published generic template contains no configuration, even when older user settings exist on the current machine.
+
+## Remote HTTP address detected in the HTTPS field
+
+If a user pastes a public HTTP URL (including a bare IPv4:port address), CDM shows a translated explanation and a one-click **Use secure SSH tunnel for this address** option. Selecting it copies the VPS hostname/IP and Coolify remote port into SSH setup, using 127.0.0.1 for the service address on the server. The SSH username and first-time key authorization remain user-specific. CDM never transmits an API token directly to a remote HTTP endpoint.

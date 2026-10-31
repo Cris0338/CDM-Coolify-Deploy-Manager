@@ -191,5 +191,8 @@
   "SetupKeyAuthorized": "Chiave pubblica autorizzata con l'alias SSH esistente. Ora verifica l'impronta del VPS.",
   "SetupHostPinned": "Chiave host del VPS registrata. Ora puoi verificare la connessione SSH.",
   "SetupChecking": "Verifica della connessione...",
-  "SetupCheckFailed": "Connessione non verificata."
+  "SetupCheckFailed": "Connessione non verificata.",
+  "SetupHttpDirectHint": "Questo indirizzo utilizza HTTP su un server remoto. CDM può raggiungerlo, ma il token API non deve viaggiare in chiaro su Internet. Usa un tunnel SSH.",
+  "SetupUseSshForHttp": "Usa un tunnel SSH per questo indirizzo",
+  "SetupSshPrefilled": "Indirizzo VPS e porta Coolify precompilati. Inserisci l'utente SSH e configura la chiave dedicata."
 }

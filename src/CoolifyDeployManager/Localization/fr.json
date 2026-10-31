@@ -191,5 +191,8 @@
   "SetupKeyAuthorized": "Clé publique autorisée via l'alias SSH existant. Vérifiez maintenant l'empreinte du VPS.",
   "SetupHostPinned": "Clé d'hôte du VPS épinglée. L'identité SSH peut maintenant être vérifiée.",
   "SetupChecking": "Vérification de la connexion...",
-  "SetupCheckFailed": "Connexion non vérifiée."
+  "SetupCheckFailed": "Connexion non vérifiée.",
+  "SetupHttpDirectHint": "Cette adresse utilise HTTP sur un serveur distant. CDM peut y accéder, mais le jeton API ne doit pas être transmis en clair sur Internet. Utilisez un tunnel SSH.",
+  "SetupUseSshForHttp": "Utiliser un tunnel SSH pour cette adresse",
+  "SetupSshPrefilled": "Adresse du VPS et port Coolify renseignés. Saisissez l’utilisateur SSH, puis configurez la clé dédiée."
 }
