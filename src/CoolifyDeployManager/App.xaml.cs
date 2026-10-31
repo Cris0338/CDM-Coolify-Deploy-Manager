@@ -70,13 +70,13 @@ public partial class App : Application
                             File.Move(staged, target, overwrite: true);
                             break;
                         }
-                        catch (IOException ex) when (
-                            ((uint)ex.HResult & 0xFFFF) is 32 or 33 &&
+                        catch (Exception ex) when (
+                            (ex is IOException || ex is UnauthorizedAccessException) &&
                             attempt < maxAttempts - 1)
                         {
-                            // Only retry ERROR_SHARING_VIOLATION / LOCK_VIOLATION.
-                            // A genuinely running clone eventually reports
-                            // the original error after a bounded ten seconds.
+                            // Windows may report transient executable-file locks
+                            // as either sharing violations or access denied.
+                            // Retry briefly, then preserve and report real failures.
                             System.Threading.Thread.Sleep(250);
                         }
                     }
