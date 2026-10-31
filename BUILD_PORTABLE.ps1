@@ -69,7 +69,7 @@ if ($LASTEXITCODE -ne 0) { throw "Executable profile tests failed (exit $LASTEXI
 # before running any executable-based save tests or touching personal clones.
 Write-Host '== PowerShell File.Replace compatibility (dummy files only) =='
 $replaceProof = Join-Path ([IO.Path]::GetTempPath()) ('CDM replace proof ' + [guid]::NewGuid().ToString('N'))
-New-Item -ItemType Directory -LiteralPath $replaceProof | Out-Null
+New-Item -ItemType Directory -Path $replaceProof -Force | Out-Null
 try {
     $oldFile = Join-Path $replaceProof 'CDM old.txt'
     $newFile = Join-Path $replaceProof 'CDM new.txt'
