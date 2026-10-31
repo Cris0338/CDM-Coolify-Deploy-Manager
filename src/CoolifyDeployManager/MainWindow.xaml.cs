@@ -64,14 +64,14 @@ public partial class MainWindow : Window
         UnknownCount.Text = Loc.F("ApplicationsCount", 0);
         InventoryCount.Text = Loc.F("ApplicationsCount", 0);
         UpdateProfileStatus();
-        AddLog("Coolify Deploy Manager WPF 2.2.0 · Startup.");
+        AddLog(BuildInfo.DiagnosticIdentity + " · Startup.");
     }
 
     private void UpdateProfileStatus()
     {
         var status = Loc.T(SettingsStore.HasPortableProfile && settings.IsConfigured
             ? "VaultConfigured" : "VaultNotConfigured");
-        Title = Loc.T("AppTitle") + " 2.2.0 · " + status;
+        Title = Loc.T("AppTitle") + " " + BuildInfo.Version + " · " + status;
         ProfileBadge.Text = status;
         if (SettingsStore.HasPortableProfile && settings.IsConfigured)
         {
