@@ -60,7 +60,7 @@ La documentazione tecnica completa è in [README.md](README.md), [CDM_SETUP_GUID
 
 ## Scaricare CDM facilmente
 
-Dopo il rilascio, la pagina ufficiale sara [GitHub Releases](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases): bastera scaricare il generico `CDM.exe` oppure il pacchetto ZIP con guida italiana. La pubblicazione effettiva si verifica nella pagina GitHub Releases; `PACKAGE_RELEASE.ps1` prepara i file per il caricamento manuale, senza pubblicarli. Vedi [RELEASE_GUIDE.md](RELEASE_GUIDE.md) e il [punto del 31 ottobre](PROJECT_STATUS_2026-10-31.md).
+**CDM 2.2.1 è stato pubblicato come [pre-release su GitHub](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/tag/v2.2.1).** Puoi scaricare il [CDM.exe generico senza credenziali](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/download/v2.2.1/CDM.exe), il [pacchetto ZIP](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/download/v2.2.1/CDM-2.2.1-win-x64.zip) o [gli hash SHA256](https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/download/v2.2.1/CDM-2.2.1-SHA256.txt). Il clone personale resta esclusivamente sul tuo PC. Roadmap e test rimasti: [ROADMAP.md](ROADMAP.md).
 
 ## 🍺 Offri una birra a Cris0338!
 
