@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Cris0338. Licensed under the CDM Free Redistribution License v1.0.
 using System.Net;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
