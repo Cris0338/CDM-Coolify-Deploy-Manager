@@ -30,8 +30,22 @@ Version: **2.2.0**, unreleased. **No GitHub Actions. No automatic deploy.**
 - Test portable clone on a different machine/account.
 - Approve ONE real staging deployment and verify its results.
 - Merge tested feature branch to main to align default source license before tagging.
-- Prepare generic downloadable EXE/ZIP/checksum using local PACKAGE_RELEASE.ps1.
+- [DONE] Prepare generic downloadable EXE/ZIP/checksum using local PACKAGE_RELEASE.ps1 (owner confirmed local packaging output; ZIP content inspection pending).
 - Publish a manual GitHub Release only after owner explicitly approves it.
 - Improvements the owner has mentioned but not specified yet: defer to a future session.
 
 No real deployment, merge, tag, release or GitHub Action was performed when saving this checkpoint.
+
+## Local release-package verification — 2026-10-31
+
+Owner ran `PACKAGE_RELEASE.ps1` on Windows successfully. The script reported:
+
+| Output in local `release-artifacts/` | Size (bytes) |
+| --- | ---: |
+| `CDM.exe` | 67,658,493 |
+| `CDM-2.2.0-win-x64.zip` | 61,795,842 |
+| `CDM-2.2.0-SHA256.txt` | 164 |
+
+SHA256 of source generic `portable/CDM.exe`: `9B1115C08BDCAAF19500ACDE2FAA9E357F91B03CC9A13AEB7F1F1791721AA8A4`.
+
+The script finished with `Ready for MANUAL GitHub Release upload (NOT published)`. This confirms local asset generation, **not** an actual GitHub Release. No binaries, credentials or personal clones were added to the repository. The ZIP contents have not been independently inspected. Remaining acceptance testing and the main-branch license alignment are still pending.
