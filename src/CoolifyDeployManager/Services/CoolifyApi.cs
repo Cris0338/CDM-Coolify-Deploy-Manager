@@ -210,6 +210,17 @@ internal sealed class CoolifyApi : IDisposable
         throw new InvalidOperationException("No deployment was queued for this application.");
     }
 
+    /// <summary>
+    /// A single read-only application status snapshot. Deployment jobs can be
+    /// "finished" while container health checks are still settling.
+    /// </summary>
+    public async Task<string> GetApplicationStatusAsync(string appUuid, CancellationToken ct)
+    {
+        using var doc = await GetJsonAsync(
+            $"applications/{Uri.EscapeDataString(appUuid)}", readToken, ct);
+        return doc.RootElement.Str("status", "non disponibile");
+    }
+
     public async Task<DeploymentInfo> GetDeploymentAsync(string deploymentUuid, CancellationToken ct)
     {
         using var doc = await GetJsonAsync(
