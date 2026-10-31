@@ -222,5 +222,7 @@
   "SetupAliasEntryHint": "Saisissez votre alias SSH Windows existant (par exemple contabo), puis autorisez la clé dédiée à CDM.",
   "SupportTitle": "🍺 Offrez une bière à Cris0338 !",
   "SupportDescription": "CDM est gratuit. Si vous l'appréciez et souhaitez soutenir son développement, choisissez librement le montant. C'est entièrement facultatif.",
-  "SupportOpenPayPal": "Soutenir via PayPal.Me"
+  "SupportOpenPayPal": "Soutenir via PayPal.Me",
+  "Guide6": "6 · Exécutable personnel perdu ou volé",
+  "Guide6Body": "Un clone CDM personnel (.exe), un fichier .pending ou une sauvegarde .bak contient le jeton API et, si configurée, la clé privée SSH.\n1. Connectez-vous à Coolify dans votre navigateur : Keys & Tokens → API Tokens → Revoke token. Révoquez tous les jetons utilisés par le clone perdu.\n2. Si vous utilisiez le tunnel SSH, connectez-vous au VPS via la console de l'hébergeur ou une autre clé. Avec le même compte SSH que CDM, ouvrez : nano ~/.ssh/authorized_keys. Identifiez la ligne de la clé publique CDM en la comparant à la clé conservée lors de la configuration ou à son empreinte ; supprimez UNIQUEMENT cette ligne puis enregistrez. Ne supprimez pas les autres clés : si la ligne est incertaine, ne supprimez rien au hasard.\n3. Créez un nouveau jeton Coolify et une nouvelle clé SSH dédiée avec l'exécutable CDM générique.\nIMPORTANT : révoquer le jeton API ne révoque pas automatiquement l'accès SSH."
 }
