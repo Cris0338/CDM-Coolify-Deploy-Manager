@@ -1,5 +1,11 @@
 # CDM — Coolify Deploy Manager
 
+<p align="center">
+  <img src="docs/images/CDMLogo.png" width="320" alt="Emblème CDM néon avec orbite cosmique — logo officiel de Coolify Deploy Manager">
+</p>
+
+<p align="center"><strong>Windows 10/11 x64 · Portable · Free to use · Unofficial Coolify dashboard</strong></p>
+
 **[Guida rapida in italiano / Guida italiana](README_IT.md)**
 
 **Created by [Cris0338](https://github.com/Cris0338)** · © 2026 Cris0338 · [CDM Free Redistribution License v1.0](LICENSE)  
