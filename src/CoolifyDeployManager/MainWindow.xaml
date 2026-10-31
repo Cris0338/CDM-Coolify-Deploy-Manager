@@ -245,16 +245,29 @@
     </Border>
     <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="22,5,8,0">
       <StackPanel>
+        <!-- Section panels and their explicit end targets are transparent hit-test
+             surfaces, even where no card occupies the last row. -->
         <StackPanel x:Name="StageSection" Margin="0,0,0,12">
           <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
             <Border Background="{StaticResource Blue}" Width="4" CornerRadius="3" Margin="0,0,12,0"/>
             <TextBlock Text="{DynamicResource L.Staging}" FontSize="14" FontWeight="Bold"/>
             <TextBlock x:Name="StageCount" Text="0 applications" Foreground="{StaticResource Muted}" Margin="12,2,0,0"/>
           </StackPanel>
-          <ItemsControl x:Name="StagingItems" ItemTemplate="{StaticResource ApplicationCard}" Tag="Staging" AllowDrop="True" DragOver="EmptyArea_DragOver" Drop="EmptyArea_Drop">
-            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel MinHeight="70"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+          <ItemsControl x:Name="StagingItems" ItemTemplate="{StaticResource ApplicationCard}"
+                        Tag="Staging" Background="Transparent" AllowDrop="True"
+                        DragOver="EmptyArea_DragOver" Drop="EmptyArea_Drop">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel Background="Transparent" MinHeight="70"/></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
           </ItemsControl>
-          <Border Tag="Staging" Height="52" CornerRadius="8" BorderBrush="{StaticResource Line}" BorderThickness="1" Margin="0,0,14,10" Padding="12,8" AllowDrop="True" PreviewDragOver="EmptyArea_DragOver" PreviewDrop="EmptyArea_Drop"><TextBlock Text="{DynamicResource L.DropToEnd}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" HorizontalAlignment="Center"/></Border>
+          <Border Tag="Staging" Height="52" Background="Transparent" CornerRadius="8"
+                  BorderBrush="{StaticResource Line}" BorderThickness="1"
+                  Margin="0,0,14,10" Padding="12,8" AllowDrop="True"
+                  PreviewDragOver="EmptyArea_DragOver" PreviewDrop="EmptyArea_Drop">
+            <TextBlock Text="{DynamicResource L.DropToEnd}" VerticalAlignment="Center"
+                       Foreground="{StaticResource Muted}" HorizontalAlignment="Center"
+                       IsHitTestVisible="False"/>
+          </Border>
         </StackPanel>
         <StackPanel x:Name="ProductionSection" Margin="0,4,0,12">
           <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -262,8 +275,21 @@
             <TextBlock Text="{DynamicResource L.Production}" FontSize="14" FontWeight="Bold"/>
             <TextBlock x:Name="ProductionCount" Text="0 applications" Foreground="{StaticResource Muted}" Margin="12,2,0,0"/>
           </StackPanel>
-          <ItemsControl x:Name="ProductionItems" ItemTemplate="{StaticResource ApplicationCard}" Tag="Production" AllowDrop="True" DragOver="EmptyArea_DragOver" Drop="EmptyArea_Drop"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel MinHeight="70"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
-          <Border Tag="Production" Height="52" CornerRadius="8" BorderBrush="{StaticResource Line}" BorderThickness="1" Margin="0,0,14,10" Padding="12,8" AllowDrop="True" PreviewDragOver="EmptyArea_DragOver" PreviewDrop="EmptyArea_Drop"><TextBlock Text="{DynamicResource L.DropToEnd}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" HorizontalAlignment="Center"/></Border>
+          <ItemsControl x:Name="ProductionItems" ItemTemplate="{StaticResource ApplicationCard}"
+                        Tag="Production" Background="Transparent" AllowDrop="True"
+                        DragOver="EmptyArea_DragOver" Drop="EmptyArea_Drop">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel Background="Transparent" MinHeight="70"/></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+          </ItemsControl>
+          <Border Tag="Production" Height="52" Background="Transparent" CornerRadius="8"
+                  BorderBrush="{StaticResource Line}" BorderThickness="1"
+                  Margin="0,0,14,10" Padding="12,8" AllowDrop="True"
+                  PreviewDragOver="EmptyArea_DragOver" PreviewDrop="EmptyArea_Drop">
+            <TextBlock Text="{DynamicResource L.DropToEnd}" VerticalAlignment="Center"
+                       Foreground="{StaticResource Muted}" HorizontalAlignment="Center"
+                       IsHitTestVisible="False"/>
+          </Border>
         </StackPanel>
         <StackPanel x:Name="UnknownSection" Margin="0,4,0,12">
           <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -271,8 +297,21 @@
             <TextBlock Text="{DynamicResource L.UnclassifiedTitle}" FontSize="14" FontWeight="Bold"/>
             <TextBlock x:Name="UnknownCount" Text="0 applications" Foreground="{StaticResource Muted}" Margin="12,2,0,0"/>
           </StackPanel>
-          <ItemsControl x:Name="UnknownItems" ItemTemplate="{StaticResource ApplicationCard}" Tag="Unknown" AllowDrop="True" DragOver="EmptyArea_DragOver" Drop="EmptyArea_Drop"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel MinHeight="70"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
-          <Border Tag="Unknown" Height="52" CornerRadius="8" BorderBrush="{StaticResource Line}" BorderThickness="1" Margin="0,0,14,10" Padding="12,8" AllowDrop="True" PreviewDragOver="EmptyArea_DragOver" PreviewDrop="EmptyArea_Drop"><TextBlock Text="{DynamicResource L.DropToEnd}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" HorizontalAlignment="Center"/></Border>
+          <ItemsControl x:Name="UnknownItems" ItemTemplate="{StaticResource ApplicationCard}"
+                        Tag="Unknown" Background="Transparent" AllowDrop="True"
+                        DragOver="EmptyArea_DragOver" Drop="EmptyArea_Drop">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel Background="Transparent" MinHeight="70"/></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+          </ItemsControl>
+          <Border Tag="Unknown" Height="52" Background="Transparent" CornerRadius="8"
+                  BorderBrush="{StaticResource Line}" BorderThickness="1"
+                  Margin="0,0,14,10" Padding="12,8" AllowDrop="True"
+                  PreviewDragOver="EmptyArea_DragOver" PreviewDrop="EmptyArea_Drop">
+            <TextBlock Text="{DynamicResource L.DropToEnd}" VerticalAlignment="Center"
+                       Foreground="{StaticResource Muted}" HorizontalAlignment="Center"
+                       IsHitTestVisible="False"/>
+          </Border>
         </StackPanel>
         <TextBlock x:Name="EmptyLabel" Text="{DynamicResource L.NoneMatch}" FontSize="15" Foreground="{StaticResource Muted}" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,20,0,20"/>
       </StackPanel>
