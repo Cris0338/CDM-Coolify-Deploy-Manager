@@ -67,7 +67,10 @@ public partial class App : Application
                     {
                         try
                         {
-                            File.Move(staged, target, overwrite: true);
+                            // The original already has a timestamped backup.
+                            // A same-directory atomic replace avoids a copy-overwrite
+                            // race when an executable has just finished running.
+                            File.Replace(staged, target, null);
                             break;
                         }
                         catch (Exception ex) when (
