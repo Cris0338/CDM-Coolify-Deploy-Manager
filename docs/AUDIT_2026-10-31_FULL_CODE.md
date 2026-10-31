@@ -103,3 +103,18 @@ Owner's full local Windows `BUILD_PORTABLE.ps1` completed with `Build completed`
 - Close-time `.pending` is applied, retaining API token, card ordering and locked positions.
 
 **BLOCKER RESOLVED BY WINDOWS EVIDENCE:** Previous deferred-save failure due to `File.Replace($pending,$target,$null)` in Windows PowerShell, plus premature helper scheduling during the session, has now passed an end-to-end synthetic Windows test after architectural correction and valid backup path. The personal `CDM-Cris0338-coolify.exe` **has not been proven upgraded or validated** by this smoke; its explicit upgrade and manual UI/API/SSH acceptance are separate next steps. Existing HIGH/MEDIUM findings in the audit remain open; do not imply release security acceptance.
+
+## 2026-10-31 — Managed SSH tunnel unexpectedly stops once after launch
+
+Owner confirms the updated personalized clone launched, connected to Coolify and worked. Approximately one minute later, UI displayed `Tunnel SSH non attivo`; pressing Refresh re-established `SSH automatico connesso`. The disconnection seemed to occur only once.
+
+Code inspection found a deterministic reason for the **time of the warning**, not yet for the underlying SSH process exit: `MainWindow` uses a 60-second `DispatcherTimer`, `CheckTunnelState()` only checked `!ssh.IsRunning` and changed the badge to disconnected without recovering; manually pressing Refresh invokes `EnsureRunningAsync` to start a new ssh.exe. `SshTunnel` previously retained SSH stderr only during initial startup, losing useful diagnostics for later exits. No proof yet of why ssh.exe exits (remote SSH close, local OpenSSH error, process crash, etc.).
+
+Fix committed on the feature branch (needs Windows compile, smoke and real runtime observation):
+- `SshTunnel.DescribeStoppedProcess` records the terminated process's exit code plus a bounded stderr excerpt; the stderr-reading task now stays in the object after startup and is cleared with `Stop`.
+- The timer asynchronously calls `CheckTunnelStateAsync`, which automatically invokes the existing secure managed-tunnel startup when a stopped ssh.exe is observed. It attempts recovery once per tick and safely logs failures for diagnosis. It does **not** trigger any deployments.
+- A `SemaphoreSlim` serializes manual Refresh and automatic reconnection, avoiding attempts to use/replace the same local forwarded port concurrently.
+- Close cancels a pending recovery; opening the settings dialog is disabled during one. Normal active tunnel, non-SSH modes, ongoing deployment, missing configuration and app shutdown all prevent automatic reconnection.
+- New no-network `--verify-tunnel-recovery-policy` WPF smoke in `BUILD_PORTABLE.ps1` checks these eligibility guards.
+
+**Status:** Source checked on GitHub; WPF build and user-observed SSH reconnect **NOT YET VERIFIED**. The actual reason for the original ssh.exe exit remains unknown until the owner's log records the exit code/stderr.
