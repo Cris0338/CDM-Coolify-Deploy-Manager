@@ -6,8 +6,15 @@ using System.Windows;
 
 namespace CoolifyDeployManager;
 
+// A single mutable representation of the application's observed runtime
+// status. Deployment history and health are independent: a finished build is
+// not necessarily a healthy running container.
 internal sealed class AppCardView : INotifyPropertyChanged
 {
+    private static readonly Brush HealthyBrush = ColorBrush("#164D3C");
+    private static readonly Brush UnhealthyBrush = ColorBrush("#643036");
+    private static readonly Brush UnknownBrush = ColorBrush("#343C4A");
+
     public CoolifyApplication App { get; }
     public string Uuid => App.Uuid;
     public string Name => App.Name;
@@ -15,50 +22,123 @@ internal sealed class AppCardView : INotifyPropertyChanged
     public string Branch => string.IsNullOrWhiteSpace(App.Branch) ? Loc.T("BranchUnknown") : App.Branch;
     public string FullDescription => $"{App.Name}\n{App.Branch}\nUUID: {App.Uuid}";
     public DeploymentGroup Group { get; }
-    public string DeployCaption => Group == DeploymentGroup.Production ? Loc.T("DeployProd") : Group == DeploymentGroup.Staging ? Loc.T("DeployStage") : Loc.T("DeployUnknown");
-    public Brush DeployBrush => Group == DeploymentGroup.Production ? Brushes.IndianRed : Group == DeploymentGroup.Staging ? Brush("#377DE6") : Brush("#667085");
+    public string DeployCaption => Group == DeploymentGroup.Production ? Loc.T("DeployProd")
+        : Group == DeploymentGroup.Staging ? Loc.T("DeployStage") : Loc.T("DeployUnknown");
+    public Brush DeployBrush => Group == DeploymentGroup.Production ? Brushes.IndianRed
+        : Group == DeploymentGroup.Staging ? ColorBrush("#377DE6") : ColorBrush("#667085");
     public Brush GroupBrush => DeployBrush;
-    public string RunningLabel { get; }
-    public string HealthLabel { get; }
-    public Brush RunningBrush { get; }
-    public Brush HealthBrush { get; }
-    public string RawStatus => App.Status;
-    private string lastDeploy = Loc.T("LastLoading");
-    public string LastDeploy { get => lastDeploy; private set { lastDeploy = value; Changed(); } }
-    private string lastStatus = "";
-    public string LastStatus { get => lastStatus; private set { lastStatus = value; Changed(); } }
-    public LatestDeploy? Latest { get; private set; }
+
+    private string currentStatus;
+    public string RawStatus => currentStatus;
+    private string[] StatusParts => (currentStatus ?? "").Split(':', StringSplitOptions.TrimEntries);
+
+    public string RunningLabel => StatusParts[0].ToLowerInvariant() switch
+    {
+        "running" => "RUNNING",
+        "exited" or "stopped" or "dead" => "STOPPED",
+        _ => "RUNNING N/D"
+    };
+    public string HealthLabel => StatusParts.Skip(1).Contains("healthy", StringComparer.OrdinalIgnoreCase)
+        ? "HEALTHY" : StatusParts.Skip(1).Contains("unhealthy", StringComparer.OrdinalIgnoreCase)
+        ? "UNHEALTHY" : "HEALTH N/D";
+    public Brush RunningBrush => RunningLabel switch
+    {
+        "RUNNING" => HealthyBrush,
+        "STOPPED" => UnhealthyBrush,
+        _ => UnknownBrush
+    };
+    public Brush HealthBrush => HealthLabel switch
+    {
+        "HEALTHY" => HealthyBrush,
+        "UNHEALTHY" => UnhealthyBrush,
+        _ => UnknownBrush
+    };
     public bool Running => RunningLabel == "RUNNING";
     public bool HasProblem => RunningLabel == "STOPPED" || HealthLabel == "UNHEALTHY";
+
+    private string lastDeploy = Loc.T("LastLoading");
+    public string LastDeploy
+    {
+        get => lastDeploy;
+        private set { lastDeploy = value; Changed(); }
+    }
+    private string lastStatus = "";
+    public string LastStatus
+    {
+        get => lastStatus;
+        private set { lastStatus = value; Changed(); }
+    }
+    public LatestDeploy? Latest { get; private set; }
     public bool Busy { get; set; }
-    public Visibility SelectionVisibility => Group == DeploymentGroup.Staging ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility SelectionVisibility => Group == DeploymentGroup.Staging
+        ? Visibility.Visible : Visibility.Collapsed;
+
     private bool isSelected;
-    public bool IsSelected { get => isSelected; set { if (isSelected == value) return; isSelected = value; Changed(); } }
+    public bool IsSelected
+    {
+        get => isSelected;
+        set { if (isSelected == value) return; isSelected = value; Changed(); }
+    }
+
     private bool positionLocked;
-    public bool PositionLocked { get => positionLocked; set { if (positionLocked == value) return; positionLocked = value; Changed(); } }
+    public bool PositionLocked
+    {
+        get => positionLocked;
+        set { if (positionLocked == value) return; positionLocked = value; Changed(); }
+    }
+
     private bool deployLocked;
-    public bool DeployLocked { get => deployLocked; set { if (deployLocked == value) return; deployLocked = value; Changed(); Changed(nameof(CanDeploy)); } }
+    public bool DeployLocked
+    {
+        get => deployLocked;
+        set
+        {
+            if (deployLocked == value) return;
+            deployLocked = value;
+            Changed();
+            Changed(nameof(CanDeploy));
+        }
+    }
     public bool CanDeploy => Group != DeploymentGroup.Unknown && !DeployLocked;
+
     public AppCardView(CoolifyApplication app, DeploymentGroup group)
     {
-        App = app; Group = group;
-        var state = (app.Status ?? "").ToLowerInvariant();
-        var first = state.Split(':')[0].Trim();
-        RunningLabel = first == "running" ? "RUNNING" : first is "exited" or "stopped" or "dead" ? "STOPPED" : "RUNNING N/D";
-        RunningBrush = RunningLabel switch { "RUNNING" => Brush("#164D3C"), "STOPPED" => Brush("#643036"), _ => Brush("#343C4A") };
-        var parts = state.Split(':').Skip(1).ToArray();
-        HealthLabel = parts.Contains("healthy") ? "HEALTHY" : parts.Contains("unhealthy") ? "UNHEALTHY" : "HEALTH N/D";
-        HealthBrush = HealthLabel switch { "HEALTHY" => Brush("#164D3C"), "UNHEALTHY" => Brush("#643036"), _ => Brush("#343C4A") };
+        App = app;
+        Group = group;
+        currentStatus = app.Status ?? "";
     }
+
+    // Called on the WPF UI thread after a read-only Coolify health refresh.
+    public void UpdateApplicationStatus(string status)
+    {
+        status ??= "";
+        if (string.Equals(currentStatus, status, StringComparison.Ordinal)) return;
+        currentStatus = status;
+        Changed(nameof(RawStatus));
+        Changed(nameof(RunningLabel));
+        Changed(nameof(RunningBrush));
+        Changed(nameof(HealthLabel));
+        Changed(nameof(HealthBrush));
+        Changed(nameof(Running));
+        Changed(nameof(HasProblem));
+    }
+
     public void UpdateDeploy(LatestDeploy? info)
     {
         Latest = info;
         if (info is null) { LastDeploy = Loc.T("LastUnavailable"); LastStatus = ""; return; }
         if (!info.HasDeploy) { LastDeploy = Loc.T("LastNone"); LastStatus = ""; return; }
         LastDeploy = Loc.T("LastPrefix") + Relative(info.When);
-        LastStatus = info.Status + (string.IsNullOrWhiteSpace(info.Commit) ? "" : " · " + info.Commit[..Math.Min(9, info.Commit.Length)]);
+        LastStatus = info.Status + (string.IsNullOrWhiteSpace(info.Commit)
+            ? "" : " · " + info.Commit[..Math.Min(9, info.Commit.Length)]);
     }
-    public void UpdateClock() { if (Latest is { HasDeploy: true }) LastDeploy = Loc.T("LastPrefix") + Relative(Latest.When); }
+
+    public void UpdateClock()
+    {
+        if (Latest is { HasDeploy: true })
+            LastDeploy = Loc.T("LastPrefix") + Relative(Latest.When);
+    }
+
     private static string Relative(DateTimeOffset? date)
     {
         if (date is null) return Loc.T("UnknownDate");
@@ -69,7 +149,11 @@ internal sealed class AppCardView : INotifyPropertyChanged
         if (span.TotalDays < 1) return Loc.F("HoursAgo", (int)span.TotalHours);
         return Loc.F("DaysAgo", (int)span.TotalDays);
     }
-    private static Brush Brush(string color) => (Brush)new BrushConverter().ConvertFromString(color)!;
+
+    private static Brush ColorBrush(string color) =>
+        (Brush)new BrushConverter().ConvertFromString(color)!;
+
     public event PropertyChangedEventHandler? PropertyChanged;
-    private void Changed([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    private void Changed([CallerMemberName] string? name = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
