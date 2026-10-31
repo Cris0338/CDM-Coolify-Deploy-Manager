@@ -22,6 +22,14 @@ settings.json
 **/*.exe.pending
 **/.*.pending
 
+# Avoid accidentally staging a copied personalized clone, old backup,
+# temporary upgrade, or deferred-save error file outside portable/.
+**/*.exe
+**/*.bak
+**/*.exe.upgrade-in-progress
+**/*.exe.upgrade-error
+**/*.pending.updater-error.txt
+
 # Binary logo assets are supplied separately in the approved image ZIP.
 src/CoolifyDeployManager/Assets/CDMLogo.png
 src/CoolifyDeployManager/Assets/CDMOfficial.ico
