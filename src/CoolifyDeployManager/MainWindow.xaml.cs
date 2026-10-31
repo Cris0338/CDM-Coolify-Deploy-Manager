@@ -58,6 +58,20 @@ public partial class MainWindow : Window
             ? "VaultConfigured" : "VaultNotConfigured");
         Title = Loc.T("AppTitle") + " 2.2.0 · " + status;
         ProfileBadge.Text = status;
+        if (SettingsStore.HasPortableProfile && settings.IsConfigured)
+        {
+            string user = settings.ConnectionMode == ConnectionMode.ManagedSshTunnel
+                ? settings.SshUsername : Environment.UserName;
+            string server = settings.ConnectionMode == ConnectionMode.ManagedSshTunnel
+                ? settings.SshHost : settings.ServerUrl;
+            ProfileIdentity.Text = Loc.F("ProfileIdentity", user, server);
+            ProfileIdentity.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            ProfileIdentity.Text = "";
+            ProfileIdentity.Visibility = Visibility.Collapsed;
+        }
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)

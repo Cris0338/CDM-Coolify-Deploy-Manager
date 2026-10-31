@@ -35,6 +35,7 @@ public partial class SettingsWindow : Window
         RemoteHost.Text = original.SshRemoteHost;
         privateKey = original.SshPrivateKey;
         knownHosts = original.SshKnownHosts;
+        UpdateManualAuthorizeCommand();
         ConnectionChooser.SelectedIndex = original.ConnectionMode == ConnectionMode.Https ? 0 : 1;
         foreach (var (code, nativeName) in Loc.Languages)
             LanguageChooser.Items.Add(new ComboBoxItem { Content = code == "system" ? Loc.T("SystemLanguage") : nativeName, Tag = code });
@@ -190,12 +191,39 @@ public partial class SettingsWindow : Window
                 if (process.ExitCode != 0) throw new IOException(errors);
                 privateKey = await File.ReadAllTextAsync(path);
                 PublicKeyText.Text = (await File.ReadAllTextAsync(path + ".pub")).Trim();
+                UpdateManualAuthorizeCommand();
                 knownHosts = "";
                 SshStatus.Text = Loc.T("SetupKeyGenerated");
             }
             finally { Directory.Delete(folder, recursive: true); }
         }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "SSH key generation", MessageBoxButton.OK, MessageBoxImage.Warning); }
+    }
+
+    private void UpdateManualAuthorizeCommand()
+    {
+        if (ManualAuthorizeCommand is null || PublicKeyText is null) return;
+        var parts = PublicKeyText.Text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 2 || parts[0] != "ssh-ed25519")
+        {
+            ManualAuthorizeCommand.Text = "";
+            return;
+        }
+        var key = parts[0] + " " + parts[1];
+        if (key.Any(c => !(char.IsLetterOrDigit(c) || c is '-' or '_' or '+' or '/' or '=' or ' ')))
+        {
+            ManualAuthorizeCommand.Text = "";
+            return;
+        }
+        ManualAuthorizeCommand.Text = "umask 077; mkdir -p ~/.ssh; touch ~/.ssh/authorized_keys; " +
+            $"grep -qxF '{key}' ~/.ssh/authorized_keys || printf '%s\\n' '{key}' >> ~/.ssh/authorized_keys";
+    }
+
+    private void CopyManualCommand_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateManualAuthorizeCommand();
+        if (!string.IsNullOrWhiteSpace(ManualAuthorizeCommand.Text))
+            Clipboard.SetText(ManualAuthorizeCommand.Text);
     }
 
     private void CopyPublicKey_Click(object sender, RoutedEventArgs e)

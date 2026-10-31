@@ -6,7 +6,7 @@
     <Border Background="{StaticResource Header}" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
       <Grid Margin="16,0,6,0">
         <TextBlock Text="{DynamicResource L.SetupTitle}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-        <Button Content="✕" HorizontalAlignment="Right" Width="36" Style="{StaticResource ActionButton}" Background="#76303D" Click="Cancel_Click"/>
+        <Button HorizontalAlignment="Right" Width="36" Height="32" Padding="0" Style="{StaticResource ActionButton}" Background="#76303D" Click="Cancel_Click"><Path Data="M 1,1 L 11,11 M 11,1 L 1,11" Width="12" Height="12" Stroke="White" StrokeThickness="2" Stretch="Uniform"/></Button>
       </Grid>
     </Border>
     <Grid Grid.Row="1" Margin="28">
@@ -63,6 +63,11 @@
               </StackPanel>
               <TextBox x:Name="PublicKeyText" IsReadOnly="True" TextWrapping="Wrap" Height="60" VerticalScrollBarVisibility="Auto"/>
               <TextBlock Text="{DynamicResource L.SetupAuthorizeHelp}" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,8"/>
+              <TextBlock Text="{DynamicResource L.SetupManualAuthorizeLabel}" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+              <DockPanel Margin="0,0,0,12" LastChildFill="True">
+                <Button DockPanel.Dock="Right" Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupCopyManualAuthorize}" Click="CopyManualCommand_Click" Margin="8,0,0,0" MinWidth="125"/>
+                <TextBox x:Name="ManualAuthorizeCommand" IsReadOnly="True" TextWrapping="Wrap" Height="65" VerticalScrollBarVisibility="Auto"/>
+              </DockPanel>
               <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                 <TextBox x:Name="ExistingSshAlias" Width="175" ToolTip="Existing SSH alias, e.g. contabo"/>
                 <Button Style="{StaticResource ActionButton}" Content="{DynamicResource L.SetupAuthorizeAlias}" Click="AuthorizeKey_Click" Margin="8,0,0,0"/>

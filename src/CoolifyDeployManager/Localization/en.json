@@ -203,5 +203,8 @@
   "SetupVerifyHostCopyHint": "Select the text or click Copy",
   "SetupHostCopied": "Copied",
   "SetupHostNoMatch": "No, cancel",
-  "SetupHostMatches": "Yes, matches"
+  "SetupHostMatches": "Yes, matches",
+  "SetupManualAuthorizeLabel": "No existing SSH alias? Copy this command and run it in the server terminal (as the SSH user):",
+  "SetupCopyManualAuthorize": "Copy VPS command",
+  "ProfileIdentity": "User: {0}  ·  VPS: {1}"
 }

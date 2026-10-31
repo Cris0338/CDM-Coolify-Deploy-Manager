@@ -51,7 +51,8 @@
               <TextBlock x:Name="ProfileBadge" Text="{DynamicResource L.VaultNotConfigured}" FontSize="11" Foreground="{StaticResource Green}"/>
             </Border>
           </StackPanel>
-          <TextBlock Text="{DynamicResource L.Subtitle}" Foreground="{StaticResource Muted}" FontSize="12" Margin="47,4,0,0"/>
+          <TextBlock Text="{DynamicResource L.Subtitle}" Foreground="{StaticResource Muted}" FontSize="12" Margin="47,3,0,0"/>
+          <TextBlock x:Name="ProfileIdentity" Foreground="{StaticResource Green}" FontSize="11" Margin="47,4,0,0" Visibility="Collapsed"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
           <Ellipse x:Name="ConnectionDot" Width="9" Height="9" Fill="{StaticResource Red}" Margin="0,0,7,0"/>

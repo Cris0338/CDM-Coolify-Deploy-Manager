@@ -203,5 +203,8 @@
   "SetupVerifyHostCopyHint": "Seleziona il testo oppure premi Copia",
   "SetupHostCopied": "Copiato",
   "SetupHostNoMatch": "No, annulla",
-  "SetupHostMatches": "Sì, corrisponde"
+  "SetupHostMatches": "Sì, corrisponde",
+  "SetupManualAuthorizeLabel": "Non hai un alias SSH? Copia questo comando nella console del VPS (come utente SSH):",
+  "SetupCopyManualAuthorize": "Copia comando VPS",
+  "ProfileIdentity": "Utente: {0}  ·  VPS: {1}"
 }
