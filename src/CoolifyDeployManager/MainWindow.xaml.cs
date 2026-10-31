@@ -24,6 +24,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, AppCardView> allCards = new(StringComparer.OrdinalIgnoreCase);
     private readonly DispatcherTimer clock;
     private CancellationTokenSource? operation;
+    private CancellationTokenSource? postDeployHealthSync;
     private bool busy;
     private string selectedProjectUuid = "ALL";
     private readonly List<ProjectChoice> projectChoices = new();
@@ -205,6 +206,7 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        postDeployHealthSync?.Cancel();
         operation?.Cancel();
         clock.Stop();
         ssh.Stop();
@@ -874,13 +876,16 @@ public partial class MainWindow : Window
     private async Task DeployQueueAsync(IReadOnlyList<AppCardView> cards)
     {
         if (busy) return;
+        postDeployHealthSync?.Cancel();
         busy = true;
         operation = new CancellationTokenSource();
         CancelButton.IsEnabled = true;
+        var successfullyDeployed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         try
         {
             await EnsureConnectionAsync(operation.Token);
             using var api = new CoolifyApi(EffectiveSettings());
+
             foreach (var card in cards)
             {
                 operation.Token.ThrowIfCancellationRequested();
@@ -889,34 +894,45 @@ public partial class MainWindow : Window
                     AddLog(Loc.F("DeploySkippedLocked", card.Name));
                     continue;
                 }
-                // Revalidate the SSH tunnel before each deployment, not just once per queue.
+
+                // Deploy operations stay exclusively here, behind the existing
+                // confirmation flow. Health synchronization is read-only.
                 await EnsureConnectionAsync(operation.Token);
                 AddLog($"POST /deploy: {card.App.Project}/{card.Name} ({card.Uuid})");
                 OperationText.Text = "Deploy: " + card.Name;
                 var deployment = await api.StartDeployAsync(card.Uuid, operation.Token);
                 AddLog(Loc.F("DeploymentQueued", deployment));
-                var start = DateTimeOffset.UtcNow;
-                string last = "";
+
+                var startedAt = DateTimeOffset.UtcNow;
+                string lastState = "";
                 while (true)
                 {
                     operation.Token.ThrowIfCancellationRequested();
-                    if (DateTimeOffset.UtcNow - start > TimeSpan.FromMinutes(30))
+                    if (DateTimeOffset.UtcNow - startedAt > TimeSpan.FromMinutes(30))
                         throw new TimeoutException(Loc.T("MonitorTimeout"));
+
                     await Task.Delay(TimeSpan.FromSeconds(4), operation.Token);
                     await EnsureConnectionAsync(operation.Token);
                     var state = await api.GetDeploymentAsync(deployment, operation.Token);
-                    if (state.Status != last)
+                    if (!string.Equals(state.Status, lastState, StringComparison.OrdinalIgnoreCase))
                     {
                         AddLog($"  {card.Name}: {state.Status} · commit {state.Commit}");
-                        last = state.Status;
+                        lastState = state.Status;
                     }
+
                     if (state.Status.Equals("finished", StringComparison.OrdinalIgnoreCase))
                     {
+                        // "finished" is the deployment-job state, NOT proof
+                        // that its container has become running:healthy.
+                        successfullyDeployed.Add(card.Uuid);
                         AddLog(Loc.T("DeploymentFinished"));
                         break;
                     }
-                    if (state.Status is "failed" or "cancelled" or "error")
-                        throw new InvalidOperationException(Loc.F("DeploymentFailed", card.Name, state.Status));
+                    if (state.Status.Equals("failed", StringComparison.OrdinalIgnoreCase) ||
+                        state.Status.Equals("cancelled", StringComparison.OrdinalIgnoreCase) ||
+                        state.Status.Equals("error", StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidOperationException(
+                            Loc.F("DeploymentFailed", card.Name, state.Status));
                 }
             }
             OperationText.Text = Loc.T("QueueFinished");
@@ -934,8 +950,98 @@ public partial class MainWindow : Window
         }
         finally
         {
-            operation.Dispose(); operation = null; busy = false; CancelButton.IsEnabled = false;
+            operation.Dispose();
+            operation = null;
+            busy = false;
+            CancelButton.IsEnabled = false;
         }
+
+        // The first inventory read may precede Coolify's health-check refresh.
+        // Follow finished applications for a bounded interval rather than
+        // leaving a stale red health badge until manual Refresh is clicked.
         await RefreshAsync();
+        if (successfullyDeployed.Count > 0 && IsLoaded)
+            StartPostDeployHealthSync(successfullyDeployed);
     }
+
+    private void StartPostDeployHealthSync(IReadOnlyCollection<string> appUuids)
+    {
+        postDeployHealthSync?.Cancel();
+        var source = new CancellationTokenSource();
+        postDeployHealthSync = source;
+        _ = SyncPostDeployHealthAsync(appUuids, source);
+    }
+
+    // Read-only GET /api/v1/applications/{uuid}. The background task runs
+    // only while this CDM window remains open, and never sends a deploy.
+    private async Task SyncPostDeployHealthAsync(
+        IReadOnlyCollection<string> appUuids, CancellationTokenSource source)
+    {
+        var pending = new HashSet<string>(appUuids, StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            pending.RemoveWhere(uuid =>
+                !allCards.TryGetValue(uuid, out var card) || card.HealthLabel == "HEALTHY");
+            if (pending.Count == 0) return;
+
+            AddLog("Post-deploy: checking application health until Coolify confirms it.");
+            using var api = new CoolifyApi(EffectiveSettings());
+            // Maximum 18 checks at five-second intervals (~90 s);
+            // individual read errors do not erase the last known status.
+            for (int attempt = 0; attempt < 18 && pending.Count > 0; attempt++)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5), source.Token);
+                foreach (var uuid in pending.ToArray())
+                {
+                    source.Token.ThrowIfCancellationRequested();
+                    try
+                    {
+                        var status = await api.GetApplicationStatusAsync(uuid, source.Token);
+                        if (!allCards.TryGetValue(uuid, out var card))
+                        {
+                            pending.Remove(uuid);
+                            continue;
+                        }
+                        if (!string.Equals(card.RawStatus, status, StringComparison.Ordinal))
+                        {
+                            card.UpdateApplicationStatus(status);
+                            AddLog($"  {card.Name}: {status}");
+                            // The view model raises binding notifications.
+                            // Only filtered lists must be repopulated.
+                            if (StatusFilter.SelectedIndex != 0) RenderCards();
+                        }
+                        if (card.HealthLabel == "HEALTHY") pending.Remove(uuid);
+                    }
+                    catch (OperationCanceledException) when (source.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        // The next read may succeed once Coolify/tunnel recovers.
+                        if (attempt == 17) AddLog($"  Health check {uuid}: {ex.Message}");
+                    }
+                }
+            }
+            if (pending.Count != 0)
+                AddLog("Post-deploy health is not confirmed for all applications yet. Refresh can check again.");
+            else
+                AddLog("Post-deploy health synchronized with Coolify.");
+        }
+        catch (OperationCanceledException) when (source.IsCancellationRequested)
+        {
+            // Closing the window or starting another deployment stops this monitor.
+        }
+        catch (Exception ex)
+        {
+            AddLog("Post-deploy health polling ended: " + ex.Message);
+        }
+        finally
+        {
+            if (ReferenceEquals(postDeployHealthSync, source))
+                postDeployHealthSync = null;
+            source.Dispose();
+        }
+    }
+
 }
