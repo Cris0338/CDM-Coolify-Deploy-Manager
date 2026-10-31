@@ -11,6 +11,8 @@ using System.Windows.Threading;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Documents;
+using System.Windows.Interop;
+using System.Runtime.InteropServices;
 
 namespace CoolifyDeployManager;
 
@@ -27,6 +29,8 @@ public partial class MainWindow : Window
     private readonly List<ProjectChoice> projectChoices = new();
     private Point dragOrigin;
     private string? dragUuid;
+    private GridLength lastVisibleLogHeight = new(160);
+    private HwndSource? windowSource;
 
     internal sealed record ProjectChoice(string Uuid, string Name);
 
@@ -81,14 +85,124 @@ public partial class MainWindow : Window
         if (settings.IsConfigured) await RefreshAsync();
         else _ = Dispatcher.BeginInvoke(new Action(() => OpenSettings()));
     }
-    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    // Every non-interactive pixel of the titlebar is a drag handle; no "move"
+    // crosshair cursor and no accidental dragging when pressing a window button.
+    private void TitleBar_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.ClickCount == 2) { WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized; return; }
-        if (e.LeftButton == MouseButtonState.Pressed) DragMove();
+        if (e.ChangedButton != MouseButton.Left ||
+            sender is not DependencyObject bar ||
+            IsInteractiveCardElement(e.OriginalSource as DependencyObject, bar))
+            return;
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal : WindowState.Maximized;
+            e.Handled = true;
+        }
+        else if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            DragMove();
+            e.Handled = true;
+        }
     }
-    private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-    private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+
+    private void Minimize_Click(object sender, RoutedEventArgs e) =>
+        WindowState = WindowState.Minimized;
+
+    private void Maximize_Click(object sender, RoutedEventArgs e) =>
+        WindowState = WindowState == WindowState.Maximized
+            ? WindowState.Normal : WindowState.Maximized;
+
+    private void Window_StateChanged(object sender, EventArgs e)
+    {
+        if (MaximizeGlyph is null || MaximizeButton is null) return;
+        bool maximized = WindowState == WindowState.Maximized;
+        MaximizeGlyph.Data = Geometry.Parse(maximized
+            ? "M 3,5 H 11 V 13 H 3 Z M 5,5 V 3 H 13 V 11 H 11"
+            : "M 2,2 H 14 V 14 H 2 Z");
+        MaximizeButton.ToolTip = maximized ? "Restore" : "Maximize";
+    }
+
     private void CloseWindow_Click(object sender, RoutedEventArgs e) => Close();
+
+    // WindowChrome + WindowStyle=None can otherwise maximize across the Windows
+    // taskbar. WM_GETMINMAXINFO constrains the maximized client to the work area
+    // of the monitor containing the window (correct for multiple monitors).
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativePoint { public int X; public int Y; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect
+    {
+        public int Left; public int Top; public int Right; public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeMonitorInfo
+    {
+        public int Size;
+        public NativeRect Monitor;
+        public NativeRect Work;
+        public int Flags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeMinMaxInfo
+    {
+        public NativePoint Reserved;
+        public NativePoint MaxSize;
+        public NativePoint MaxPosition;
+        public NativePoint MinTrackSize;
+        public NativePoint MaxTrackSize;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetMonitorInfo(IntPtr monitor, ref NativeMonitorInfo info);
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        windowSource = PresentationSource.FromVisual(this) as HwndSource;
+        windowSource?.AddHook(WindowMessage);
+    }
+
+    private static IntPtr WindowMessage(IntPtr hwnd, int msg, IntPtr wParam,
+        IntPtr lParam, ref bool handled)
+    {
+        const int WM_GETMINMAXINFO = 0x0024;
+        const uint MONITOR_DEFAULTTONEAREST = 2;
+        if (msg != WM_GETMINMAXINFO || lParam == IntPtr.Zero) return IntPtr.Zero;
+
+        var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+        if (monitor == IntPtr.Zero) return IntPtr.Zero;
+        var info = new NativeMonitorInfo
+        {
+            Size = Marshal.SizeOf<NativeMonitorInfo>()
+        };
+        if (!GetMonitorInfo(monitor, ref info)) return IntPtr.Zero;
+
+        var value = Marshal.PtrToStructure<NativeMinMaxInfo>(lParam);
+        value.MaxPosition.X = info.Work.Left - info.Monitor.Left;
+        value.MaxPosition.Y = info.Work.Top - info.Monitor.Top;
+        value.MaxSize.X = info.Work.Right - info.Work.Left;
+        value.MaxSize.Y = info.Work.Bottom - info.Work.Top;
+        Marshal.StructureToPtr(value, lParam, false);
+        handled = true;
+        return IntPtr.Zero;
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        windowSource?.RemoveHook(WindowMessage);
+        windowSource = null;
+        base.OnClosed(e);
+    }
+
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         operation?.Cancel();
@@ -682,7 +796,25 @@ public partial class MainWindow : Window
     }
     private void Guide_Click(object sender, RoutedEventArgs e) => new GuideWindow { Owner = this }.ShowDialog();
     private void About_Click(object sender, RoutedEventArgs e) => new AboutWindow { Owner = this }.ShowDialog();
-    private void ToggleLog_Click(object sender, RoutedEventArgs e) => LogPanel.Visibility = LogPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+    private void ToggleLog_Click(object sender, RoutedEventArgs e)
+    {
+        if (LogPanel.Visibility == Visibility.Visible)
+        {
+            lastVisibleLogHeight = LogRow.Height;
+            LogSplitter.Visibility = Visibility.Collapsed;
+            LogPanel.Visibility = Visibility.Collapsed;
+            LogRow.MinHeight = 0;
+            LogRow.Height = new GridLength(0);
+        }
+        else
+        {
+            LogRow.MinHeight = 75;
+            LogRow.Height = lastVisibleLogHeight.Value > 0
+                ? lastVisibleLogHeight : new GridLength(160);
+            LogPanel.Visibility = Visibility.Visible;
+            LogSplitter.Visibility = Visibility.Visible;
+        }
+    }
     private void CopyLog_Click(object sender, RoutedEventArgs e) { if (!string.IsNullOrEmpty(LogBox.Text)) Clipboard.SetText(LogBox.Text); }
     private void ClearLog_Click(object sender, RoutedEventArgs e) => LogBox.Clear();
     private void Cancel_Click(object sender, RoutedEventArgs e)
