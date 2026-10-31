@@ -95,8 +95,17 @@ if ($running.Count -gt 0) {
     throw "Close the running portable\CDM.exe before rebuilding (PID: $($running.Id -join ', '))."
 }
 
-Write-Host '== Publish portable WPF Windows x64 executable =='
-& $dotnet publish $project -c Release -r win-x64 --self-contained true '-p:PublishSingleFile=true' '-p:IncludeNativeLibrariesForSelfExtract=true' '-p:EnableCompressionInSingleFile=true' '-p:DebugType=None' '-p:DebugSymbols=false' -o $destination
+# Embed Git revision and UTC compile time into the executable's assembly.
+$gitFullSha = (& git -C $root rev-parse --verify HEAD).Trim()
+if ($LASTEXITCODE -ne 0 -or $gitFullSha -notmatch '^[0-9a-fA-F]{40}$') {
+    throw 'Cannot determine Git commit for CDM build identity.'
+}
+$gitShortSha = $gitFullSha.Substring(0,12).ToLowerInvariant()
+$buildUtc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ', [Globalization.CultureInfo]::InvariantCulture)
+$projectVersion = [regex]::Match((Get-Content -LiteralPath $project -Raw),'<Version>(\d+\.\d+\.\d+)</Version>').Groups[1].Value
+if ([string]::IsNullOrWhiteSpace($projectVersion)) { throw 'Missing CDM project version.' }
+Write-Host "== Publish CDM $projectVersion (Git $gitShortSha, UTC $buildUtc) portable WPF Windows x64 =="
+& $dotnet publish $project -c Release -r win-x64 --self-contained true '-p:PublishSingleFile=true' '-p:IncludeNativeLibrariesForSelfExtract=true' '-p:EnableCompressionInSingleFile=true' '-p:DebugType=None' '-p:DebugSymbols=false' "-p:CDMSourceCommit=$gitShortSha" "-p:CDMBuildUtc=$buildUtc" -o $destination
 if ($LASTEXITCODE -ne 0) { throw "Build failed (exit $LASTEXITCODE)." }
 
 $published = Join-Path $destination 'CoolifyDeployManager.exe'
@@ -141,6 +150,16 @@ try {
         throw "Generic CDM.exe unexpectedly loaded saved credentials. $((Get-Content "$templateMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
     }
     Write-Host 'PASS: generic CDM.exe starts without credentials, irrespective of older user settings.'
+
+    # Compare version, commit and timestamp actually read from the published EXE.
+    $buildMarker = Join-Path $smoke 'build-info.txt'
+    $buildCheck = Start-Process -FilePath $exe -ArgumentList ('--verify-build-info "' + $buildMarker + '"') -Wait -PassThru
+    $expectedBuildInfo = "$projectVersion|$gitShortSha|$buildUtc"
+    if ($buildCheck.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $buildMarker) -or
+        (Get-Content -LiteralPath $buildMarker -Raw).Trim() -ne $expectedBuildInfo) {
+        throw "CDM build identity mismatch (expected $expectedBuildInfo). $((Get-Content "$buildMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    Write-Host "PASS: CDM $projectVersion Git $gitShortSha UTC $buildUtc embedded in the published executable."
 
     # Status update is independent of the deployment's "finished" event.
     # This offline test exercises WPF view-model property notifications only.
