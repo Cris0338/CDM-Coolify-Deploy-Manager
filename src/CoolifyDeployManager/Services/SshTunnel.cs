@@ -14,6 +14,7 @@ namespace CoolifyDeployManager;
 internal sealed class SshTunnel : IAsyncDisposable
 {
     private Process? process;
+    private string? ephemeralIdentityFolder;
     private string? configSignature;
     public bool IsRunning => process is { HasExited: false };
     public string LocalUrl { get; private set; } = "";
@@ -23,7 +24,7 @@ internal sealed class SshTunnel : IAsyncDisposable
     {
         if (settings.ConnectionMode != ConnectionMode.ManagedSshTunnel) return;
         Validate(settings);
-        var signature = $"{settings.SshHost}|{settings.SshLocalPort}|{settings.SshRemoteHost}|{settings.SshRemotePort}";
+        var signature = $"{settings.SshHost}|{settings.SshUsername}|{settings.SshPort}|{settings.SshLocalPort}|{settings.SshRemoteHost}|{settings.SshRemotePort}";
         if (IsRunning && signature == configSignature)
         {
             if (await HealthCheckAsync(settings.SshLocalPort, ct)) return;
@@ -32,6 +33,20 @@ internal sealed class SshTunnel : IAsyncDisposable
         Stop();
         if (!IsPortFree(settings.SshLocalPort))
             throw new IOException($"Local port {settings.SshLocalPort} is already in use. Close the old SSH tunnel or choose another port.");
+        // SSH requires temporary files; long-lived credentials remain inside the clone EXE.
+        string? identity = null;
+        string? knownHosts = null;
+        if (!string.IsNullOrWhiteSpace(settings.SshPrivateKey))
+        {
+            if (string.IsNullOrWhiteSpace(settings.SshKnownHosts) ||
+                string.IsNullOrWhiteSpace(settings.SshUsername))
+                throw new IOException("Portable SSH needs a username and verified host key.");
+            ephemeralIdentityFolder = Directory.CreateTempSubdirectory("cdm-ssh-").FullName;
+            identity = Path.Combine(ephemeralIdentityFolder, "identity");
+            knownHosts = Path.Combine(ephemeralIdentityFolder, "known_hosts");
+            File.WriteAllText(identity, settings.SshPrivateKey);
+            File.WriteAllText(knownHosts, settings.SshKnownHosts + Environment.NewLine);
+        }
         var start = new ProcessStartInfo("ssh.exe")
         {
             UseShellExecute = false,
@@ -39,6 +54,15 @@ internal sealed class SshTunnel : IAsyncDisposable
             RedirectStandardError = true,
             RedirectStandardOutput = false,
         };
+        if (identity is not null)
+        {
+            foreach (var arg in new[] { "-i", identity,
+                "-o", "IdentitiesOnly=yes",
+                "-o", $"UserKnownHostsFile={knownHosts}",
+                "-p", settings.SshPort.ToString(),
+                "-l", settings.SshUsername })
+                start.ArgumentList.Add(arg);
+        }
         foreach (var arg in new[]
         {
             "-N", "-T", "-o", "BatchMode=yes", "-o", "ExitOnForwardFailure=yes",
@@ -63,7 +87,8 @@ internal sealed class SshTunnel : IAsyncDisposable
         }
         catch (System.ComponentModel.Win32Exception ex)
         {
-            throw new IOException("OpenSSH Client (ssh.exe) is not available. Enable the optional Windows OpenSSH Client feature.", ex);
+            Stop();
+            throw new IOException("OpenSSH Client (ssh.exe) is unavailable. Enable Windows OpenSSH Client.", ex);
         }
         configSignature = signature;
         LocalUrl = $"http://127.0.0.1:{settings.SshLocalPort}";
@@ -107,7 +132,7 @@ internal sealed class SshTunnel : IAsyncDisposable
     {
         if (string.IsNullOrWhiteSpace(s.SshHost) || s.SshHost.StartsWith('-') || s.SshHost.Any(char.IsWhiteSpace))
             throw new ArgumentException("Invalid SSH host alias.");
-        if (s.SshLocalPort is < 1024 or > 65535 || s.SshRemotePort is < 1 or > 65535)
+        if (s.SshLocalPort is < 1024 or > 65535 || s.SshRemotePort is < 1 or > 65535 || s.SshPort is < 1 or > 65535)
             throw new ArgumentException("Invalid local or remote SSH port.");
         if (string.IsNullOrWhiteSpace(s.SshRemoteHost) || s.SshRemoteHost.StartsWith('-') || s.SshRemoteHost.Any(char.IsWhiteSpace))
             throw new ArgumentException("Invalid remote SSH host.");
@@ -118,11 +143,20 @@ internal sealed class SshTunnel : IAsyncDisposable
         process = null;
         configSignature = null;
         LocalUrl = "";
-        if (p is null) return;
-        try { if (!p.HasExited) p.Kill(entireProcessTree: true); }
-        catch (InvalidOperationException) { }
-        catch (System.ComponentModel.Win32Exception) { }
-        finally { p.Dispose(); }
+        if (p is not null)
+        {
+            try { if (!p.HasExited) p.Kill(entireProcessTree: true); }
+            catch (InvalidOperationException) { }
+            catch (System.ComponentModel.Win32Exception) { }
+            finally { p.Dispose(); }
+        }
+        if (ephemeralIdentityFolder is { } folder)
+        {
+            ephemeralIdentityFolder = null;
+            try { Directory.Delete(folder, recursive: true); }
+            catch (IOException) { /* Windows may briefly retain a file handle. */ }
+            catch (UnauthorizedAccessException) { }
+        }
     }
     public ValueTask DisposeAsync() { Stop(); return ValueTask.CompletedTask; }
 }
