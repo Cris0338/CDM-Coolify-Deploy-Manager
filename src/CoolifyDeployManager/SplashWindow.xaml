@@ -1,24 +1,17 @@
-<!-- Official CDM artwork is provided by the user-approved transparent PNG resource. -->
+<!-- Official CDM logo is already a transparent PNG. The whole WPF splash
+     has per-pixel transparency: no rectangular frame, backdrop or footer. -->
 <Window x:Class="CoolifyDeployManager.SplashWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Width="930" Height="625" WindowStartupLocation="CenterScreen"
         ShowInTaskbar="False" WindowStyle="None" ResizeMode="NoResize"
-        AllowsTransparency="True" Background="Transparent" Topmost="True">
-  <Border x:Name="SplashShell" CornerRadius="23" Background="#111827" BorderBrush="#51419C" BorderThickness="1" ClipToBounds="True">
-    <Grid>
-      <Grid.Background>
-        <RadialGradientBrush Center="0.5,0.48" GradientOrigin="0.48,0.43" RadiusX="0.82" RadiusY="0.98">
-          <GradientStop Color="#23365E" Offset="0"/>
-          <GradientStop Color="#151E33" Offset="0.51"/>
-          <GradientStop Color="#090F1C" Offset="1"/>
-        </RadialGradientBrush>
-      </Grid.Background>
-      <Canvas Width="920" Height="610" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
-        <Ellipse Canvas.Left="112" Canvas.Top="125" Width="675" Height="345" Stroke="#2369D9" StrokeThickness="1" StrokeDashArray="5 6" Opacity=".25"/>
-        <Ellipse Canvas.Left="152" Canvas.Top="139" Width="600" Height="333" Stroke="#9B56F8" StrokeThickness="1" Opacity=".2"/>
-      </Canvas>
-      <Grid x:Name="LogoStage" Width="900" Height="530" HorizontalAlignment="Center" VerticalAlignment="Center">
+        AllowsTransparency="True" Background="Transparent" Topmost="True"
+        ShowActivated="False">
+  <!-- No opaque ancestor: only the logo, electron and particles draw pixels. -->
+  <Grid x:Name="LogoStage" Width="900" Height="530"
+        Background="Transparent" ClipToBounds="False"
+        HorizontalAlignment="Center" VerticalAlignment="Center"
+        IsHitTestVisible="False">
         <!-- The electron uses separate layers, behind and in front of the real logo. -->
         <Canvas x:Name="BackOrbit" Width="900" Height="530" IsHitTestVisible="False">
           <Ellipse x:Name="BackElectron" Width="50" Height="50" Visibility="Collapsed" Opacity=".55">
@@ -54,13 +47,6 @@
           </Ellipse>
         </Canvas>
         <Canvas x:Name="ParticleLayer" Width="900" Height="530" IsHitTestVisible="False"/>
-      </Grid>
-      <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,16">
-        <TextBlock Text="COOLIFY DEPLOY MANAGER" Foreground="#C2CBEB" FontSize="11"
-                   FontFamily="Consolas" HorizontalAlignment="Center" Opacity=".88"/>
-        <TextBlock Text="Avvio della dashboard..." Foreground="#7992C9" FontSize="11"
-                   HorizontalAlignment="Center" Margin="0,4,0,0"/>
-      </StackPanel>
-    </Grid>
-  </Border>
+
+  </Grid>
 </Window>
