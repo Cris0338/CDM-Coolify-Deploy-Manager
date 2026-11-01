@@ -124,6 +124,7 @@ public partial class App : Application
              e.Args[0] == "--verify-tunnel-recovery-policy" ||
              e.Args[0] == "--verify-live-deploy-ui" ||
              e.Args[0] == "--verify-live-spinner-retemplate" ||
+             e.Args[0] == "--verify-tray-ui" ||
              e.Args[0] == "--verify-build-info"))
         {
             try
@@ -242,6 +243,37 @@ public partial class App : Application
                         activityNotifications < 2)
                         throw new InvalidDataException("Deploy indicator did not clear or notify WPF bindings.");
                     File.WriteAllText(e.Args[1], "CDM-LIVE-DEPLOY-UI-OK");
+                }
+                else if (e.Args[0] == "--verify-tray-ui")
+                {
+                    // Only pure registry command validation and local WPF UI;
+                    // DO NOT modify Windows startup keys or connect to Coolify.
+                    var cmd = WindowsStartup.CommandFor(
+                        @"C:\Program Files\CDM\Personal CDM.exe");
+                    if (cmd != "\"C:\\Program Files\\CDM\\Personal CDM.exe\" --startup-tray" ||
+                        SingleInstanceGate.IdentityFor(@"C:\CDM\one.exe") ==
+                        SingleInstanceGate.IdentityFor(@"C:\CDM\two.exe"))
+                        throw new InvalidDataException(
+                            "Windows startup command or per-clone identity is invalid.");
+
+                    var trayDashboard = new MainWindow { SkipStartupConnectionForSmoke = true };
+                    MainWindow = trayDashboard;
+                    trayDashboard.Show();
+                    try
+                    {
+                        trayDashboard.WindowState = WindowState.Minimized;
+                        Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Loaded);
+                        if (trayDashboard.IsVisible || trayDashboard.ShowInTaskbar)
+                            throw new InvalidDataException(
+                                "Minimization did not hide the real WPF window to notification area.");
+                        trayDashboard.RestoreFromTray();
+                        if (!trayDashboard.IsVisible || !trayDashboard.ShowInTaskbar ||
+                            trayDashboard.WindowState != WindowState.Normal)
+                            throw new InvalidDataException(
+                                "Tray restore did not reopen the real WPF dashboard.");
+                        File.WriteAllText(e.Args[1], "CDM-TRAY-UI-OK");
+                    }
+                    finally { trayDashboard.Close(); }
                 }
                 else if (e.Args[0] == "--verify-live-spinner-retemplate")
                 {
