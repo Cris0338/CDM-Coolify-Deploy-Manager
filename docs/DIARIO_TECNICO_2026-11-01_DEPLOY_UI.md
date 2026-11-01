@@ -47,3 +47,7 @@ L'utente deve collaudare separatamente la versione 2.2.2 da branch (build offlin
 **Regression guard** `a1539c255643584377a19c97e4e1f1bc5567014e`: `BUILD_PORTABLE.ps1` rifiuta una build quando le sei chiamate `AddLog` a eventi interni vengono reintrodotte; stampa `PASS: card reordering, local locks and settings events do not pollute the communication terminal.` se assenti.
 
 **Stato dei test:** modifica e controllo statico inseriti su branch `feature/live-deploy-card-status-20261101`; ancora da verificare mediante build reale Windows e prova di drag durante un deploy. Nessuna modifica alla release `v2.2.1`, al VPS, al clone personale o ai suoi backup.
+
+**Affinamento** `6a5755655faa0f81dd0f43706aec13110ae15f0d`: esclusi dal terminale anche `DeploySkippedLocked`, `LastStatusLog` (fine coda locale prima del refresh) e `StatusWaiting` (annullamento locale). Il deploy saltato viene comunicato in `OperationText`, non nel registro di rete; stop locale e fine coda sono già indicati in `OperationText`. Il log continua a mostrare le effettive richieste/risposte API e SSH, lo stato restituito da Coolify, le letture di health e i relativi errori. Aggiornato test di non-regressione in `BUILD_PORTABLE.ps1`, commit `95695c0b076514d9761d54460ed210cb11ce9992`: ora controlla **nove** pattern di messaggi UI/locali vietati.
+
+**Nota di chiusura di questo passo:** non abbiamo ancora una build Windows su questo branch; prima verifica in esecuzione ancora necessaria. Le modifiche al codice sono solo nel branch 2.2.2, non nella pre-release pubblicata.
