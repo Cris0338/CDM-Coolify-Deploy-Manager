@@ -84,10 +84,11 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 
 ## Phase 5 — CDM 2.2.3: animazione deploy taskbar + tray (planned)
 
-**Tracking issue:** https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/issues/3 (user request 2026-11-01). This is planned for **2.2.3, not 2.2.2**. No 2.2.3 code or release created yet.
+**Tracking issue:** https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/issues/3 (user request 2026-11-01). Development branch: `feature/deploy-shell-indicator-223-20261101`, based on the post-test 2.2.2 feature branch. No merge, tag, release or personal EXE change.
 
-- [ ] Reuse the **real remote deployment active state** (`queued`/`in_progress`) already driving the 2.2.2 per-card spinner; multiple concurrent deployments must keep the global spinner active until all are terminal.
-- [ ] Add a small rotating circle indicator to the **Windows taskbar button** while it exists and a deploy is active; do not summon a taskbar button for a window intentionally hidden to tray.
-- [ ] Add the same active-state animated circle to the **notification-area tray icon**, including while startup-tray/minimized; restore normal icon after deploy, dispose temporary icon handles safely.
-- [ ] Guard transitions for stopped local queue, remote completion, disconnect, multi-deploy and restore/minimize; don't mistake queue cancellation for server terminal state.
-- [ ] Offline state/WPF smoke and one manual real deployment acceptance; document build SHA and changes. No public 2.2.3 release before 2.2.2 acceptance.
+- [x] Code: reuse the **real remote deployment active state** (`queued`/`in_progress`) driving per-card spinners, with aggregation over card view models; synthetic test covers two concurrent active cards, first finished before second. No new server polling.
+- [x] Code: animated green circular overlay on **Windows taskbar** using 12 cached frozen WPF DrawingImage frames, without changing ShowInTaskbar or showing a hidden window. Windows visual acceptance pending.
+- [x] Code: tray icon uses 12 cached overlay Icon frames with HICON lifecycle handling, existing official icon retained beneath ring; updates continue while window is hidden, restore the original icon on inactive/dispose. Windows visual acceptance pending.
+- [ ] Verify edge cases for stopped local monitoring, remote completion, disconnect, multiple deploys, and restore/minimize. Current implementation deliberately follows the same known server states and final cleanup as 2.2.2 card spinners; no new remote-job polling after local cancellation.
+- [x] Added `--verify-deploy-shell-indicator` WPF smoke: queued, animated frame change, two concurrent active cards, first finished, tray while hidden, both finished and normal icon, then restore. Integrated into `BUILD_PORTABLE.ps1`; **not yet executed on Windows**.
+- [ ] Owner must `git fetch`/checkout new branch and run `BUILD_PORTABLE.ps1` to compile 2.2.3 and run all offline tests, then visually verify both taskbar/tray on real deploy. No personal clone upgrade or release before explicit acceptance.
