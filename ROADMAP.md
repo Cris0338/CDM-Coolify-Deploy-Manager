@@ -63,9 +63,10 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 - [ ] Verify tray context menu Open/Exit, normal Close, same-clone double-launch and that no competing SSH listener appears on port 18000.
 - [x] Enable checkbox on test clone and verify the actual HKCU Run value points to `CDM-Test-2.2.2-Recovered.exe --startup-tray` (owner showed actual registration, 2026-11-01).
 - [x] Simulate `--startup-tray` from closed test clone: no splash/window, tray icon shown, and double-click opens connected CDM (owner confirmed 2026-11-01). **Defect found:** restored window stays behind other Windows windows.
-- [ ] Fix tray restore foreground activation on Windows 10, including second-instance wake.
-- [ ] Persist per-clone last normal window rectangle and maximized/normal state; restoring from tray must preserve prior maximized state, including startup-tray.
-- [ ] Add offline WPF/serialization tests for window placement and bring-to-front behavior; compile+manual verify after fixing.
+- [x] Code patch: restore from tray and second-instance wake now explicitly raises WPF window in foreground using topmost z-order transition, WPF activation and Win32 SetForegroundWindow. **Windows manual confirmation pending**.
+- [x] Code patch: persist last normal window rectangle and normal/maximized mode inside personalized EXE profile on clean Close; restore on next launch and after tray. Validate virtual desktop bounds and do not persist transient minimized state. **Windows manual confirmation pending**.
+- [x] Offline WPF / JSON / real staged embedded profile smoke authored: `--verify-window-placement` and existing upgraded synthetic clone close-time save. No real network, registry or user settings written by tests.
+- [ ] Windows compile and smoke PASS for foreground/geometry patch; manually verify foreground focus, resize/maximize state persistence and absence of an unexpected second SSH tunnel on clone test.
 - [ ] Disable checkbox and verify HKCU Run entry removal, then optionally re-enable; actual sign-in auto-launch still unverified. No public release until accepted.
 
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
