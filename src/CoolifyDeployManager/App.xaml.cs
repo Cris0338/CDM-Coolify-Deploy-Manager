@@ -122,6 +122,7 @@ public partial class App : Application
              e.Args[0] == "--verify-health-viewmodel" ||
              e.Args[0] == "--verify-tunnel-recovery-policy" ||
              e.Args[0] == "--verify-live-deploy-ui" ||
+             e.Args[0] == "--verify-live-spinner-retemplate" ||
              e.Args[0] == "--verify-build-info"))
         {
             try
@@ -240,6 +241,20 @@ public partial class App : Application
                         activityNotifications < 2)
                         throw new InvalidDataException("Deploy indicator did not clear or notify WPF bindings.");
                     File.WriteAllText(e.Args[1], "CDM-LIVE-DEPLOY-UI-OK");
+                }
+                else if (e.Args[0] == "--verify-live-spinner-retemplate")
+                {
+                    // Display an actual WPF card template without API/SSH calls.
+                    // This explicitly exercises the drag/rebuild crash path.
+                    var dashboard = new MainWindow { SkipStartupConnectionForSmoke = true };
+                    MainWindow = dashboard;
+                    dashboard.Show();
+                    try
+                    {
+                        dashboard.VerifyLiveSpinnerRetemplateForSmoke();
+                        File.WriteAllText(e.Args[1], "CDM-WPF-SPINNER-RETEMPLATE-OK");
+                    }
+                    finally { dashboard.Close(); }
                 }
                 else if (e.Args[0] == "--verify-health-viewmodel")
                 {
