@@ -59,7 +59,8 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 - [x] IT/FR/EN locale strings for Windows-start checkbox, explanation, menu Open/Exit and minimize tooltip (232/232 each); others use English fallback.
 - [x] **Windows build and full offline smoke PASS** (2026-11-01): 2.2.2 source `8585427dff9e`, SHA256 generic `E4F3D9989185694A17C97344C6E014A45CCFE784812586D71C05FB181B41E6E4`, successful `--verify-tray-ui` (hide/restore, named-instance event, autostart command; no registry modifications).
 - [x] Upgrade only disposable `CDM-Test-2.2.2-Recovered.exe` using the SHA256-verified Windows tray build; owner confirmed PASS (2026-11-01); original personalized clone preserved.
-- [ ] Manually test icon, minimize/restore, Close, same-clone double-launch and SSH connection on recovered clone, with no competing listener on 18000.
+- [x] Manually test notification icon, minimize to tray and double-click to restore actual WPF window on recovered clone: owner confirmed 👍 (2026-11-01).
+- [ ] Verify tray context menu Open/Exit, normal Close, same-clone double-launch and that no competing SSH listener appears on port 18000.
 - [ ] Enable/disable the checkbox on clone test and verify HKCU Run path and hidden Windows login startup (no personal clone upgrades, no public release until tested).
 
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
