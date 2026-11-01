@@ -246,15 +246,15 @@ public partial class App : Application
                 {
                     // Display an actual WPF card template without API/SSH calls.
                     // This explicitly exercises the drag/rebuild crash path.
-                    var dashboard = new MainWindow { SkipStartupConnectionForSmoke = true };
-                    MainWindow = dashboard;
-                    dashboard.Show();
+                    var smokeDashboard = new MainWindow { SkipStartupConnectionForSmoke = true };
+                    MainWindow = smokeDashboard;
+                    smokeDashboard.Show();
                     try
                     {
-                        dashboard.VerifyLiveSpinnerRetemplateForSmoke();
+                        smokeDashboard.VerifyLiveSpinnerRetemplateForSmoke();
                         File.WriteAllText(e.Args[1], "CDM-WPF-SPINNER-RETEMPLATE-OK");
                     }
-                    finally { dashboard.Close(); }
+                    finally { smokeDashboard.Close(); }
                 }
                 else if (e.Args[0] == "--verify-health-viewmodel")
                 {
