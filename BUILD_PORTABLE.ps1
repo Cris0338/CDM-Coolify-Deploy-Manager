@@ -232,6 +232,24 @@ try {
     finally { $trayTest.Dispose() }
     Write-Host 'PASS: Windows tray icon hides/restores WPF, validates user autostart command without touching registry.'
 
+    # Real WPF taskbar overlay and Windows notification icon must animate
+    # from Coolify-confirmed state, survive minimization and multi-deploy, then
+    # return to the exact original icon. This makes no SSH/API/registry calls.
+    $shellMarker = Join-Path $smoke 'shell-deploy-indicator.txt'
+    $shellTest = Start-Process -FilePath $exe -ArgumentList ('--verify-deploy-shell-indicator "' + $shellMarker + '"') -PassThru
+    try {
+        if (-not $shellTest.WaitForExit(30000)) {
+            try { $shellTest.Kill() } catch { }
+            throw 'Windows deploy shell indicator smoke timed out after 30 seconds.'
+        }
+        if ($shellTest.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $shellMarker) -or
+            (Get-Content -LiteralPath $shellMarker -Raw).Trim() -ne 'CDM-SHELL-INDICATOR-OK') {
+            throw "Deploy shell indicator WPF/tray smoke failed. $((Get-Content "$shellMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+        }
+    }
+    finally { $shellTest.Dispose() }
+    Write-Host 'PASS: taskbar and tray deploy rings animate with actual server states, even when minimized.'
+
     # Verify geometry survives settings JSON and that minimizing into the tray
     # retains the last normal/maximized presentation. No settings are written.
     $placementMarker = Join-Path $smoke 'window-placement.txt'
