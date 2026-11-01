@@ -18,7 +18,12 @@
       <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="0,0,8,0">
           <TextBlock Text="{DynamicResource L.Language}" FontWeight="SemiBold" Foreground="{StaticResource Purple}" Margin="0,0,0,5"/>
-          <ComboBox x:Name="LanguageChooser" Margin="0,0,0,16"/>
+          <ComboBox x:Name="LanguageChooser" Margin="0,0,0,14"/>
+          <CheckBox x:Name="StartWithWindowsCheck" Content="{DynamicResource L.StartWithWindowsTray}"
+                    Foreground="{StaticResource Primary}" FontWeight="SemiBold"
+                    Margin="0,0,0,6"/>
+          <TextBlock Text="{DynamicResource L.StartWithWindowsHint}" TextWrapping="Wrap"
+                     FontSize="11" Foreground="{StaticResource Muted}" Margin="24,0,0,16"/>
           <TextBlock Text="{DynamicResource L.SetupServerLabel}" FontWeight="SemiBold" Foreground="{StaticResource Purple}" Margin="0,0,0,5"/>
           <TextBox x:Name="ServerLabel" ToolTip="Example: contabo, coolify-production" Margin="0,0,0,5"/>
           <TextBlock Text="{DynamicResource L.SetupCloneHelp}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,15"/>
