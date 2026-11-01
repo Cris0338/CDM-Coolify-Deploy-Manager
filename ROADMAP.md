@@ -40,7 +40,7 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Confirm spinner becomes visible during a real Coolify deploy (2026-11-01, owner-observed). Spinner termination at server terminal status still unverified.
 - [ ] **WPF crash diagnosed and candidate fixed; Windows retest PENDING:** the 2026-11-01 crash was `XamlParseException` from the card spinner's frozen shared storyboard `RotateTransform`. Per-card runtime transform + actual re-template smoke added. Run Windows build and real drag test before clearing this item; order persistence still unvalidated.
 - [x] Identify SSH port 18000 listener: `ssh.exe` PID 33596 / ParentPID 10628, matching crashed CDM PID `0x2984`. Safe one-off cleanup requires exact process verification; automatic orphan prevention not implemented.
-- [ ] Confirm port 18000 recovered after closing only the verified orphan, then test normal managed SSH reconnect.
+- [x] Confirm port 18000 recovered after targeted orphan cleanup and restart of stable personal CDM 2.2.1; user confirmed SSH/Coolify works (2026-11-01).
 - [ ] Evaluate behavior after Stop Queue or API disconnect (remote deployment may continue).
 - [ ] Explicitly approve separate v2.2.2 release only after acceptance.
 
