@@ -57,6 +57,8 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Code: `--startup-tray` bypasses splash/taskbar, begins regular SSH/inventory in background; manual launch unchanged. Windows sign-in acceptance pending.
 - [x] Code: named mutex + restore event scoped by hash of clone EXE path; second launch should reopen same window, not compete for SSH port. Offline smoke and Windows manual acceptance pending.
 - [x] IT/FR/EN locale strings for Windows-start checkbox, explanation, menu Open/Exit and minimize tooltip (232/232 each); others use English fallback.
-- [ ] Windows build and full offline smoke **PENDING**. New `--verify-tray-ui` smoke exercises no-registry-write command, named-instance wake event, WPF minimize/restore. Then test checkbox on/off with clone and actual Windows sign-in. Do not publish yet.
+- [x] **Windows build and full offline smoke PASS** (2026-11-01): 2.2.2 source `8585427dff9e`, SHA256 generic `E4F3D9989185694A17C97344C6E014A45CCFE784812586D71C05FB181B41E6E4`, successful `--verify-tray-ui` (hide/restore, named-instance event, autostart command; no registry modifications).
+- [ ] Upgrade only disposable `CDM-Test-2.2.2-Recovered.exe` from the verified generic template and manually test icon, close, double-launch, and real SSH connection.
+- [ ] Enable/disable the checkbox on clone test and verify HKCU Run path and hidden Windows login startup (no personal clone upgrades, no public release until tested).
 
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
