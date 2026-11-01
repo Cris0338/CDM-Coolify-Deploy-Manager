@@ -7,6 +7,7 @@ namespace CoolifyDeployManager;
 
 public partial class App : Application
 {
+    private SingleInstanceGate? runningInstance;
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -312,11 +313,49 @@ public partial class App : Application
             return;
         }
 
-        var dashboard = new MainWindow();
+        // A second launch of this exact clone reopens the running window;
+        // never open a competing managed SSH forward to the same local port.
+        if (SettingsStore.HasPortableProfile)
+        {
+            runningInstance = SingleInstanceGate.TryCreate(ExecutableProfile.OwnPath, () =>
+            {
+                try
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (MainWindow is MainWindow current)
+                            current.RestoreFromTray();
+                    }));
+                }
+                catch (TaskCanceledException) { }
+            });
+            if (runningInstance is null)
+            {
+                Shutdown(0);
+                return;
+            }
+        }
+
+        bool startInTray = e.Args.Length == 1 &&
+            e.Args[0] == WindowsStartup.TrayArgument &&
+            SettingsStore.HasPortableProfile;
+        var dashboard = new MainWindow { StartHiddenToTray = startInTray };
         MainWindow = dashboard;
         ShutdownMode = ShutdownMode.OnMainWindowClose;
-        // Splash is deliberately skipped by the offline smoke-test entry points.
-        // The connection is established only after the dashboard becomes visible.
+
+        if (startInTray)
+        {
+            // Windows Run startup must never show the splash or occupy
+            // the taskbar. Loaded still starts SSH and the inventory refresh.
+            dashboard.ShowActivated = false;
+            dashboard.ShowInTaskbar = false;
+            dashboard.WindowState = WindowState.Minimized;
+            dashboard.Show();
+            dashboard.Hide();
+            return;
+        }
+
+        // Ordinary manual launches retain the existing animated splash.
         var splash = new SplashWindow();
         splash.Show();
         _ = ShowDashboardAfterSplashAsync(dashboard, splash);
@@ -324,6 +363,8 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        runningInstance?.Dispose();
+        runningInstance = null;
         // The clone is already closing: only now spawn a detached helper to
         // install its latest verified .pending profile. Generic CDM.exe and
         // clones with no changes do not spawn a helper.
