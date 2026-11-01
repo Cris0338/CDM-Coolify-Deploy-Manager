@@ -121,6 +121,7 @@ public partial class App : Application
              e.Args[0] == "--verify-saved-self-test-clone" ||
              e.Args[0] == "--verify-health-viewmodel" ||
              e.Args[0] == "--verify-tunnel-recovery-policy" ||
+             e.Args[0] == "--verify-live-deploy-ui" ||
              e.Args[0] == "--verify-build-info"))
         {
             try
@@ -199,6 +200,46 @@ public partial class App : Application
                         throw new InvalidDataException(
                             "SSH auto-recovery policy unexpectedly enables or blocks a reconnect.");
                     File.WriteAllText(e.Args[1], "CDM-TUNNEL-RECOVERY-POLICY-OK");
+                }
+                else if (e.Args[0] == "--verify-live-deploy-ui")
+                {
+                    var sample = new CoolifyApplication("live-deploy-test", "live-deploy-test",
+                        "running:healthy", "main", "test", "test-project", "staging", "");
+                    var card = new AppCardView(sample, DeploymentGroup.Staging);
+                    int activityNotifications = 0;
+                    card.PropertyChanged += (_, args) =>
+                    {
+                        if (args.PropertyName == nameof(AppCardView.IsLiveDeploymentActive))
+                            activityNotifications++;
+                    };
+                    if (card.IsLiveDeploymentActive ||
+                        !global::CoolifyDeployManager.MainWindow.CanReorderWhile(false, "", 0) ||
+                        global::CoolifyDeployManager.MainWindow.CanReorderWhile(true, "", 0) ||
+                        global::CoolifyDeployManager.MainWindow.CanReorderWhile(false, "filtered", 0) ||
+                        global::CoolifyDeployManager.MainWindow.CanReorderWhile(false, "", 1))
+                        throw new InvalidDataException("Initial deploy activity or card drag policy is invalid.");
+
+                    foreach (var state in new[] { "queued", "in_progress", "pending", "starting" })
+                    {
+                        card.UpdateLiveDeployment(state);
+                        if (!card.IsLiveDeploymentActive || card.LiveDeploymentStatus != state)
+                            throw new InvalidDataException("Confirmed active deployment did not animate: " + state);
+                        // A running deployment is *not* an inventory refresh:
+                        // drag remains available unless the layout is filtered.
+                        if (!global::CoolifyDeployManager.MainWindow.CanReorderWhile(false, "", 0))
+                            throw new InvalidDataException("Card drag was blocked during deployment.");
+                    }
+                    foreach (var state in new[] { "finished", "failed", "cancelled", "cancelled-by-user", "error", "unknown" })
+                    {
+                        card.UpdateLiveDeployment(state);
+                        if (card.IsLiveDeploymentActive)
+                            throw new InvalidDataException("Terminal/unknown deployment still animates: " + state);
+                    }
+                    card.UpdateLiveDeployment(null);
+                    if (card.IsLiveDeploymentActive || card.LiveDeploymentStatus != "" ||
+                        activityNotifications < 2)
+                        throw new InvalidDataException("Deploy indicator did not clear or notify WPF bindings.");
+                    File.WriteAllText(e.Args[1], "CDM-LIVE-DEPLOY-UI-OK");
                 }
                 else if (e.Args[0] == "--verify-health-viewmodel")
                 {
