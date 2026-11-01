@@ -18,6 +18,9 @@ foreach ($uiOnlyLog in @(
     'AddLog(Loc.T("LockedPositionPrevented"))',
     'AddLog(Loc.T("SettingsSaved"))',
     'AddLog(Loc.T("LocalQueueCancelled"))',
+    'AddLog(Loc.T("StatusWaiting"))',
+    'AddLog(Loc.T("LastStatusLog"))',
+    'AddLog(Loc.F("DeploySkippedLocked"',
     'AddLog(BuildInfo.DiagnosticIdentity',
     'AddLog(Loc.F("UnclassifiedExplanation"'
 )) {
