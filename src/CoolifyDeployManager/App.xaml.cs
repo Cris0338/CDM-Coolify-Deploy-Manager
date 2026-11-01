@@ -125,6 +125,7 @@ public partial class App : Application
              e.Args[0] == "--verify-live-deploy-ui" ||
              e.Args[0] == "--verify-live-spinner-retemplate" ||
              e.Args[0] == "--verify-tray-ui" ||
+             e.Args[0] == "--verify-deploy-shell-indicator" ||
              e.Args[0] == "--verify-window-placement" ||
              e.Args[0] == "--verify-build-info"))
         {
@@ -296,6 +297,20 @@ public partial class App : Application
                         File.WriteAllText(e.Args[1], "CDM-TRAY-UI-OK");
                     }
                     finally { trayDashboard.Close(); }
+                }
+                else if (e.Args[0] == "--verify-deploy-shell-indicator")
+                {
+                    // Real WPF TaskbarItemInfo and WinForms tray icon surfaces,
+                    // without calling Coolify/SSH or touching user configuration.
+                    var dashboard = new MainWindow { SkipStartupConnectionForSmoke = true };
+                    MainWindow = dashboard;
+                    dashboard.Show();
+                    try
+                    {
+                        dashboard.VerifyDeployShellIndicatorForSmoke();
+                        File.WriteAllText(e.Args[1], "CDM-SHELL-INDICATOR-OK");
+                    }
+                    finally { dashboard.Close(); }
                 }
                 else if (e.Args[0] == "--verify-window-placement")
                 {
