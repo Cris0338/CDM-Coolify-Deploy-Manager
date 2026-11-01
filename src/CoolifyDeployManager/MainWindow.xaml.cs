@@ -41,6 +41,11 @@ public partial class MainWindow : Window
     private Forms.NotifyIcon? trayIcon;
     private Forms.ContextMenuStrip? trayMenu;
     private System.Drawing.Icon? trayOwnedIcon;
+    // The transient Minimized state must never replace the last displayed
+    // Normal/Maximized state or the last normal rectangle.
+    private WindowState lastDisplayedWindowState = WindowState.Normal;
+    private Rect? lastNormalWindowBounds;
+    private bool restoringFromTray;
     private string selectedProjectUuid = "ALL";
     private readonly List<ProjectChoice> projectChoices = new();
     private Point dragOrigin;
@@ -74,7 +79,72 @@ public partial class MainWindow : Window
         ProductionCount.Text = Loc.F("ApplicationsCount", 0);
         UnknownCount.Text = Loc.F("ApplicationsCount", 0);
         InventoryCount.Text = Loc.F("ApplicationsCount", 0);
+        ApplySavedWindowPlacement();
+        LocationChanged += (_, _) => RecordNormalWindowBounds();
+        SizeChanged += (_, _) => RecordNormalWindowBounds();
         UpdateProfileStatus();
+    }
+
+    private void ApplySavedWindowPlacement()
+    {
+        var saved = settings.WindowPlacement;
+        if (saved?.IntersectsDesktop(SystemParameters.VirtualScreenLeft,
+                SystemParameters.VirtualScreenTop, SystemParameters.VirtualScreenWidth,
+                SystemParameters.VirtualScreenHeight) != true)
+            return;
+
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Left = saved.Left;
+        Top = saved.Top;
+        Width = saved.Width;
+        Height = saved.Height;
+        lastNormalWindowBounds = new Rect(saved.Left, saved.Top, saved.Width, saved.Height);
+        lastDisplayedWindowState = saved.Maximized ? WindowState.Maximized : WindowState.Normal;
+        WindowState = lastDisplayedWindowState;
+    }
+
+    internal void ApplyWindowPlacementForSmoke(WindowPlacementState sample)
+    {
+        settings.WindowPlacement = sample;
+        ApplySavedWindowPlacement();
+    }
+
+    private void RecordNormalWindowBounds()
+    {
+        if (!IsLoaded || !IsVisible || WindowState != WindowState.Normal ||
+            !double.IsFinite(Left) || !double.IsFinite(Top) ||
+            !double.IsFinite(ActualWidth) || !double.IsFinite(ActualHeight))
+            return;
+        var bounds = new Rect(Left, Top, ActualWidth, ActualHeight);
+        if (bounds.Width >= MinWidth && bounds.Height >= MinHeight)
+            lastNormalWindowBounds = bounds;
+    }
+
+    private void SaveWindowPlacementAtExit()
+    {
+        if (SkipStartupConnectionForSmoke || !SettingsStore.HasPortableProfile ||
+            !settings.IsConfigured)
+            return;
+
+        RecordNormalWindowBounds();
+        if (lastNormalWindowBounds is not Rect bounds) return;
+        var latest = new WindowPlacementState
+        {
+            Left = bounds.Left, Top = bounds.Top,
+            Width = bounds.Width, Height = bounds.Height,
+            Maximized = lastDisplayedWindowState == WindowState.Maximized
+        };
+        if (!latest.IsValid || Equals(settings.WindowPlacement, latest)) return;
+
+        var previous = settings.WindowPlacement;
+        settings.WindowPlacement = latest;
+        try { SettingsStore.Save(settings); }
+        catch (Exception ex)
+        {
+            settings.WindowPlacement = previous;
+            MessageBox.Show(this, ex.Message, Loc.T("VaultSaveFailed"),
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void UpdateProfileStatus()
@@ -101,6 +171,7 @@ public partial class MainWindow : Window
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        RecordNormalWindowBounds();
         if (SkipStartupConnectionForSmoke) return;
         EnsureTrayIcon();
         if (StartHiddenToTray) MinimizeToTray();
@@ -167,10 +238,25 @@ public partial class MainWindow : Window
     internal void RestoreFromTray()
     {
         if (closingWindow) return;
-        WindowState = WindowState.Normal;
-        ShowInTaskbar = true;
-        Show();
-        Activate();
+        // Showing a previously hidden WPF window does not necessarily lift it
+        // above other applications. Temporarily raise its z-order, then return
+        // it to the ordinary non-topmost level and request foreground focus.
+        restoringFromTray = true;
+        try
+        {
+            ShowActivated = true;
+            ShowInTaskbar = true;
+            Show();
+            WindowState = lastDisplayedWindowState;
+            Topmost = true;
+            Activate();
+            Topmost = false;
+            Activate();
+            var handle = new WindowInteropHelper(this).Handle;
+            if (handle != IntPtr.Zero) SetForegroundWindow(handle);
+            Focus();
+        }
+        finally { restoringFromTray = false; }
     }
 
     private void UpdateTrayText()
@@ -186,11 +272,15 @@ public partial class MainWindow : Window
 
     private void Window_StateChanged(object sender, EventArgs e)
     {
-        if (IsLoaded && WindowState == WindowState.Minimized)
+        if (WindowState == WindowState.Minimized)
         {
-            MinimizeToTray();
+            if (IsLoaded) MinimizeToTray();
             return;
         }
+        if (!restoringFromTray)
+            lastDisplayedWindowState = WindowState == WindowState.Maximized
+                ? WindowState.Maximized : WindowState.Normal;
+        RecordNormalWindowBounds();
         if (MaximizeGlyph is null || MaximizeButton is null) return;
         bool maximized = WindowState == WindowState.Maximized;
         MaximizeGlyph.Data = Geometry.Parse(maximized
@@ -231,6 +321,10 @@ public partial class MainWindow : Window
         public NativePoint MinTrackSize;
         public NativePoint MaxTrackSize;
     }
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetForegroundWindow(IntPtr window);
 
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
@@ -290,6 +384,7 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        SaveWindowPlacementAtExit();
         closingWindow = true;
         tunnelRecovery?.Cancel();
         postDeployHealthSync?.Cancel();
