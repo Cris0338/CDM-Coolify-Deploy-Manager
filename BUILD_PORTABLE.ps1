@@ -211,6 +211,23 @@ try {
     finally { $wpfTest.Dispose() }
     Write-Host 'PASS: real WPF card retemplate during live spinner does not crash or freeze transforms.'
 
+    # The WinForms tray icon must hide and restore the real WPF dashboard.
+    # This test performs NO writes to HKCU Run and makes NO SSH/API calls.
+    $trayMarker = Join-Path $smoke 'notification-area-ui.txt'
+    $trayTest = Start-Process -FilePath $exe -ArgumentList ('--verify-tray-ui "' + $trayMarker + '"') -PassThru
+    try {
+        if (-not $trayTest.WaitForExit(30000)) {
+            try { $trayTest.Kill() } catch { }
+            throw 'Windows tray UI smoke timed out after 30 seconds.'
+        }
+        if ($trayTest.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $trayMarker) -or
+            (Get-Content -LiteralPath $trayMarker -Raw).Trim() -ne 'CDM-TRAY-UI-OK') {
+            throw "Windows tray UI smoke failed. $((Get-Content "$trayMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+        }
+    }
+    finally { $trayTest.Dispose() }
+    Write-Host 'PASS: Windows tray icon hides/restores WPF, validates user autostart command without touching registry.'
+
     # Status update is independent of the deployment's "finished" event.
     # This offline test exercises WPF view-model property notifications only.
     $healthMarker = Join-Path $smoke 'health-updated.txt'
