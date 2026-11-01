@@ -164,7 +164,7 @@ public partial class MainWindow : Window
         Hide();
     }
 
-    private void RestoreFromTray()
+    internal void RestoreFromTray()
     {
         if (closingWindow) return;
         WindowState = WindowState.Normal;
