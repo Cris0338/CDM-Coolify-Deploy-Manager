@@ -71,4 +71,11 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 - [ ] Manually verify foreground focus from tray, persisted normal window rectangle and maximized state after exit/relaunch, and absence of competing SSH tunnel.
 - [ ] Disable checkbox and verify HKCU Run entry removal, then optionally re-enable; actual sign-in auto-launch still unverified. No public release until accepted.
 
+### Ordinary save backup cleanup — 2026-11-01
+
+- [x] On successful ordinary personal EXE close-time save, remove `.before-save.bak` immediately after the atomic `File.Replace`, preserving safe `.pending` and error reporting.
+- [x] Update dummy File.Replace compatibility and full synthetic clone smoke to assert no lasting `.before-save.bak`, `.pending` or updater marker after success; verify profile is applied.
+- [ ] **Windows build/smoke required** for cleanup patch (source commits `8fc1e14`, `0735896`; no PASS claimed yet).
+- [ ] Upgrade ONLY the active personal clone to verified generic build after closing CDM and checking no pending save; verify clean exit leaves only original generic and personal EXEs.
+- [ ] Keep explicit version-upgrade backups unchanged for now; no public v2.2.2 release without acceptance.
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
