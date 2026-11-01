@@ -229,5 +229,6 @@
   "StartWithWindowsTray": "Start with Windows, minimized to the notification area",
   "StartWithWindowsHint": "Launch this personal CDM when you sign in to Windows, hidden beside the clock. Double-click the icon to open it. Only one personal clone can be registered.",
   "TrayOpen": "Open CDM",
-  "TrayExit": "Exit CDM"
+  "TrayExit": "Exit CDM",
+  "TrayMinimize": "Minimize to notification area"
 }
