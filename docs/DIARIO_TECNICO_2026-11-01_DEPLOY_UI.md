@@ -199,3 +199,15 @@ La procedura non avvia software o nuovi tunnel, conserva l'originale `CDM-Cris03
 **STATO ATTUALE: CODICE COMMITTATO; NON ANCORA COMPILATO O COLLAUDATO SU WINDOWS.** Non presentare test come PASS. CDM personale recuperato e stabile rimane utilizzabile; la release 2.2.1 non viene toccata. Non attivare ancora Windows autostart per nessun clone finché publish e smoke della 2.2.2 non sono PASS. La presenza dell'icona nella tray va validata anche visivamente su Windows 10 e l'attivazione/disattivazione dal pannello Impostazioni va verificata su clone test; controllare la persistenza del vecchio ordinamento card.
 
 **Prossimo passo:** `git pull --ff-only`, `BUILD_PORTABLE.ps1`, esaminare l'eventuale prima diagnostica del compilatore e il nuovo `PASS: Windows tray icon hides/restores WPF...` prima di aggiornare e avviare esclusivamente una copia di test del clone.
+
+## 2026-11-01 — Windows 2.2.2 build PASS: startup to tray
+
+**Build proprietario Windows 10 confermata PASS**: comando `powershell -NoProfile -ExecutionPolicy Bypass -File .\\BUILD_PORTABLE.ps1`; sorgente/commit incorporato **`8585427dff9e`**, build UTC **`2026-11-01T11:39:51Z`**; publish `net10.0-windows win-x64` completo in 10,6 secondi, `portable/CDM.exe` 74,64 MB, SHA256 **`E4F3D9989185694A17C97344C6E014A45CCFE784812586D71C05FB181B41E6E4`**, hash verificato contro l'output appena generato.
+
+**Smoke PASS**: cataloghi e classificatore (prima del publish), icon/logo SHA, profili embedded, link, File.Replace; startup del generico senza credenziali; identity metadata; live spinner e drag; template WPF con spinner live; **`PASS: Windows tray icon hides/restores WPF, validates user autostart command without touching registry.`**; health viewmodel; SSH reconnect policy; creazione/upgrade clone sintetico, migrazione credenziali/lock/ordini, salvataggio differito e backup.
+
+**Osservazione importante**: il test del registro produce soltanto la stringa del comando di avvio; non abilita autostart per l'utente. I test WPF usano una finestra senza API/SSH. **Non ancora verificata sul PC la scelta manuale nelle Impostazioni, la reale comparsa dell'icona nell'area notifiche con app e tunnel attivi, l'istanza unica con vero clone e l'avvio automatico dopo login Windows.** La 2.2.1 resta invariata e non si è pubblicata una release 2.2.2.
+
+**Inventario di file aggiuntivi nel publish directory** (come da output): `CDM-Cris0338-coolify.exe` con backup, clone test `CDM-Test-2.2.2.exe` con backup, clone test recuperato `CDM-Test-2.2.2-Recovered.exe` con backup, `.CDM-Test-2.2.2.exe.pending` originale. Tutti rimasti locali, non includere file personali negli asset release né nel repo.
+
+**Prossimo passo**: aggiornare *solo* `portable/CDM-Test-2.2.2-Recovered.exe` con il generico di hash noto, quando la copia non è in esecuzione, senza interferire con altri tunnel; poi testare minimizzazione, tray context menu, secondo avvio stesso EXE, checkbox HKCU Run on/off (ispezione del percorso soltanto, nessun segreto) e finalmente login Windows solo quando scelto dall'autore.
