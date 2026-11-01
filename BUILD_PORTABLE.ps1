@@ -193,6 +193,24 @@ try {
     }
     Write-Host 'PASS: per-card Coolify-driven spinner state and card drag policy during network deployment.'
 
+    # Actual WPF templates must survive card reorder while an indicator
+    # is active. The earlier view-model-only test missed a fatal frozen
+    # Freezable/Storyboard exception in Window.xaml on template recreation.
+    $wpfMarker = Join-Path $smoke 'wpf-spinner-retemplate.txt'
+    $wpfTest = Start-Process -FilePath $exe -ArgumentList ('--verify-live-spinner-retemplate "' + $wpfMarker + '"') -PassThru
+    try {
+        if (-not $wpfTest.WaitForExit(30000)) {
+            try { $wpfTest.Kill() } catch { }
+            throw 'WPF live spinner retemplate regression timed out after 30 seconds.'
+        }
+        if ($wpfTest.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $wpfMarker) -or
+            (Get-Content -LiteralPath $wpfMarker -Raw).Trim() -ne 'CDM-WPF-SPINNER-RETEMPLATE-OK') {
+            throw "WPF live spinner retemplate regression failed. $((Get-Content "$wpfMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+        }
+    }
+    finally { $wpfTest.Dispose() }
+    Write-Host 'PASS: real WPF card retemplate during live spinner does not crash or freeze transforms.'
+
     # Status update is independent of the deployment's "finished" event.
     # This offline test exercises WPF view-model property notifications only.
     $healthMarker = Join-Path $smoke 'health-updated.txt'
