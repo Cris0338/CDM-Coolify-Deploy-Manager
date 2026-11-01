@@ -211,3 +211,11 @@ La procedura non avvia software o nuovi tunnel, conserva l'originale `CDM-Cris03
 **Inventario di file aggiuntivi nel publish directory** (come da output): `CDM-Cris0338-coolify.exe` con backup, clone test `CDM-Test-2.2.2.exe` con backup, clone test recuperato `CDM-Test-2.2.2-Recovered.exe` con backup, `.CDM-Test-2.2.2.exe.pending` originale. Tutti rimasti locali, non includere file personali negli asset release né nel repo.
 
 **Prossimo passo**: aggiornare *solo* `portable/CDM-Test-2.2.2-Recovered.exe` con il generico di hash noto, quando la copia non è in esecuzione, senza interferire con altri tunnel; poi testare minimizzazione, tray context menu, secondo avvio stesso EXE, checkbox HKCU Run on/off (ispezione del percorso soltanto, nessun segreto) e finalmente login Windows solo quando scelto dall'autore.
+
+## 2026-11-01 — Clone di prova aggiornato con build tray 2.2.2: PASS
+
+L'autore ha eseguito sul PC Windows la procedura controllata `--upgrade-clone-silent` sul SOLO eseguibile `portable/CDM-Test-2.2.2-Recovered.exe`, partendo dal generico `portable/CDM.exe` costruito dal commit sorgente `8585427dff9e` e verificato tramite SHA256 `E4F3D9989185694A17C97344C6E014A45CCFE784812586D71C05FB181B41E6E4`. La procedura verificava anche l'assenza del processo di prova attivo e dell'eventuale suo `.pending` prima dell'upgrade. **Conferma esplicita dell'autore:** `PASS: clone di prova aggiornato alla nuova 2.2.2`.
+
+**Esito:** clone di test ora aggiornato alla build contenente le funzionalità Windows startup/tray; backup creato dal tool di upgrade e vecchio clone personale `CDM-Cris0338-coolify.exe` non modificato. Non è stata abilitata alcuna chiave Windows Run; nessuna connessione o deploy avviati dalla procedura. Il clone test contiene credenziali personali e resta locale: non pubblicare in GitHub.
+
+**Prossimo controllo manuale:** verificare che porta locale `18000` e processi CDM non siano occupati da altro programma prima di aprire il clone di prova; eseguire minimizzazione (scomparsa dalla taskbar), comparsa icona nell'area notifiche, doppio clic per ripristinare finestra e menu contestuale Apri/Esci. Successivamente provare doppio avvio stesso clone e impostazione opzionale Windows Run in modo controllato. Nessun nuovo deploy richiesto per queste prove.
