@@ -25,3 +25,17 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [ ] Version increment and release only for an actual new software change; avoid modifying frozen 2.2.1 code speculatively.
 
 **Maintenance rule:** log each engineering step and test with branch, commits, files, result and next step in the technical diary. No GitHub Actions, automated deployments, or uploading credential-bearing personal EXEs.
+
+## Phase 3 — CDM 2.2.2 development branch (2026-11-01)
+
+- [x] Investigate actual Coolify deployment endpoint and confirm four-second server-status polling already exists.
+- [x] Add a per-card spinner gated by real `queued/in_progress` deployment states (no invented progress).
+- [x] Decouple card reordering from `busy` while retaining inventory rebuild/filter/position-lock guards.
+- [x] Add offline WPF entrypoint to test state transitions, property notifications and drag policy.
+- [ ] Build the new development version on Windows and pass all smoke tests.
+- [ ] Manually confirm the spinner runs during a real deploy and stops at actual terminal status.
+- [ ] Manually drag another unlocked card during a running deploy and confirm saved order survives refresh/exit/restart.
+- [ ] Evaluate behavior after Stop Queue or API disconnect (remote deployment may continue).
+- [ ] Explicitly approve separate v2.2.2 release only after acceptance.
+
+**Branch:** `feature/live-deploy-card-status-20261101`. No merge, no tag and no change to released v2.2.1; keep previous stable personal clone. Detailed reasoning and tests: `docs/DIARIO_TECNICO_2026-11-01_DEPLOY_UI.md`.
