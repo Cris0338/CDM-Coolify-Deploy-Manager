@@ -106,3 +106,13 @@ L'autore riferisce **«sembrerebbe ok»** dopo aver avviato il clone locale 2.2.
 Dopo il crash WPF, l'utente ha eseguito la procedura di liberazione mirata della porta `18000`, verificando proprietario del socket e comando SSH prima della terminazione del solo vecchio `ssh.exe` PID `33596`, figlio del processo CDM crashato PID `10628`. Il comando prevedeva poi l'avvio del clone personale stabile `CDM-Cris0338-coolify.exe` (2.2.1) che ricostruisce il tunnel gestito. **Conferma esplicita dell'utente: «ok... funziona».** L'accesso SSH/Coolify è quindi recuperato e il blocco operativo porta 18000 è chiuso.
 
 Restano aperti **il crash e la sua correzione 2.2.2 non ancora verificata su Windows**. Non ripetere il deploy per questo recupero; la versione 2.2.1 è stata usata senza modifiche. Prossimo passo: recuperare il branch aggiornato, ricompilare 2.2.2 e superare il nuovo smoke WPF prima di riprovare a spostare card durante il deploy.
+
+## 2026-11-01 11:41 CET — Build 2.2.2 FALLITA per errore di sintassi; patch sul branch
+
+**Input:** log completo fornito dall'autore della build Windows `powershell -NoProfile -ExecutionPolicy Bypass -File .\\BUILD_PORTABLE.ps1`, compilazione da `7ccacf6eeb1d` con build UTC `2026-11-01T10:40:30Z`. Gli smoke iniziali (policy terminale, logo, classificazione 8/8, localizzazione, profilo, URL e `File.Replace`) sono PASS; compilazione .NET WPF Windows fallita con **83 errori** a cascata, a partire da `MainWindow.xaml.cs(502,65)`, `CS1002`/ `CS1519`. Questo **non** è un risultato PASS e non genera un nuovo binario verificato.
+
+**Diagnosi sorgente esatta:** la precedente sostituzione automatica dell'alias WPF `ShapePath` ha introdotto la firma sintatticamente errata `private static void SetLiveDeploymentSpinner(ShapePath path), bool shouldSpin)`. La parentesi chiusa prima della virgola fa interpretare erroneamente tutti i metodi successivi.
+
+**Correzione commit `bb8e1e644e7191dab274d24c5dc2ec18d1db445b`:** rimosso solo il carattere errato dalla dichiarazione; firma ora `private static void SetLiveDeploymentSpinner(ShapePath path, bool shouldSpin)`. Nessun cambiamento alla logica WPF o SSH. Non affermare che tutto compili finché il proprietario non ripete `dotnet publish` via `BUILD_PORTABLE.ps1` e mostra i risultati. Il clone stabile 2.2.1, il vecchio clone test e i relativi token non vengono modificati da questo commit.
+
+**Prossimo passo:** `git pull --ff-only` sul branch di sviluppo e ripetere build su Windows. Verificare in particolare il nuovo smoke `PASS: real WPF card retemplate during live spinner does not crash or freeze transforms.`; non effettuare deploy finché non è PASS.
