@@ -962,7 +962,8 @@ public partial class MainWindow : Window
                 operation.Token.ThrowIfCancellationRequested();
                 if (settings.BlockedDeploys.Contains(card.Uuid))
                 {
-                    AddLog(Loc.F("DeploySkippedLocked", card.Name));
+                    // This is a local policy decision, not a Coolify request.
+                    OperationText.Text = Loc.F("DeploySkippedLocked", card.Name);
                     continue;
                 }
 
@@ -1013,11 +1014,9 @@ public partial class MainWindow : Window
                 }
             }
             OperationText.Text = Loc.T("QueueFinished");
-            AddLog(Loc.T("LastStatusLog"));
         }
         catch (OperationCanceledException)
         {
-            AddLog(Loc.T("StatusWaiting"));
             OperationText.Text = Loc.T("StatusWaitingShort");
         }
         catch (Exception ex)
