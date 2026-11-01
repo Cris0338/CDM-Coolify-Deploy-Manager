@@ -76,7 +76,8 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 - [x] On successful ordinary personal EXE close-time save, remove `.before-save.bak` immediately after the atomic `File.Replace`, preserving safe `.pending` and error reporting.
 - [x] Update dummy File.Replace compatibility and full synthetic clone smoke to assert no lasting `.before-save.bak`, `.pending` or updater marker after success; verify profile is applied.
 - [x] **Windows build/smoke PASS** for no-backup close-time save (2026-11-01): source `87845ca7dbf2`, built UTC `19:54:19Z`, generic SHA256 `3EC8C8A8E4DE3F29FD08083138218245AEDF262D8C1024020B50AF7B6A932A07`. Windows File.Replace dummy test, synthetic close-time `.before-save.bak` removal, `.pending` apply and profile preservation all PASS, plus all previous WPF/tray/SSH smoke.
-- [ ] Upgrade ONLY the active personal clone to verified generic build after closing CDM and checking no pending save; verify clean exit leaves only original generic and personal EXEs.
+- [x] Owner reports successful upgrade of the personal clone to verified CDM 2.2.2 source `87845ca7`; removed the sole timestamped upgrade backup; final portable inventory is exactly `CDM.exe` (78,269,336 B) and `CDM-Cris0338-coolify.exe` (78,270,786 B), confirmed 2026-11-01.
+- [ ] Confirm an ordinary close-time save of the updated real personal clone leaves only those two EXEs; Windows synthetic clone test already PASS.
 - [ ] Keep explicit version-upgrade backups unchanged for now; no public v2.2.2 release without acceptance.
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
 
