@@ -263,3 +263,10 @@ Dopo avere aperto le Impostazioni del clone `CDM-Test-2.2.2-Recovered.exe`, l'au
 **Non ancora verificato:** effetto foreground con finestre reali sovrapposte (il WPF smoke controlla stato/visibilità, non il focus contro altre app), posizionamento/schermo a riavvio del clone personalizzato, riapertura del programma già in background. Il registro HKCU Run attualmente punta al clone test: conservarne il percorso. **Nessuna release/tag 2.2.2**, né modifica all'originale 2.2.1.
 
 **Prossimo passo operativo:** chiudere normalmente il clone test dal menu tray `Esci`; controllare che non sia in esecuzione né abbia un file `.pending` non ancora applicato; verificare SHA256 del generico; aggiornare soltanto `CDM-Test-2.2.2-Recovered.exe` via `--upgrade-clone-silent`, poi avviare e verificare manualmente finestra davanti e persistenza dopo exit/restart. Non serve ripetere un deploy reale.
+
+
+## 2026-11-01 — Clone test con correzioni finestra aggiornato: PASS
+
+L'autore ha eseguito il comando di upgrade `--upgrade-clone-silent` dopo aver controllato l'hash del generico `portable/CDM.exe` **`9A8612A7941A96AA02535A5832441F12436E5DCBA059CE7A1F1685FB7B43E0A1`** (sorgente `1123f2d2d95f`, versione 2.2.2), l'assenza di processi del clone di prova in esecuzione e l'assenza del relativo `.pending`. Aggiornato **esclusivamente** `portable/CDM-Test-2.2.2-Recovered.exe`. **Output riferito dall'autore: `PASS: clone di prova aggiornato con le correzioni finestra`**. L'eseguibile stabile `CDM-Cris0338-coolify.exe` resta invariato. Il clone di prova mantiene il percorso usato dalla voce Windows HKCU Run.
+
+**Prossimo controllo manuale:** simulare avvio `--startup-tray` con clone fermo e porta SSH locale non occupata, tenere un'altra finestra in primo piano, doppio clic sulla tray: verificare che CDM torni davanti. Solo dopo provare spostamento/ridimensionamento, chiusura normale, riapertura e geometria/massimizzazione persistenti. Non dichiarare questi controlli PASS prima dell'esito dell'utente.
