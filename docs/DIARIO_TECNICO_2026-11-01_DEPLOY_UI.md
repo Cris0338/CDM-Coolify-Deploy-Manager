@@ -61,3 +61,9 @@ L'utente ha compilato dal branch `feature/live-deploy-card-status-20261101` con 
 Il compilatore ha avvisato della presenza di un clone reale `CDM-Cris0338-coolify.exe` e di due backup privati già esistenti (`20261031-224602.bak` e `before-save.bak`): **non è un errore e non vanno pubblicati o sostituiti automaticamente**. Nessuna distribuzione della 2.2.2 è stata creata. La release `v2.2.1` resta invariata.
 
 **Prossimo test:** chiudere il clone corrente per evitare concorrenza sul tunnel SSH; fare una copia di prova locale del clone, aggiornare *solo la copia* usando il template 2.2.2, quindi verificare connessione, drag e animazione durante un vero deploy di staging. Confermare il risultato prima di proporre una eventuale release 2.2.2. L'aggiornamento di questo diario è documentale e successivo alla build; non richiede ricompilazione del medesimo codice.
+
+## 2026-11-01 — Clone locale 2.2.2 di collaudo creato: PASS
+
+L'utente ha confermato da PowerShell: `PASS: clone di test CDM 2.2.2 pronto`. È stata copiata la versione personalizzata in un nuovo clone di prova e il template generico 2.2.2 l'ha aggiornata con `--upgrade-clone-silent` (exit code 0). Il clone di prova è locale ed escluso da Git; la versione personale originale 2.2.1 e la release GitHub v2.2.1 restano inalterate. I dati di connessione sono incorporati nel clone di prova ma non sono stati registrati o caricati.
+
+**Stato:** preparazione clone PASS; avvio reale della UI, connessione, spinner durante deploy reale, drag durante deploy e assenza di log UI rimangono da verificare. Prossimo passo: avviare solo il clone di prova e osservare connessione e dashboard; usare una risorsa di staging soltanto dopo una verifica preliminare.
