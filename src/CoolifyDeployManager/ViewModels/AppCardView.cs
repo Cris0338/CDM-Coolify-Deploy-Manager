@@ -69,6 +69,28 @@ internal sealed class AppCardView : INotifyPropertyChanged
         private set { lastStatus = value; Changed(); }
     }
     public LatestDeploy? Latest { get; private set; }
+    // Only a Coolify-confirmed queued/active job is animated. The status
+    // comes from POST /deploy or GET /deployments/{uuid}, never a timer.
+    private string liveDeploymentStatus = "";
+    private bool isLiveDeploymentActive;
+    public string LiveDeploymentStatus => liveDeploymentStatus;
+    public bool IsLiveDeploymentActive => isLiveDeploymentActive;
+    public void UpdateLiveDeployment(string? serverStatus)
+    {
+        string next = serverStatus?.Trim() ?? "";
+        bool active = DeploymentActivity.IsActive(next);
+        if (!string.Equals(liveDeploymentStatus, next, StringComparison.Ordinal))
+        {
+            liveDeploymentStatus = next;
+            Changed(nameof(LiveDeploymentStatus));
+        }
+        if (isLiveDeploymentActive != active)
+        {
+            isLiveDeploymentActive = active;
+            Changed(nameof(IsLiveDeploymentActive));
+        }
+    }
+
     public bool Busy { get; set; }
     public Visibility SelectionVisibility => Group == DeploymentGroup.Staging
         ? Visibility.Visible : Visibility.Collapsed;
