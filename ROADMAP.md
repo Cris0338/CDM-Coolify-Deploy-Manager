@@ -41,7 +41,8 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [ ] **WPF unit/visual re-template smoke PASS; real live drag retest PENDING:** 2026-11-01 crash was `XamlParseException` from frozen shared storyboard `RotateTransform`. Fixed with per-card runtime transform; Windows publish and repeated WPF re-template test PASS, but a **real drag during actual running deploy** and saved order persistence are still unvalidated.
 - [x] Identify SSH port 18000 listener: `ssh.exe` PID 33596 / ParentPID 10628, matching crashed CDM PID `0x2984`. Safe one-off cleanup requires exact process verification; automatic orphan prevention not implemented.
 - [x] Confirm port 18000 recovered after targeted orphan cleanup and restart of stable personal CDM 2.2.1; user confirmed SSH/Coolify works (2026-11-01).
-- [ ] Inspect leftover `.CDM-Test-2.2.2.exe.pending` before updating the local test clone; keep the personal 2.2.1 EXE and SSH tunnel untouched until explicit test switch.
+- [x] Identify leftover `.CDM-Test-2.2.2.exe.pending` (11:00:42, same timestamp as crash; full staged clone per SettingsStore); no CDM process reported, original test clone remains unchanged. Preserve pending and prepare separate recovered test clone without touching stable personal 2.2.1 or SSH tunnel.
+- [ ] Copy crash-time `.pending` into an additional local test EXE, upgrade **only** that copy with the passing 2.2.2 generic template, then test UI after safely switching away from the stable clone.
 - [ ] Evaluate behavior after Stop Queue or API disconnect (remote deployment may continue).
 - [ ] Explicitly approve separate v2.2.2 release only after acceptance.
 
