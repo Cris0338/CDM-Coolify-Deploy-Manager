@@ -35,10 +35,12 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Restrict terminal log to incoming/outgoing Coolify/SSH activity and related errors; move local blocked-move and skipped-deploy feedback to status bar.
 - [x] Add build-time guard against logging nine internal UI/queue events.
 - [ ] Confirm manually that card reorder and local settings changes do not append terminal lines while remote deploy messages still appear.
+- [ ] Rebuild and run new **real WPF retemplate** smoke after frozen-transform fix; the prior build was PASS only before the crash was discovered.
 - [x] Build the new development version on Windows and pass all smoke tests (2026-11-01, .NET 10 WPF win-x64, executable SHA256 `E363C98E6927B07C09E43F0E629EA58C3438349255FC9B88553DC4ADF905123C`).
 - [x] Confirm spinner becomes visible during a real Coolify deploy (2026-11-01, owner-observed). Spinner termination at server terminal status still unverified.
-- [ ] **BLOCKED/FAIL (2026-11-01):** dragging another card during a running deploy crashed CDM 2.2.2. Identify WPF crash from Windows Application Event Log, fix and retest; saved order persistence not validated.
-- [ ] Diagnose orphaned/other local listener on SSH port 18000 after CDM crash; verify process ownership, prevent tunnel orphan on abrupt termination where possible, retest recovery.
+- [ ] **WPF crash diagnosed and candidate fixed; Windows retest PENDING:** the 2026-11-01 crash was `XamlParseException` from the card spinner's frozen shared storyboard `RotateTransform`. Per-card runtime transform + actual re-template smoke added. Run Windows build and real drag test before clearing this item; order persistence still unvalidated.
+- [x] Identify SSH port 18000 listener: `ssh.exe` PID 33596 / ParentPID 10628, matching crashed CDM PID `0x2984`. Safe one-off cleanup requires exact process verification; automatic orphan prevention not implemented.
+- [ ] Confirm port 18000 recovered after closing only the verified orphan, then test normal managed SSH reconnect.
 - [ ] Evaluate behavior after Stop Queue or API disconnect (remote deployment may continue).
 - [ ] Explicitly approve separate v2.2.2 release only after acceptance.
 
