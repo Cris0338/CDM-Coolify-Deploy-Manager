@@ -35,3 +35,15 @@ Branch: `feature/live-deploy-card-status-20261101` (non ancora mergiato). Versio
 ## Prossimo passo
 
 L'utente deve collaudare separatamente la versione 2.2.2 da branch (build offline e interfaccia), **senza aggiornare automaticamente il proprio clone 2.2.1**. Dopo i PASS e un test manuale di una card in deploy con drag delle altre card, decidere se e quando pubblicare 2.2.2. Nessuna pubblicazione o modifica al VPS eseguita in questa sessione.
+
+## 2026-11-01 — Terminale dedicato alle comunicazioni, niente eventi UI
+
+**Segnalazione utente:** trascinare una card produceva `Ordine delle card salvato` nel terminale; il terminale deve riguardare solo quello che esce ed entra dall'applicazione, ossia traffico Coolify/SSH e diagnostica di tali comunicazioni. È una richiesta separata dallo spinner e dal drag durante il deploy.
+
+**Root cause:** `MainWindow.xaml.cs` chiamava `AddLog(Loc.T("OrderSaved"))` da `CommitCardMove`, e `AddLog(Loc.T("LockedPositionPrevented"))` in caso di drag non consentito. Ulteriori eventi puramente locali finivano nello stesso registro: avvio con ID build, classificazione interna dei progetti sconosciuti, configurazione salvata e pressione di Stop Queue. Non sono richieste/risposte Coolify e non devono comparire nella console dedicata.
+
+**Modifica** `038519532d69519a088ad6b8527e0a0338cc18c9`: rimossi i sei punti di registrazione di attività interna. Per spostamenti bloccati, il motivo è mostrato nella riga di stato `OperationText` soltanto quando nessun deploy è in corso, evitando di sovrascrivere il nome del deploy attivo. L'ordinamento e il salvataggio persistente della card sono invariati, così come registro SSH, interrogazioni API, stati remoti e problemi di comunicazione.
+
+**Regression guard** `a1539c255643584377a19c97e4e1f1bc5567014e`: `BUILD_PORTABLE.ps1` rifiuta una build quando le sei chiamate `AddLog` a eventi interni vengono reintrodotte; stampa `PASS: card reordering, local locks and settings events do not pollute the communication terminal.` se assenti.
+
+**Stato dei test:** modifica e controllo statico inseriti su branch `feature/live-deploy-card-status-20261101`; ancora da verificare mediante build reale Windows e prova di drag durante un deploy. Nessuna modifica alla release `v2.2.1`, al VPS, al clone personale o ai suoi backup.
