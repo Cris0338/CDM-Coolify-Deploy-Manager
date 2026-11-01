@@ -125,6 +125,7 @@ public partial class App : Application
              e.Args[0] == "--verify-live-deploy-ui" ||
              e.Args[0] == "--verify-live-spinner-retemplate" ||
              e.Args[0] == "--verify-tray-ui" ||
+             e.Args[0] == "--verify-window-placement" ||
              e.Args[0] == "--verify-build-info"))
         {
             try
@@ -290,6 +291,84 @@ public partial class App : Application
                         File.WriteAllText(e.Args[1], "CDM-TRAY-UI-OK");
                     }
                     finally { trayDashboard.Close(); }
+                }
+                else if (e.Args[0] == "--verify-window-placement")
+                {
+                    // Test real WPF window placement, tray state, and portable
+                    // settings JSON without API, SSH, registry or profile writes.
+                    var desktopX = SystemParameters.VirtualScreenLeft;
+                    var desktopY = SystemParameters.VirtualScreenTop;
+                    var saved = new WindowPlacementState
+                    {
+                        Left = desktopX + 35, Top = desktopY + 35,
+                        Width = 1050, Height = 720, Maximized = true
+                    };
+                    if (!saved.IntersectsDesktop(desktopX, desktopY,
+                            SystemParameters.VirtualScreenWidth,
+                            SystemParameters.VirtualScreenHeight) ||
+                        new WindowPlacementState {
+                            Left = -50000, Top = -50000,
+                            Width = 1050, Height = 720
+                        }.IntersectsDesktop(desktopX, desktopY,
+                            SystemParameters.VirtualScreenWidth,
+                            SystemParameters.VirtualScreenHeight))
+                        throw new InvalidDataException("Saved window placement screen validation failed.");
+
+                    var serialized = System.Text.Json.JsonSerializer.Serialize(
+                        new UserSettings { WindowPlacement = saved });
+                    var restored = System.Text.Json.JsonSerializer.Deserialize<UserSettings>(serialized);
+                    if (restored?.Copy().WindowPlacement != saved)
+                        throw new InvalidDataException("Portable window placement JSON was not preserved.");
+
+                    var placementWindow = new MainWindow { SkipStartupConnectionForSmoke = true };
+                    placementWindow.ApplyWindowPlacementForSmoke(saved);
+                    MainWindow = placementWindow;
+                    if (placementWindow.WindowState != WindowState.Maximized ||
+                        placementWindow.WindowStartupLocation != WindowStartupLocation.Manual)
+                        throw new InvalidDataException("Maximized placement was not restored on construction.");
+                    placementWindow.Show();
+                    try
+                    {
+                        placementWindow.WindowState = WindowState.Minimized;
+                        Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Loaded);
+                        var hidden = placementWindow.SnapshotWindowPlacement();
+                        if (placementWindow.IsVisible || placementWindow.ShowInTaskbar ||
+                            hidden?.Maximized != true)
+                            throw new InvalidDataException(
+                                "Minimize-to-tray discarded the last maximized presentation.");
+                        placementWindow.RestoreFromTray();
+                        if (!placementWindow.IsVisible || !placementWindow.ShowInTaskbar ||
+                            placementWindow.WindowState != WindowState.Maximized)
+                            throw new InvalidDataException(
+                                "Tray restore did not recover maximized presentation.");
+
+                        placementWindow.WindowState = WindowState.Normal;
+                        placementWindow.Left = desktopX + 50;
+                        placementWindow.Top = desktopY + 50;
+                        placementWindow.Width = 1040;
+                        placementWindow.Height = 700;
+                        placementWindow.UpdateLayout();
+                        var normal = placementWindow.SnapshotWindowPlacement();
+                        if (normal is null || normal.Maximized ||
+                            Math.Abs(normal.Left - (desktopX + 50)) > 2 ||
+                            Math.Abs(normal.Top - (desktopY + 50)) > 2)
+                            throw new InvalidDataException(
+                                "Normal window coordinates or state were not captured.");
+
+                        placementWindow.WindowState = WindowState.Minimized;
+                        var preserved = placementWindow.SnapshotWindowPlacement();
+                        if (preserved != normal)
+                            throw new InvalidDataException(
+                                "Minimizing overwrote the last normal position.");
+                        placementWindow.RestoreFromTray();
+                        if (placementWindow.WindowState != WindowState.Normal ||
+                            !placementWindow.IsVisible || !placementWindow.ShowInTaskbar)
+                            throw new InvalidDataException(
+                                "Tray restore failed to recover normal window presentation.");
+
+                        File.WriteAllText(e.Args[1], "CDM-WINDOW-PLACEMENT-OK");
+                    }
+                    finally { placementWindow.Close(); }
                 }
                 else if (e.Args[0] == "--verify-live-spinner-retemplate")
                 {
