@@ -67,7 +67,6 @@ public partial class MainWindow : Window
         UnknownCount.Text = Loc.F("ApplicationsCount", 0);
         InventoryCount.Text = Loc.F("ApplicationsCount", 0);
         UpdateProfileStatus();
-        AddLog(BuildInfo.DiagnosticIdentity + " · Startup.");
     }
 
     private void UpdateProfileStatus()
@@ -375,7 +374,6 @@ public partial class MainWindow : Window
                 latest.Values.TryGetValue(app.Uuid, out var info);
                 card.UpdateDeploy(info);
                 allCards[app.Uuid] = card;
-                if (group == DeploymentGroup.Unknown) AddLog(Loc.F("UnclassifiedExplanation", Classifier.Explain(app, group)));
             }
             RebuildNavigation();
             RenderCards();
@@ -768,7 +766,9 @@ public partial class MainWindow : Window
             out var planned))
         {
             // Locked positions retain their original visual index.
-            AddLog(Loc.T("LockedPositionPrevented"));
+            // Local layout feedback belongs in the status bar, not the
+            // Coolify/SSH communication log. Do not overwrite deploy status.
+            if (!busy) OperationText.Text = Loc.T("LockedPositionPrevented");
             return;
         }
 
@@ -788,7 +788,6 @@ public partial class MainWindow : Window
             return;
         }
         RenderCards();
-        AddLog(Loc.T("OrderSaved"));
     }
 
     private void TogglePositionLock_Click(object sender, RoutedEventArgs e)
@@ -866,7 +865,6 @@ public partial class MainWindow : Window
         }
         RebuildNavigation();
         RenderCards();
-        AddLog(Loc.T("SettingsSaved"));
         SetConnection(false, Loc.T("NeedsCheck"));
         await RefreshAsync();
     }
@@ -895,7 +893,6 @@ public partial class MainWindow : Window
     private void ClearLog_Click(object sender, RoutedEventArgs e) => LogBox.Clear();
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
-        AddLog(Loc.T("LocalQueueCancelled"));
         operation?.Cancel();
     }
     private async void Deploy_Click(object sender, RoutedEventArgs e)
