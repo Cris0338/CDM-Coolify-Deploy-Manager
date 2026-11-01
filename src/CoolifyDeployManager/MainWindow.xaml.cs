@@ -30,6 +30,9 @@ public partial class MainWindow : Window
     private bool reconnectingTunnel;
     private bool closingWindow;
     private bool busy;
+    // A server deploy is network-busy but must not lock dashboard layout.
+    // Only an inventory refresh recreates card view-models.
+    private bool inventoryRefreshing;
     private string selectedProjectUuid = "ALL";
     private readonly List<ProjectChoice> projectChoices = new();
     private Point dragOrigin;
@@ -348,6 +351,7 @@ public partial class MainWindow : Window
         if (busy) { OperationText.Text = Loc.T("AlreadyBusy"); return; }
         if (!settings.IsConfigured) { OpenSettings(); return; }
         busy = true;
+        inventoryRefreshing = true;
         RefreshButton.IsEnabled = false;
         OperationText.Text = Loc.T("LoadingInventory");
         using var ct = new CancellationTokenSource(TimeSpan.FromMinutes(3));
@@ -384,7 +388,12 @@ public partial class MainWindow : Window
             AddLog(Loc.T("ErrorPrefix") + ex.Message);
             OperationText.Text = Loc.T("ConnectionError");
         }
-        finally { busy = false; RefreshButton.IsEnabled = true; }
+        finally
+        {
+            inventoryRefreshing = false;
+            busy = false;
+            RefreshButton.IsEnabled = true;
+        }
     }
     private void RebuildNavigation()
     {
@@ -550,8 +559,14 @@ public partial class MainWindow : Window
         dragPreviewLayer = null;
     }
 
-    private bool CanReorderCards => !busy &&
-        string.IsNullOrWhiteSpace(SearchBox.Text) && StatusFilter.SelectedIndex == 0;
+    // Do not confuse server activity with a frozen WPF UI: card positioning
+    // remains available throughout deployment. An inventory rebuild or an
+    // active search/filter still protects the existing drag ordering semantics.
+    internal static bool CanReorderWhile(bool inventoryLoading, string? search, int statusFilter) =>
+        !inventoryLoading && string.IsNullOrWhiteSpace(search) && statusFilter == 0;
+
+    private bool CanReorderCards =>
+        CanReorderWhile(inventoryRefreshing, SearchBox.Text, StatusFilter.SelectedIndex);
 
     private static bool IsInteractiveCardElement(DependencyObject? source, DependencyObject card)
     {
@@ -960,6 +975,9 @@ public partial class MainWindow : Window
                 AddLog($"POST /deploy: {card.App.Project}/{card.Name} ({card.Uuid})");
                 OperationText.Text = "Deploy: " + card.Name;
                 var deployment = await api.StartDeployAsync(card.Uuid, operation.Token);
+                // A valid deployment UUID confirms server-side queue entry.
+                // The spinner starts only after that actual Coolify response.
+                card.UpdateLiveDeployment("queued");
                 AddLog(Loc.F("DeploymentQueued", deployment));
 
                 var startedAt = DateTimeOffset.UtcNow;
@@ -973,6 +991,9 @@ public partial class MainWindow : Window
                     await Task.Delay(TimeSpan.FromSeconds(4), operation.Token);
                     await EnsureConnectionAsync(operation.Token);
                     var state = await api.GetDeploymentAsync(deployment, operation.Token);
+                    // The same read-only API response that drives the queue
+                    // also controls the corresponding card animation.
+                    card.UpdateLiveDeployment(state.Status);
                     if (!string.Equals(state.Status, lastState, StringComparison.OrdinalIgnoreCase))
                     {
                         AddLog($"  {card.Name}: {state.Status} · commit {state.Commit}");
@@ -1009,7 +1030,11 @@ public partial class MainWindow : Window
         }
         finally
         {
-            operation.Dispose();
+            // When local monitoring ends (success, error or Stop Queue), do not
+            // keep animating based on an old server snapshot. Stop Queue does
+            // not cancel the remote Coolify job; Refresh can verify its state.
+            foreach (var card in cards) card.UpdateLiveDeployment(null);
+            operation?.Dispose();
             operation = null;
             busy = false;
             CancelButton.IsEnabled = false;
