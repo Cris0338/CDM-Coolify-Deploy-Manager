@@ -73,3 +73,15 @@ L'utente ha confermato da PowerShell: `PASS: clone di test CDM 2.2.2 pronto`. È
 L'autore riferisce **«sembrerebbe ok»** dopo aver avviato il clone locale 2.2.2 e aver ricevuto le istruzioni per controllare versione, connessione Coolify, card e assenza di messaggi di riordino nel terminale. Registrato come **riscontro preliminare positivo**, non come validazione puntuale dei quattro controlli né come PASS del deploy reale.
 
 **Prossimo controllo:** avviare dalla UI un deploy su una risorsa di staging selezionata dall'autore; durante il deploy verificare animazione nella card interessata, trascinamento di una card diversa non bloccata e terminale riservato a richieste/risposte API/SSH. Alla conclusione osservare che la rotazione si fermi. Nessun comando di deploy viene avviato dall'assistente.
+
+## 2026-11-01 11:02 CET — Regressione confermata: crash durante il drag con deploy attivo
+
+**Risultato del primo collaudo reale sul clone di prova v2.2.2:**
+- Il deploy è partito e il **cerchietto associato a Coolify funziona** (osservazione diretta utente: `deploy, cerchietto ok`).
+- **Trascinamento di una card durante il deploy → crash del software.** Quindi l'accettazione del drag concorrente è **FAIL**; i precedenti smoke offline NON coprono la situazione WPF reale. Non dichiarare completata la funzionalità.
+- Al successivo avvio le connessioni SSH gestite falliscono: `Local port 18000 is already in use. Close the old SSH tunnel or choose another port.`. Log include `Managed SSH tunnel stopped: No managed OpenSSH process.`, nuova riconnessione fallita con porta occupata. Probabile processo OpenSSH rimasto dal precedente processo CDM dopo terminazione improvvisa: **da identificare con PID e proprietario prima di chiuderlo**. Potrebbe anche essere un altro listener; nessuna terminazione automatica senza prova di identità.
+- Il deploy remoto può proseguire su Coolify malgrado il crash del client; **non ripetere il POST di deploy solo per riottenere la connessione**.
+
+**Indagine tecnica preliminare:** il drag WPF usa `DragDrop.DoDragDrop` (modal/nested dispatcher loop), un adorner con `RenderTargetBitmap.Render(card)` e, al `Drop`, `SettingsStore.Save(settings)` seguito da `RenderCards()`. Il loop del monitor server aggiorna lo stato della card ogni quattro secondi durante l'operazione drag. Il fatto che il conflitto sia temporalmente associato non prova quale operazione abbia generato l'eccezione. **Recuperare l'evento Windows .NET Runtime / Application Error con stack trace** e l'identità del listener porta 18000 prima di decidere la correzione. Il codice 2.2.1 e la release GitHub non sono stati modificati.
+
+**Prossimo passo:** PowerShell di diagnostica solo-lettura per elenco listener porta 18000 + eventi Application recenti, poi correzione mirata e nuova build di prova. Documentare i test dopo il fix.
