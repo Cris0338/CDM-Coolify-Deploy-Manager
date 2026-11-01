@@ -139,3 +139,14 @@ L'autore ha compilato il branch `feature/live-deploy-card-status-20261101` con `
 **Stato di accettazione:** build e smoke WPF **PASS**, ma **non** ancora confermato il drag effettivo di una card durante un deploy Coolify reale, lo stop dell'animazione al termine del lavoro reale, la persistenza dell'ordine e la pulizia terminale con questa build. **Nessuna release GitHub 2.2.2 pubblicata e nessuna modifica alla release stabile v2.2.1.**
 
 **Prossimo passo:** verifica locale non distruttiva sul file `.pending` e gli eseguibili in esecuzione; solo dopo, aggiornare esclusivamente il clone di test e fare il collaudo manuale con un unico CDM/tunnel attivo.
+
+## 2026-11-01 — Inventario locale del clone test e del file di salvataggio sospeso
+
+L'utente ha eseguito il controllo solo-lettura di processi CDM attivi e dei file del clone. Nel risultato **nessun processo CDM elencato**, quindi nessuna UI CDM risultava in esecuzione al momento della lettura. File presenti:
+
+- `portable/CDM-Test-2.2.2.exe`: 67 693 634 byte, ultimo aggiornamento `01/11/2026 10:57:35`.
+- `portable/.CDM-Test-2.2.2.exe.pending`: 67 693 634 byte, ultimo aggiornamento `01/11/2026 11:00:42`, coincidente con la registrazione del crash WPF. Dimensioni uguali non significano contenuti o profilo uguali.
+
+Il sorgente `SettingsStore.Save` genera `.pending` come **intero eseguibile personalizzato** tramite `ExecutableProfile.Build`, includendo impostazioni, ordine card ed eventuali credenziali; il normale aggiornamento viene programmato all'uscita, mentre un crash può lasciare il `.pending` recuperabile (`Services/SettingsStore.cs`, righe 53–67). Il comando `--upgrade-clone-silent` accetta un clone `.exe`, verifica il profilo, costruisce il nuovo EXE generico 2.2.2 conservando le credenziali e crea un backup senza accedere a Coolify.
+
+**Decisione operativa:** non eliminare `.pending` e non sovrascrivere il vecchio clone; preparare un **nuovo clone di prova locale** a partire da una copia del `.pending`, aggiornando soltanto questa copia con il template compilato che ha superato gli smoke. Conserverà così l'eventuale ultimo ordinamento salvato al momento del crash, senza alterare gli altri due file. Evitare avvii contemporanei con CDM personale sulla porta 18000. Test UI manuali ancora da eseguire.
