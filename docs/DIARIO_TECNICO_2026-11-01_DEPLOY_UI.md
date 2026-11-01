@@ -85,3 +85,18 @@ L'autore riferisce **«sembrerebbe ok»** dopo aver avviato il clone locale 2.2.
 **Indagine tecnica preliminare:** il drag WPF usa `DragDrop.DoDragDrop` (modal/nested dispatcher loop), un adorner con `RenderTargetBitmap.Render(card)` e, al `Drop`, `SettingsStore.Save(settings)` seguito da `RenderCards()`. Il loop del monitor server aggiorna lo stato della card ogni quattro secondi durante l'operazione drag. Il fatto che il conflitto sia temporalmente associato non prova quale operazione abbia generato l'eccezione. **Recuperare l'evento Windows .NET Runtime / Application Error con stack trace** e l'identità del listener porta 18000 prima di decidere la correzione. Il codice 2.2.1 e la release GitHub non sono stati modificati.
 
 **Prossimo passo:** PowerShell di diagnostica solo-lettura per elenco listener porta 18000 + eventi Application recenti, poi correzione mirata e nuova build di prova. Documentare i test dopo il fix.
+
+## 2026-11-01 — Root cause del crash e patch WPF (compilazione Windows ancora da fare)
+
+**Evidenza diagnostica ottenuta da Windows Application Event Log, ore 11:00:42:**
+- `Application Error` ID 1000, eseguibile `CDM-Test-2.2.2.exe`, versione 2.2.2.0; CLR exception `0xe0434352`.
+- `.NET Runtime` ID 1026: `System.Windows.Markup.XamlParseException` con `System.InvalidOperationException: Impossibile animare '(0).(1)' in un'istanza di oggetto non modificabile.` Stack: `Storyboard.ProcessComplexPath`, `BeginStoryboard.Begin`, `StyleHelper.InvokeApplicableDataTriggerActions`, `FrameworkTemplate.LoadTemplateXaml`. L'animazione dichiarata nella `Path.Style` della DataTemplate tentava di animare un `RotateTransform` WPF congelato al momento di ricreare le card dopo un drag. **Causa confermata; non è un errore Coolify.**
+- Porta locale `18000` in LISTEN: `ssh.exe` PID **33596**, ParentPID **10628**, avvio 10:58:10. Il processo CDM del crash è `0x2984` = **10628** in decimale. La corrispondenza dimostra un SSH figlio del CDM terminato bruscamente, rimasto orfano. Non terminare processi SSH indiscriminatamente; identificare per PID, parent PID, porta e `-L 127.0.0.1:18000:` prima di chiuderlo.
+
+**Correzione sorgente isolata su `feature/live-deploy-card-status-20261101`:**
+- `80ccf5f` `MainWindow.xaml`: eliminato lo `Storyboard` sul `RotateTransform` della DataTemplate; mantenuto il binding `IsLiveDeploymentActive` alla proprietà `Visibility` del cerchietto; agganciati gli eventi `Loaded`, `IsVisibleChanged`, `Unloaded`.
+- `e67c729`, `98aa277` `MainWindow.xaml.cs`: istanziato un `RotateTransform` **mutabile e dedicato** per ciascun `Path` reale a runtime; `BeginAnimation` diretto solo per card visibili; stop su chiusura/visibilità falsa; alias `ShapePath` per non confondere System.IO.Path. Il cerchietto rimane governato dallo stato API, non da un timer simulato.
+- `fc54928` `MainWindow.xaml.cs`: aggiunto test WPF in modalità senza rete `VerifyLiveSpinnerRetemplateForSmoke()`. Apre la finestra senza refresh o connessione, crea due vere card WPF, alterna ripetutamente l'ordinamento con spinner attivo, controlla che il transform non sia frozen e che l'animazione si fermi allo stato `finished`. Questo copre il percorso WPF assente dal test dei soli viewmodel che non aveva rilevato la regressione.
+- `8e6874e` `App.xaml.cs`: nuova opzione isolata `--verify-live-spinner-retemplate` del generico; `98afae9` `BUILD_PORTABLE.ps1`: avvia lo smoke con timeout di 30 secondi e pretende il marker PASS.
+
+**Stato:** patch e nuovo smoke sono sul branch di sviluppo; **non dichiarare la correzione collaudata finché la compilazione Windows e lo smoke reale WPF non danno PASS**. Nessun deploy è stato rilanciato, nessun EXE o processo SSH dell'utente toccato, nessun commit al tag v2.2.1.
