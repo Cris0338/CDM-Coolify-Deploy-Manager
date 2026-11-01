@@ -122,8 +122,10 @@ internal static class ExecutableProfile
     // A personal clone writes a verified .pending file while running.
     // WPF App.OnExit launches this detached helper only when the app closes.
     // Windows then releases the original executable, allowing one atomic
-    // replacement. A fixed, recoverable last-good backup avoids unbounded
-    // timestamped backups after every ordinary card edit.
+    // replacement. File.Replace needs a temporary backup on PowerShell 5.1,
+    // but we remove it once replacement succeeds. No persistent .bak file
+    // is left after a successful ordinary save. On failure, keep artifacts
+    // for diagnosis instead of silently losing the personalized profile.
     public static void ScheduleReplaceOnExit(string pendingPath)
     {
         var target = OwnPath;
@@ -141,28 +143,30 @@ internal static class ExecutableProfile
         var errorPath = pending + ".updater-error.txt";
         var statePath = pending + ".updater-started.txt";
 
-        // IMPORTANT: Windows PowerShell can marshal $null to an empty string
-        // for .NET string parameters. File.Replace(source, target, $null)
-        // then throws "The path is not of a legal form" on PS 5.1.
-        // ALWAYS supply the explicit, valid backup path. This backup holds
-        // credentials just like the personalized clone and remains private.
+        // IMPORTANT: On Windows PowerShell 5.1 the third File.Replace
+        // argument cannot be $null (it may marshal as an invalid empty path).
+        // Use a same-directory temporary backup only during replacement.
+        // Once the new executable is installed, remove that backup; routine
+        // profile saves must not leave extra credential-bearing EXEs behind.
         var script = "$ErrorActionPreference='Stop'; " +
             $"$pending={PsLiteral(pending)}; $target={PsLiteral(target)}; " +
             $"$backup={PsLiteral(backup)}; " +
             $"$errorPath={PsLiteral(errorPath)}; $statePath={PsLiteral(statePath)}; " +
             "try { [IO.File]::WriteAllText($statePath,'started'); " +
-            "$last=$null; for($attempt=0; $attempt -lt 160; $attempt++) { " +
-            "try { [IO.File]::Replace($pending,$target,$backup); " +
-            "if(-not [IO.File]::Exists($backup)) { throw [IO.IOException]::new('Backup not created') }; " +
-            "Remove-Item -LiteralPath $statePath,$errorPath -Force -ErrorAction SilentlyContinue; exit 0 } " +
+            "$last=$null; $applied=$false; for($attempt=0; $attempt -lt 160; $attempt++) { " +
+            "try { [IO.File]::Replace($pending,$target,$backup); $applied=$true; break } " +
             "catch { $actual=$_.Exception; " +
             "if ($actual -is [System.Management.Automation.MethodInvocationException] " +
             "-and $actual.InnerException) { $actual=$actual.InnerException }; " +
             "if ($actual -isnot [IO.IOException] -and " +
             "$actual -isnot [UnauthorizedAccessException]) { throw }; " +
             "$last=$actual }; Start-Sleep -Milliseconds 300 }; " +
-            "throw [IO.IOException]::new('EXE busy after bounded retries: ' + " +
-            "$last.GetType().Name) } " +
+            "if(-not $applied) { throw [IO.IOException]::new('EXE busy after bounded retries: ' + " +
+            "$last.GetType().Name) }; " +
+            "if(-not [IO.File]::Exists($backup)) { throw [IO.IOException]::new('Temporary backup not created') }; " +
+            "[IO.File]::Delete($backup); " +
+            "if([IO.File]::Exists($backup)) { throw [IO.IOException]::new('Temporary backup was not removed') }; " +
+            "Remove-Item -LiteralPath $statePath,$errorPath -Force -ErrorAction SilentlyContinue; exit 0 } " +
             "catch { try { [IO.File]::WriteAllText($errorPath, " +
             "'CDM update helper failed: ' + $_.Exception.GetType().Name + " +
             "' - ' + $_.Exception.Message) } catch { }; exit 1 }";
