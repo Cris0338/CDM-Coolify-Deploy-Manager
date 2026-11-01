@@ -7,7 +7,6 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Shell;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
@@ -20,7 +19,7 @@ internal sealed class DeployShellIndicator : IDisposable
     private const int FrameCount = 12;
     private readonly Window window;
     private readonly DispatcherTimer clock;
-    private readonly ImageSource[] taskbarFrames = new ImageSource[FrameCount];
+    private readonly WpfMedia.ImageSource[] taskbarFrames = new WpfMedia.ImageSource[FrameCount];
     private Icon[]? trayFrames;
     private Forms.NotifyIcon? tray;
     private Icon? normalIcon;
@@ -117,9 +116,9 @@ internal sealed class DeployShellIndicator : IDisposable
         }
     }
 
-    private static ImageSource BuildTaskbarFrame(int index)
+    private static WpfMedia.ImageSource BuildTaskbarFrame(int index)
     {
-        var circle = new WpfMedia.EllipseGeometry(new WpfMedia.Point(8, 8), 6.3, 6.3);
+        var circle = new WpfMedia.EllipseGeometry(new System.Windows.Point(8, 8), 6.3, 6.3);
         var backdrop = new WpfMedia.GeometryDrawing(
             new WpfMedia.SolidColorBrush(WpfMedia.Color.FromArgb(238, 12, 26, 37)),
             new WpfMedia.Pen(new WpfMedia.SolidColorBrush(
@@ -128,18 +127,18 @@ internal sealed class DeployShellIndicator : IDisposable
 
         const double radius = 4.9;
         double start = index * 360.0 / FrameCount - 90;
-        static WpfMedia.Point OnRing(double degrees)
+        static System.Windows.Point OnRing(double degrees)
         {
-            const double r = radius;
+            const double r = 4.9;
             double radians = degrees * Math.PI / 180;
-            return new WpfMedia.Point(8 + r * Math.Cos(radians),
+            return new System.Windows.Point(8 + r * Math.Cos(radians),
                 8 + r * Math.Sin(radians));
         }
         var arc = new WpfMedia.StreamGeometry();
         using (var pen = arc.Open())
         {
             pen.BeginFigure(OnRing(start), isFilled: false, isClosed: false);
-            pen.ArcTo(OnRing(start + 255), new Size(radius, radius), 0,
+            pen.ArcTo(OnRing(start + 255), new System.Windows.Size(radius, radius), 0,
                 isLargeArc: true, WpfMedia.SweepDirection.Clockwise,
                 isStroked: true, isSmoothJoin: false);
         }
