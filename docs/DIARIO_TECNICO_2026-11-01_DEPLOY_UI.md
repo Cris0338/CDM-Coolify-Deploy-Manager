@@ -274,3 +274,13 @@ L'autore ha eseguito il comando di upgrade `--upgrade-clone-silent` dopo aver co
 ## 2026-11-01 — Windows Run reindirizzato a CDM personale: PASS
 
 L'autore ha confermato l'output dell'impostazione Windows HKCU Run: `"C:\Users\Cris0338\Downloads\CDM-Coolify-Deploy-Manager\portable\CDM-Cris0338-coolify.exe" --startup-tray`. La chiave `CDM-Coolify-Deploy-Manager` ora punta alla copia personale e non più al clone di test; **PASS: percorso di avvio Windows verificato dall'utente**. L'operazione di aggiornamento del clone personale era stata proposta ed eseguita secondo il precedente scambio, ma non c'è un nuovo output di build hash personale: non attestare un SHA non verificato. L'utente ha chiesto di lasciare in `portable/` solo `CDM.exe` e `CDM-Cris0338-coolify.exe`; dopo l'eliminazione dei vecchi backup e test era rimasto un `CDM-Test-2.2.2-Recovered.exe` bloccato, che va chiuso ordinatamente prima della cancellazione. Il comando di pulizia non deve eliminare un `.pending` personale eventualmente ancora da applicare, né operare con un CDM in esecuzione. **La pulizia finale non è ancora stata confermata.**
+
+## 2026-11-01 — Pulizia: due EXE rimasti, salvataggio pendente eliminato
+
+Il controllo dell'utente nella cartella portable elenca solo CDM.exe (78.268.824 byte) e CDM-Cris0338-coolify.exe (78.270.196 byte). La chiave autostart Windows era stata indirizzata al clone personale.
+
+**Attenzione:** l'utente ha eseguito i comandi PowerShell come blocchi separati dopo i due errori STOP: il controllo iniziale ha segnalato CDM ancora aperto e un file pending personale presente; nonostante ciò il successivo Remove-Item ha cancellato tutti gli elementi diversi dai due exe. Il PASS finale è una stampa di Write-Host, NON una verifica che il processo sia chiuso o che l'ultimo salvataggio sia conservato.
+
+**Rischio:** SettingsStore può aver preparato il file pending con le ultime modifiche al profilo incorporato, che saranno perse se il file è stato cancellato mentre il clone era aperto. Al successivo OnExit un updater potrebbe non trovare più il pending. Non eliminare altro né sostituire gli EXE; acquisire prima un inventario di processi CDM con PID e percorso, e listener della porta locale 18000. Quindi uscire ordinatamente dall'eventuale CDM aperto e verificare eventuali file di aggiornamento o errori.
+
+Nessuna nuova release pubblicata; non dichiarare persistenza di impostazioni non ancora confermata.
