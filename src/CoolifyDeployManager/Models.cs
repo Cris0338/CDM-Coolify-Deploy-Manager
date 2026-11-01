@@ -14,11 +14,34 @@ internal sealed record CoolifyInventory(IReadOnlyList<CoolifyProject> Projects,
 internal sealed record DeploymentInfo(string Uuid, string Status, string Commit);
 internal sealed record LatestDeploy(DateTimeOffset? When, string Status, string Commit, bool HasDeploy);
 
+// Immutable geometry, serialized only in the personalized executable profile.
+// Minimized-to-tray is transient: save the last Normal/Maximized presentation.
+internal sealed record WindowPlacementState
+{
+    public double Left { get; init; }
+    public double Top { get; init; }
+    public double Width { get; init; }
+    public double Height { get; init; }
+    public bool Maximized { get; init; }
+
+    public bool IsValid => double.IsFinite(Left) && double.IsFinite(Top) &&
+        double.IsFinite(Width) && double.IsFinite(Height) &&
+        Math.Abs(Left) < 100000 && Math.Abs(Top) < 100000 &&
+        Width >= 850 && Height >= 570 && Width <= 20000 && Height <= 20000;
+
+    public bool IntersectsDesktop(double x, double y, double width, double height) =>
+        IsValid && double.IsFinite(x) && double.IsFinite(y) &&
+        width > 0 && height > 0 &&
+        Math.Min(Left + Width, x + width) - Math.Max(Left, x) >= 90 &&
+        Math.Min(Top + Height, y + height) - Math.Max(Top, y) >= 70;
+}
+
 internal sealed class UserSettings
 {
     public string ServerUrl { get; set; } = "";
     public string ServerLabel { get; set; } = "coolify";
     public string Language { get; set; } = "system";
+    public WindowPlacementState? WindowPlacement { get; set; }
     public string ReadToken { get; set; } = "";
     public string DeployToken { get; set; } = "";
     public Dictionary<string, DeploymentGroup> Overrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
@@ -43,6 +66,7 @@ internal sealed class UserSettings
     public UserSettings Copy() => new()
     {
         Language = Language, ServerUrl = ServerUrl, ServerLabel = ServerLabel, ReadToken = ReadToken, DeployToken = DeployToken,
+        WindowPlacement = WindowPlacement,
         Overrides = new(Overrides, StringComparer.OrdinalIgnoreCase),
         CardOrders = CardOrders.ToDictionary(k => k.Key, k => new List<string>(k.Value), StringComparer.OrdinalIgnoreCase),
         LockedPositions = new(LockedPositions, StringComparer.OrdinalIgnoreCase),
