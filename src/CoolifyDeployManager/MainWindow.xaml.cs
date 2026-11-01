@@ -39,6 +39,7 @@ public partial class MainWindow : Window
     internal bool SkipStartupConnectionForSmoke { get; set; }
     internal bool StartHiddenToTray { get; set; }
     private Forms.NotifyIcon? trayIcon;
+    private DeployShellIndicator? shellDeployIndicator;
     private Forms.ContextMenuStrip? trayMenu;
     private System.Drawing.Icon? trayOwnedIcon;
     // The transient Minimized state must never replace the last displayed
@@ -232,6 +233,8 @@ public partial class MainWindow : Window
             if (e.Button == Forms.MouseButtons.Left)
                 Dispatcher.BeginInvoke(new Action(RestoreFromTray));
         };
+        shellDeployIndicator?.AttachTray(trayIcon,
+            trayOwnedIcon ?? System.Drawing.SystemIcons.Application);
     }
 
     private void MinimizeToTray()
@@ -373,6 +376,8 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        shellDeployIndicator?.Dispose();
+        shellDeployIndicator = null;
         if (trayIcon is not null)
         {
             trayIcon.Visible = false;
@@ -670,6 +675,84 @@ public partial class MainWindow : Window
     // Storyboard animated a Freezable shared/frozen by the WPF template during
     // a drop-induced card rebuild and crashed the entire process. Directly
     // animating a per-instance transform avoids that shared Freezable path.
+    // Global taskbar/tray animation is derived from the same server statuses as
+    // the card spinners. Never use the local queue's busy flag as a substitute.
+    private void UpdateCardLiveDeployment(AppCardView card, string? serverStatus)
+    {
+        card.UpdateLiveDeployment(serverStatus);
+        UpdateShellDeployIndicator();
+    }
+
+    private void UpdateShellDeployIndicator()
+    {
+        bool active = allCards.Values.Any(card => card.IsLiveDeploymentActive);
+        if (!active && shellDeployIndicator is null) return;
+        shellDeployIndicator ??= new DeployShellIndicator(this);
+        if (trayIcon is not null)
+            shellDeployIndicator.AttachTray(trayIcon,
+                trayOwnedIcon ?? System.Drawing.SystemIcons.Application);
+        shellDeployIndicator.SetActive(active);
+    }
+
+    internal void VerifyDeployShellIndicatorForSmoke()
+    {
+        // No deployment, SSH traffic, registry changes or profile writes.
+        EnsureTrayIcon();
+        var first = new AppCardView(new CoolifyApplication("shell-active-1",
+            "shell-one", "running:healthy", "main", "test", "test-project",
+            "staging", ""), DeploymentGroup.Staging);
+        var second = new AppCardView(new CoolifyApplication("shell-active-2",
+            "shell-two", "running:healthy", "main", "test", "test-project",
+            "staging", ""), DeploymentGroup.Staging);
+        allCards[first.Uuid] = first;
+        allCards[second.Uuid] = second;
+        try
+        {
+            UpdateCardLiveDeployment(first, "queued");
+            if (shellDeployIndicator?.IsActive != true ||
+                TaskbarItemInfo?.Overlay is null || trayIcon?.Icon is null ||
+                ReferenceEquals(trayIcon.Icon, trayOwnedIcon))
+                throw new InvalidDataException(
+                    "A server-queued deployment did not animate both shell surfaces.");
+
+            var priorFrame = trayIcon.Icon;
+            var priorOverlay = TaskbarItemInfo.Overlay;
+            shellDeployIndicator.AdvanceForSmoke();
+            if (ReferenceEquals(trayIcon.Icon, priorFrame) ||
+                ReferenceEquals(TaskbarItemInfo.Overlay, priorOverlay))
+                throw new InvalidDataException(
+                    "Deploy indicator does not rotate through distinct cached frames.");
+
+            UpdateCardLiveDeployment(second, "in_progress");
+            UpdateCardLiveDeployment(first, "finished");
+            if (!shellDeployIndicator.IsActive)
+                throw new InvalidDataException(
+                    "First finished deployment stopped a second active deployment.");
+
+            MinimizeToTray();
+            if (IsVisible || ShowInTaskbar || trayIcon.Icon is null ||
+                ReferenceEquals(trayIcon.Icon, trayOwnedIcon))
+                throw new InvalidDataException(
+                    "The animated tray icon was not retained while hidden.");
+
+            UpdateCardLiveDeployment(second, "finished");
+            if (shellDeployIndicator.IsActive || TaskbarItemInfo.Overlay is not null ||
+                !ReferenceEquals(trayIcon.Icon, trayOwnedIcon))
+                throw new InvalidDataException(
+                    "Completed deployments did not restore the normal icon.");
+
+            RestoreFromTray();
+            if (!IsVisible || !ShowInTaskbar)
+                throw new InvalidDataException("Tray restore failed after shell animation.");
+        }
+        finally
+        {
+            allCards.Remove(first.Uuid);
+            allCards.Remove(second.Uuid);
+            shellDeployIndicator?.SetActive(false);
+        }
+    }
+
     private static void SetLiveDeploymentSpinner(ShapePath path, bool shouldSpin)
     {
         if (path.RenderTransform is not RotateTransform rotate || rotate.IsFrozen)
@@ -1248,7 +1331,7 @@ public partial class MainWindow : Window
                 var deployment = await api.StartDeployAsync(card.Uuid, operation.Token);
                 // A valid deployment UUID confirms server-side queue entry.
                 // The spinner starts only after that actual Coolify response.
-                card.UpdateLiveDeployment("queued");
+                UpdateCardLiveDeployment(card, "queued");
                 AddLog(Loc.F("DeploymentQueued", deployment));
 
                 var startedAt = DateTimeOffset.UtcNow;
@@ -1264,7 +1347,7 @@ public partial class MainWindow : Window
                     var state = await api.GetDeploymentAsync(deployment, operation.Token);
                     // The same read-only API response that drives the queue
                     // also controls the corresponding card animation.
-                    card.UpdateLiveDeployment(state.Status);
+                    UpdateCardLiveDeployment(card, state.Status);
                     if (!string.Equals(state.Status, lastState, StringComparison.OrdinalIgnoreCase))
                     {
                         AddLog($"  {card.Name}: {state.Status} · commit {state.Commit}");
@@ -1302,7 +1385,7 @@ public partial class MainWindow : Window
             // When local monitoring ends (success, error or Stop Queue), do not
             // keep animating based on an old server snapshot. Stop Queue does
             // not cancel the remote Coolify job; Refresh can verify its state.
-            foreach (var card in cards) card.UpdateLiveDeployment(null);
+            foreach (var card in cards) UpdateCardLiveDeployment(card, null);
             operation?.Dispose();
             operation = null;
             busy = false;
