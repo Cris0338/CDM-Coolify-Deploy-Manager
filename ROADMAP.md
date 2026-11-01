@@ -62,7 +62,10 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Manually test notification icon, minimize to tray and double-click to restore actual WPF window on recovered clone: owner confirmed 👍 (2026-11-01).
 - [ ] Verify tray context menu Open/Exit, normal Close, same-clone double-launch and that no competing SSH listener appears on port 18000.
 - [x] Enable checkbox on test clone and verify the actual HKCU Run value points to `CDM-Test-2.2.2-Recovered.exe --startup-tray` (owner showed actual registration, 2026-11-01).
-- [ ] Simulate `--startup-tray` from a fully closed clone; verify hidden UI, notification icon, background SSH, and menu Exit.
+- [x] Simulate `--startup-tray` from closed test clone: no splash/window, tray icon shown, and double-click opens connected CDM (owner confirmed 2026-11-01). **Defect found:** restored window stays behind other Windows windows.
+- [ ] Fix tray restore foreground activation on Windows 10, including second-instance wake.
+- [ ] Persist per-clone last normal window rectangle and maximized/normal state; restoring from tray must preserve prior maximized state, including startup-tray.
+- [ ] Add offline WPF/serialization tests for window placement and bring-to-front behavior; compile+manual verify after fixing.
 - [ ] Disable checkbox and verify HKCU Run entry removal, then optionally re-enable; actual sign-in auto-launch still unverified. No public release until accepted.
 
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
