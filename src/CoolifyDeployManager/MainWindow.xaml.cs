@@ -14,6 +14,7 @@ using System.Windows.Documents;
 using ShapePath = System.Windows.Shapes.Path;
 using System.Windows.Interop;
 using System.Runtime.InteropServices;
+using Forms = System.Windows.Forms;
 
 namespace CoolifyDeployManager;
 
@@ -36,6 +37,10 @@ public partial class MainWindow : Window
     private bool inventoryRefreshing;
     // Offline test mode: render WPF cards without creating SSH/API traffic.
     internal bool SkipStartupConnectionForSmoke { get; set; }
+    internal bool StartHiddenToTray { get; set; }
+    private Forms.NotifyIcon? trayIcon;
+    private Forms.ContextMenuStrip? trayMenu;
+    private System.Drawing.Icon? trayOwnedIcon;
     private string selectedProjectUuid = "ALL";
     private readonly List<ProjectChoice> projectChoices = new();
     private Point dragOrigin;
@@ -97,6 +102,8 @@ public partial class MainWindow : Window
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         if (SkipStartupConnectionForSmoke) return;
+        EnsureTrayIcon();
+        if (StartHiddenToTray) MinimizeToTray();
         if (settings.IsConfigured) await RefreshAsync();
         else _ = Dispatcher.BeginInvoke(new Action(() => OpenSettings()));
     }
@@ -125,12 +132,65 @@ public partial class MainWindow : Window
     private void Minimize_Click(object sender, RoutedEventArgs e) =>
         WindowState = WindowState.Minimized;
 
+    // The notification icon is an independent, per-process Windows shell object.
+    // A normal Close still shuts CDM down and stops its managed SSH tunnel.
+    private void EnsureTrayIcon()
+    {
+        if (trayIcon is not null) return;
+        trayOwnedIcon = System.Drawing.Icon.ExtractAssociatedIcon(ExecutableProfile.OwnPath);
+        trayMenu = new Forms.ContextMenuStrip();
+        trayMenu.Items.Add(Loc.T("TrayOpen"), null,
+            (_, _) => Dispatcher.BeginInvoke(new Action(RestoreFromTray)));
+        trayMenu.Items.Add(Loc.T("TrayExit"), null,
+            (_, _) => Dispatcher.BeginInvoke(new Action(Close)));
+        trayIcon = new Forms.NotifyIcon
+        {
+            Icon = trayOwnedIcon ?? System.Drawing.SystemIcons.Application,
+            Text = "CDM - Coolify Deploy Manager",
+            ContextMenuStrip = trayMenu,
+            Visible = true
+        };
+        trayIcon.MouseDoubleClick += (_, e) =>
+        {
+            if (e.Button == Forms.MouseButtons.Left)
+                Dispatcher.BeginInvoke(new Action(RestoreFromTray));
+        };
+    }
+
+    private void MinimizeToTray()
+    {
+        EnsureTrayIcon();
+        ShowInTaskbar = false;
+        Hide();
+    }
+
+    private void RestoreFromTray()
+    {
+        if (closingWindow) return;
+        WindowState = WindowState.Normal;
+        ShowInTaskbar = true;
+        Show();
+        Activate();
+    }
+
+    private void UpdateTrayText()
+    {
+        if (trayMenu is null) return;
+        trayMenu.Items[0].Text = Loc.T("TrayOpen");
+        trayMenu.Items[1].Text = Loc.T("TrayExit");
+    }
+
     private void Maximize_Click(object sender, RoutedEventArgs e) =>
         WindowState = WindowState == WindowState.Maximized
             ? WindowState.Normal : WindowState.Maximized;
 
     private void Window_StateChanged(object sender, EventArgs e)
     {
+        if (IsLoaded && WindowState == WindowState.Minimized)
+        {
+            MinimizeToTray();
+            return;
+        }
         if (MaximizeGlyph is null || MaximizeButton is null) return;
         bool maximized = WindowState == WindowState.Maximized;
         MaximizeGlyph.Data = Geometry.Parse(maximized
@@ -213,6 +273,16 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        if (trayIcon is not null)
+        {
+            trayIcon.Visible = false;
+            trayIcon.Dispose();
+            trayIcon = null;
+        }
+        trayMenu?.Dispose();
+        trayMenu = null;
+        trayOwnedIcon?.Dispose();
+        trayOwnedIcon = null;
         windowSource?.RemoveHook(WindowMessage);
         windowSource = null;
         base.OnClosed(e);
@@ -949,6 +1019,7 @@ public partial class MainWindow : Window
         ssh.Stop();
         settings = dlg.Result;
         Loc.Apply(settings.Language);
+        UpdateTrayText();
         UpdateProfileStatus();
         foreach (var app in inventory.Applications)
         {
