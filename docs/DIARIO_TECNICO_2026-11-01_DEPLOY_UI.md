@@ -251,3 +251,15 @@ Dopo avere aperto le Impostazioni del clone `CDM-Test-2.2.2-Recovered.exe`, l'au
 - Controllo statico mirato dei sorgenti PASS: nuovi campi, validazione, percorso chiusura e foreground, test CLI, serializzazione e build script presenti. **Nessun risultato di compilazione Windows ancora ricevuto per questa patch.**
 
 **Accettazione ancora necessaria:** `git pull --ff-only`, `BUILD_PORTABLE.ps1` (con eventuale diagnostica compilatore), aggiornamento del **solo clone di test** a programma chiuso, prova doppio clic tray davanti ad altre finestre, posizione/dimensione e massimizzazione ricordate dopo uscita e riavvio. Non sovrascrivere l'EXE personale 2.2.1 né pubblicare l'EXE con credenziali. HKCU Run punta attualmente al clone test e va lasciato inalterato durante build/test offline.
+
+## 2026-11-01 — Windows publish/Smoke foreground + finestra persistente: PASS
+
+**Windows publish proprietario PASS (output fornito dall'autore)** con `BUILD_PORTABLE.ps1`: CDM `2.2.2`, commit sorgente `1123f2d2d95f`, UTC build `2026-11-01T12:15:28Z`, Windows `net10.0-windows win-x64`, publish riuscito in `9,1s` e SHA256 verificato del solo eseguibile generico `portable/CDM.exe`: **`9A8612A7941A96AA02535A5832441F12436E5DCBA059CE7A1F1685FB7B43E0A1`**, dimensione `74,64 MB`.
+
+**Smoke PASS:** generico senza credenziali, metadata commit/versione/data, spinner per singola card durante deploy reale e drag state, vera retemplate WPF spinner senza crash, tray hide/restore/autostart string (no scrittura al registro), **`PASS: window geometry JSON and normal/maximized presentation survive minimize-to-tray/restore.`**, health state senza sovrascrivere il deploy, recovery tunnel SSH, creazione clone sintetico e upgrade, preservazione embedded credentials, save differito con copia backup del precedente EXE e `.pending` applicato al clone di prova con token/ordine card/posizione lock intatti. Test aggiuntivo `WindowPlacement` inserito nel clone sintetico e verificato dopo re-launch.
+
+**Avviso della cartella portable:** restano separati gli eseguibili `CDM-Cris0338-coolify.exe` (stabile), `CDM-Test-2.2.2-Recovered.exe` (test) e relativi backup, `CDM-Test-2.2.2.exe`, e vecchio `.CDM-Test-2.2.2.exe.pending`. Nessuno di questi è un asset pubblico e contengono potenzialmente credenziali.
+
+**Non ancora verificato:** effetto foreground con finestre reali sovrapposte (il WPF smoke controlla stato/visibilità, non il focus contro altre app), posizionamento/schermo a riavvio del clone personalizzato, riapertura del programma già in background. Il registro HKCU Run attualmente punta al clone test: conservarne il percorso. **Nessuna release/tag 2.2.2**, né modifica all'originale 2.2.1.
+
+**Prossimo passo operativo:** chiudere normalmente il clone test dal menu tray `Esci`; controllare che non sia in esecuzione né abbia un file `.pending` non ancora applicato; verificare SHA256 del generico; aggiornare soltanto `CDM-Test-2.2.2-Recovered.exe` via `--upgrade-clone-silent`, poi avviare e verificare manualmente finestra davanti e persistenza dopo exit/restart. Non serve ripetere un deploy reale.
