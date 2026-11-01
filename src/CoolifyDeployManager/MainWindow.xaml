@@ -103,9 +103,47 @@
             <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}"
                       Visibility="{Binding SelectionVisibility}" Margin="0,2,10,0"
                       VerticalAlignment="Top" ToolTip="{DynamicResource L.SelectForDeploy}"/>
-            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="15"
-                       FontWeight="SemiBold" TextWrapping="Wrap" MaxHeight="45"
-                       ToolTip="{Binding FullDescription}"/>
+            <Grid Grid.Column="1">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="15"
+                         FontWeight="SemiBold" TextWrapping="Wrap" MaxHeight="45"
+                         ToolTip="{Binding FullDescription}"/>
+              <!-- Real server activity: this arc rotates ONLY while the
+                   matching Coolify deployment state is queued/in_progress.
+                   It is not a fabricated percentage or progress estimate. -->
+              <Path Grid.Column="1" Width="20" Height="20" Margin="9,0,0,0"
+                    VerticalAlignment="Top" Stroke="#B9B7F6" StrokeThickness="3"
+                    StrokeStartLineCap="Round" Stretch="Uniform"
+                    RenderTransformOrigin="0.5,0.5"
+                    ToolTip="{Binding LiveDeploymentStatus}"
+                    Data="M 14,2 A 12,12 0 1 1 2,14">
+                <Path.RenderTransform><RotateTransform/></Path.RenderTransform>
+                <Path.Style>
+                  <Style TargetType="Path">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsLiveDeploymentActive}" Value="True">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <DataTrigger.EnterActions>
+                          <BeginStoryboard x:Name="CoolifyLiveDeploymentSpin">
+                            <Storyboard RepeatBehavior="Forever">
+                              <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                               From="0" To="360" Duration="0:0:1"/>
+                            </Storyboard>
+                          </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                          <StopStoryboard BeginStoryboardName="CoolifyLiveDeploymentSpin"/>
+                        </DataTrigger.ExitActions>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Path.Style>
+              </Path>
+            </Grid>
           </Grid>
           <StackPanel Grid.Row="1" Margin="0,0,0,10">
             <TextBlock Text="{Binding Environment}" FontSize="11"
