@@ -34,15 +34,17 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Add offline WPF entrypoint to test state transitions, property notifications and drag policy.
 - [x] Restrict terminal log to incoming/outgoing Coolify/SSH activity and related errors; move local blocked-move and skipped-deploy feedback to status bar.
 - [x] Add build-time guard against logging nine internal UI/queue events.
-- [ ] Confirm manually that card reorder and local settings changes do not append terminal lines while remote deploy messages still appear.
+- [x] Real-world verification: card reorder does not append terminal entries; Coolify API and SSH communication still appears (2026-11-01, staging deploy).
+- [ ] Verify separately that other local settings changes do not append terminal entries.
 - [x] Rebuild and pass **real WPF retemplate** smoke after frozen-transform fix (2026-11-01, source `48c87cf6df3d`); earlier syntax and scope errors corrected in `bb8e1e6` / `146d7b3`. Owner confirmed `PASS: real WPF card retemplate during live spinner does not crash or freeze transforms.`
 - [x] Build the new development version on Windows and pass all smoke tests; **latest passing 2026-11-01 WPF-fix build**: source `48c87cf6df3d`, .NET 10 win-x64, SHA256 `12F5B9F44EF25E749BA40B8C56D13BE10B7326037EE23A11515AB56045AB5DEF` (supersedes earlier 2.2.2 candidate).
-- [x] Confirm spinner becomes visible during a real Coolify deploy (2026-11-01, owner-observed). Spinner termination at server terminal status still unverified.
-- [ ] **WPF unit/visual re-template smoke PASS; real live drag retest PENDING:** 2026-11-01 crash was `XamlParseException` from frozen shared storyboard `RotateTransform`. Fixed with per-card runtime transform; Windows publish and repeated WPF re-template test PASS, but a **real drag during actual running deploy** and saved order persistence are still unvalidated.
+- [x] Confirm per-card spinner animates during real Coolify deployment and stops on actual `finished` server response (2026-11-01, owner-observed).
+- [x] **Real card drag during deploy PASS (2026-11-01)**, no crash WPF after correcting frozen `RotateTransform`; WPF re-template smoke also PASS. Saved order persistence across restart still pending.
 - [x] Identify SSH port 18000 listener: `ssh.exe` PID 33596 / ParentPID 10628, matching crashed CDM PID `0x2984`. Safe one-off cleanup requires exact process verification; automatic orphan prevention not implemented.
 - [x] Confirm port 18000 recovered after targeted orphan cleanup and restart of stable personal CDM 2.2.1; user confirmed SSH/Coolify works (2026-11-01).
 - [x] Identify leftover `.CDM-Test-2.2.2.exe.pending` (11:00:42, same timestamp as crash; full staged clone per SettingsStore); no CDM process reported, original test clone remains unchanged. Preserve pending and prepare separate recovered test clone without touching stable personal 2.2.1 or SSH tunnel.
-- [ ] Copy crash-time `.pending` into an additional local test EXE, upgrade **only** that copy with the passing 2.2.2 generic template, then test UI after safely switching away from the stable clone.
+- [x] Recover separate clone from crash-time pending and upgrade to passing 2.2.2 build; owner confirmed PASS and used it for successful real-world staging deployment.
+- [ ] Confirm reordered cards persist after clean exit and relaunch.
 - [ ] Evaluate behavior after Stop Queue or API disconnect (remote deployment may continue).
 - [ ] Explicitly approve separate v2.2.2 release only after acceptance.
 
