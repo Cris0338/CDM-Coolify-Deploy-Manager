@@ -67,3 +67,9 @@ Il compilatore ha avvisato della presenza di un clone reale `CDM-Cris0338-coolif
 L'utente ha confermato da PowerShell: `PASS: clone di test CDM 2.2.2 pronto`. È stata copiata la versione personalizzata in un nuovo clone di prova e il template generico 2.2.2 l'ha aggiornata con `--upgrade-clone-silent` (exit code 0). Il clone di prova è locale ed escluso da Git; la versione personale originale 2.2.1 e la release GitHub v2.2.1 restano inalterate. I dati di connessione sono incorporati nel clone di prova ma non sono stati registrati o caricati.
 
 **Stato:** preparazione clone PASS; avvio reale della UI, connessione, spinner durante deploy reale, drag durante deploy e assenza di log UI rimangono da verificare. Prossimo passo: avviare solo il clone di prova e osservare connessione e dashboard; usare una risorsa di staging soltanto dopo una verifica preliminare.
+
+## 2026-11-01 — Prima prova UI reale del clone di test
+
+L'autore riferisce **«sembrerebbe ok»** dopo aver avviato il clone locale 2.2.2 e aver ricevuto le istruzioni per controllare versione, connessione Coolify, card e assenza di messaggi di riordino nel terminale. Registrato come **riscontro preliminare positivo**, non come validazione puntuale dei quattro controlli né come PASS del deploy reale.
+
+**Prossimo controllo:** avviare dalla UI un deploy su una risorsa di staging selezionata dall'autore; durante il deploy verificare animazione nella card interessata, trascinamento di una card diversa non bloccata e terminale riservato a richieste/risposte API/SSH. Alla conclusione osservare che la rotazione si fermi. Nessun comando di deploy viene avviato dall'assistente.
