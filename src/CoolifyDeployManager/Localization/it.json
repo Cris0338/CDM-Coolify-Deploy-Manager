@@ -229,5 +229,6 @@
   "StartWithWindowsTray": "Avvia con Windows, ridotto nell'area notifiche",
   "StartWithWindowsHint": "Avvia questo CDM personale all'accesso a Windows, vicino all'orologio. Fai doppio clic sull'icona per aprirlo. È possibile registrare un solo clone personale.",
   "TrayOpen": "Apri CDM",
-  "TrayExit": "Esci da CDM"
+  "TrayExit": "Esci da CDM",
+  "TrayMinimize": "Riduci nell'area notifiche"
 }
