@@ -11,7 +11,7 @@ using System.Windows.Threading;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Documents;
-using System.Windows.Shapes;
+using ShapePath = System.Windows.Shapes.Path;
 using System.Windows.Interop;
 using System.Runtime.InteropServices;
 
@@ -499,7 +499,7 @@ public partial class MainWindow : Window
     // Storyboard animated a Freezable shared/frozen by the WPF template during
     // a drop-induced card rebuild and crashed the entire process. Directly
     // animating a per-instance transform avoids that shared Freezable path.
-    private static void SetLiveDeploymentSpinner(Path path, bool shouldSpin)
+    private static void SetLiveDeploymentSpinner(ShapePath path), bool shouldSpin)
     {
         if (path.RenderTransform is not RotateTransform rotate || rotate.IsFrozen)
         {
@@ -514,20 +514,20 @@ public partial class MainWindow : Window
 
     private void LiveDeploymentSpinner_Loaded(object sender, RoutedEventArgs e)
     {
-        if (sender is Path path)
+        if (sender is ShapePath path)
             SetLiveDeploymentSpinner(path, path.IsVisible);
     }
 
     private void LiveDeploymentSpinner_IsVisibleChanged(object sender,
         DependencyPropertyChangedEventArgs e)
     {
-        if (sender is Path path)
+        if (sender is ShapePath path)
             SetLiveDeploymentSpinner(path, path.IsVisible);
     }
 
     private void LiveDeploymentSpinner_Unloaded(object sender, RoutedEventArgs e)
     {
-        if (sender is Path path)
+        if (sender is ShapePath path)
             SetLiveDeploymentSpinner(path, false);
     }
 
@@ -579,9 +579,9 @@ public partial class MainWindow : Window
                 "Terminal Coolify state did not stop the real rendered spinner.");
     }
 
-    private static Path? FindLiveSpinner(DependencyObject root, string tooltip)
+    private static ShapePath? FindLiveSpinner(DependencyObject root, string tooltip)
     {
-        if (root is Path path && string.Equals(
+        if (root is ShapePath path && string.Equals(
             path.ToolTip?.ToString(), tooltip, StringComparison.Ordinal))
             return path;
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
