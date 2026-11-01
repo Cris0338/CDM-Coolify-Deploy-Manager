@@ -225,3 +225,12 @@ L'autore ha eseguito sul PC Windows la procedura controllata `--upgrade-clone-si
 Con la build 2.2.2 del clone test `CDM-Test-2.2.2-Recovered.exe` (codice `8585427dff9e`, smoke WPF già PASS), l'autore ha eseguito il test richiesto: avvio del clone, pressione del pulsante di minimizzazione, scomparsa della finestra dalla taskbar, comparsa dell'icona nell'area notifiche accanto all'orologio, doppio clic per ripristinare la finestra. **Risposta esplicita «pollicesu» (pollice su): PASS per minimizzazione e ripristino.** Questo conferma il comportamento visivo reale oltre al test WPF automatico.
 
 **Ancora da collaudare:** clic destro menu Apri/Esci, doppio avvio dello stesso clone con finestra già aperta senza creare secondo SSH sulla porta 18000, opzione `Avvia con Windows` dal pannello Impostazioni e reale avvio nascosto dopo accesso a Windows. Non dichiarare superati test che non sono stati confermati. Nessun deploy reale ripetuto, nessuna release pubblicata. Prossimo test: con clone già aperto o ridotto a icona, eseguire di nuovo lo stesso clone e verificare che richiami la finestra esistente.
+
+
+## 2026-11-01 — Opzione HKCU Run verificata sul clone test: PASS
+
+Dopo avere aperto le Impostazioni del clone `CDM-Test-2.2.2-Recovered.exe`, l'autore ha abilitato `Avvia con Windows, ridotto nell'area notifiche` e ha interrogato `HKCU:\Software\Microsoft\Windows\CurrentVersion\Run`, valore `CDM-Coolify-Deploy-Manager`.
+
+**Valore effettivo confermato:** `"C:\Users\Cris0338\Downloads\CDM-Coolify-Deploy-Manager\portable\CDM-Test-2.2.2-Recovered.exe" --startup-tray`. **PASS registrazione corretta** su HKCU (percorso e argomento), senza token/API key nel registro; si tratta soltanto del clone di prova, non del clone personale stabile.
+
+**Ancora PENDING:** esecuzione simulata `--startup-tray` da app chiusa, permanenza dell'icona e connessione nel background, effettivo avvio al login Windows, disattivazione della casella e rimozione del valore HKCU. Il test del doppio avvio non è stato esplicitamente confermato: non marcarlo PASS. Prima di lanciare il clone in modalità startup occorre uscire realmente da quello aperto (menu tray Esci) e attendere fine tunnel/aggiornamenti `.pending`.
