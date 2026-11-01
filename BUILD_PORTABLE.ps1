@@ -161,6 +161,17 @@ try {
     }
     Write-Host "PASS: CDM $projectVersion Git $gitShortSha UTC $buildUtc embedded in the published executable."
 
+    # UI-only regression: a Coolify-confirmed job animates its own card,
+    # terminal/unknown states stop, while card drag remains enabled during
+    # network deployment and is blocked during inventory refresh.
+    $activityMarker = Join-Path $smoke 'live-deploy-ui.txt'
+    $activityCheck = Start-Process -FilePath $exe -ArgumentList ('--verify-live-deploy-ui "' + $activityMarker + '"') -Wait -PassThru
+    if ($activityCheck.ExitCode -ne 0 -or -not (Test-Path $activityMarker) -or
+        (Get-Content $activityMarker -Raw).Trim() -ne 'CDM-LIVE-DEPLOY-UI-OK') {
+        throw "Coolify live deployment card UI smoke failed. $((Get-Content "$activityMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+    }
+    Write-Host 'PASS: per-card Coolify-driven spinner state and card drag policy during network deployment.'
+
     # Status update is independent of the deployment's "finished" event.
     # This offline test exercises WPF view-model property notifications only.
     $healthMarker = Join-Path $smoke 'health-updated.txt'
