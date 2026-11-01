@@ -61,6 +61,8 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Upgrade only disposable `CDM-Test-2.2.2-Recovered.exe` using the SHA256-verified Windows tray build; owner confirmed PASS (2026-11-01); original personalized clone preserved.
 - [x] Manually test notification icon, minimize to tray and double-click to restore actual WPF window on recovered clone: owner confirmed 👍 (2026-11-01).
 - [ ] Verify tray context menu Open/Exit, normal Close, same-clone double-launch and that no competing SSH listener appears on port 18000.
-- [ ] Enable/disable the checkbox on clone test and verify HKCU Run path and hidden Windows login startup (no personal clone upgrades, no public release until tested).
+- [x] Enable checkbox on test clone and verify the actual HKCU Run value points to `CDM-Test-2.2.2-Recovered.exe --startup-tray` (owner showed actual registration, 2026-11-01).
+- [ ] Simulate `--startup-tray` from a fully closed clone; verify hidden UI, notification icon, background SSH, and menu Exit.
+- [ ] Disable checkbox and verify HKCU Run entry removal, then optionally re-enable; actual sign-in auto-launch still unverified. No public release until accepted.
 
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
