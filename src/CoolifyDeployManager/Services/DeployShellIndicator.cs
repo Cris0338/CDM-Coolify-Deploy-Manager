@@ -182,7 +182,9 @@ internal sealed class DeployShellIndicator : IDisposable
         var handle = bitmap.GetHicon();
         try
         {
-            using var borrowed = Icon.FromHandle(handle);
+            // FromHandle borrows the native HICON. Clone into an independently
+            // owned Icon before releasing the bitmap-created native handle.
+            var borrowed = Icon.FromHandle(handle);
             return (Icon)borrowed.Clone();
         }
         finally { DestroyIcon(handle); }
