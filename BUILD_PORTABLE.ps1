@@ -228,6 +228,23 @@ try {
     finally { $trayTest.Dispose() }
     Write-Host 'PASS: Windows tray icon hides/restores WPF, validates user autostart command without touching registry.'
 
+    # Verify geometry survives settings JSON and that minimizing into the tray
+    # retains the last normal/maximized presentation. No settings are written.
+    $placementMarker = Join-Path $smoke 'window-placement.txt'
+    $placementTest = Start-Process -FilePath $exe -ArgumentList ('--verify-window-placement "' + $placementMarker + '"') -PassThru
+    try {
+        if (-not $placementTest.WaitForExit(30000)) {
+            try { $placementTest.Kill() } catch { }
+            throw 'Windows placement WPF regression timed out after 30 seconds.'
+        }
+        if ($placementTest.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $placementMarker) -or
+            (Get-Content -LiteralPath $placementMarker -Raw).Trim() -ne 'CDM-WINDOW-PLACEMENT-OK') {
+            throw "Window placement/maximize/tray smoke failed. $((Get-Content "$placementMarker.error" -ErrorAction SilentlyContinue) -join ' ')"
+        }
+    }
+    finally { $placementTest.Dispose() }
+    Write-Host 'PASS: window geometry JSON and normal/maximized presentation survive minimize-to-tray/restore.'
+
     # Status update is independent of the deployment's "finished" event.
     # This offline test exercises WPF view-model property notifications only.
     $healthMarker = Join-Path $smoke 'health-updated.txt'
