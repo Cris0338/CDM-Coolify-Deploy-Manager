@@ -256,6 +256,22 @@ public partial class App : Application
                         throw new InvalidDataException(
                             "Windows startup command or per-clone identity is invalid.");
 
+                    // Exercise the named mutex + reopen signal without
+                    // launching a second CDM or connecting to the real server.
+                    var fakeClonePath = Path.Combine(Path.GetTempPath(),
+                        "CDM-instance-test-" + Guid.NewGuid().ToString("N") + ".exe");
+                    using var reopened = new ManualResetEventSlim(false);
+                    using (var firstInstance = SingleInstanceGate.TryCreate(
+                        fakeClonePath, () => reopened.Set())
+                        ?? throw new InvalidDataException("Could not create first test instance."))
+                    {
+                        using var duplicate = SingleInstanceGate.TryCreate(
+                            fakeClonePath, () => { });
+                        if (duplicate is not null || !reopened.Wait(TimeSpan.FromSeconds(4)))
+                            throw new InvalidDataException(
+                                "A second CDM launch did not signal the original instance.");
+                    }
+
                     var trayDashboard = new MainWindow { SkipStartupConnectionForSmoke = true };
                     MainWindow = trayDashboard;
                     trayDashboard.Show();
