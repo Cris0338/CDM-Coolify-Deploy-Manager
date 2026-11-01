@@ -100,3 +100,9 @@ L'autore riferisce **«sembrerebbe ok»** dopo aver avviato il clone locale 2.2.
 - `8e6874e` `App.xaml.cs`: nuova opzione isolata `--verify-live-spinner-retemplate` del generico; `98afae9` `BUILD_PORTABLE.ps1`: avvia lo smoke con timeout di 30 secondi e pretende il marker PASS.
 
 **Stato:** patch e nuovo smoke sono sul branch di sviluppo; **non dichiarare la correzione collaudata finché la compilazione Windows e lo smoke reale WPF non danno PASS**. Nessun deploy è stato rilanciato, nessun EXE o processo SSH dell'utente toccato, nessun commit al tag v2.2.1.
+
+## 2026-11-01 — Recupero riuscito della porta 18000 e del tunnel SSH
+
+Dopo il crash WPF, l'utente ha eseguito la procedura di liberazione mirata della porta `18000`, verificando proprietario del socket e comando SSH prima della terminazione del solo vecchio `ssh.exe` PID `33596`, figlio del processo CDM crashato PID `10628`. Il comando prevedeva poi l'avvio del clone personale stabile `CDM-Cris0338-coolify.exe` (2.2.1) che ricostruisce il tunnel gestito. **Conferma esplicita dell'utente: «ok... funziona».** L'accesso SSH/Coolify è quindi recuperato e il blocco operativo porta 18000 è chiuso.
+
+Restano aperti **il crash e la sua correzione 2.2.2 non ancora verificata su Windows**. Non ripetere il deploy per questo recupero; la versione 2.2.1 è stata usata senza modifiche. Prossimo passo: recuperare il branch aggiornato, ricompilare 2.2.2 e superare il nuovo smoke WPF prima di riprovare a spostare card durante il deploy.
