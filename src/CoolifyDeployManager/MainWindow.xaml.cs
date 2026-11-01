@@ -937,7 +937,7 @@ public partial class MainWindow : Window
         ssh.Stop(); // The wizard may need the same local tunnel port.
         var dlg = new SettingsWindow(settings) { Owner = this };
         if (dlg.ShowDialog() != true) return;
-        try { SettingsStore.Save(dlg.Result); }
+        try { SettingsStore.Save(dlg.Result, dlg.StartWithWindows); }
         catch (OperationCanceledException) { return; }
         catch (Exception ex)
         {
