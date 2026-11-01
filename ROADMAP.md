@@ -36,8 +36,9 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Add build-time guard against logging nine internal UI/queue events.
 - [ ] Confirm manually that card reorder and local settings changes do not append terminal lines while remote deploy messages still appear.
 - [x] Build the new development version on Windows and pass all smoke tests (2026-11-01, .NET 10 WPF win-x64, executable SHA256 `E363C98E6927B07C09E43F0E629EA58C3438349255FC9B88553DC4ADF905123C`).
-- [ ] Manually confirm the spinner runs during a real deploy and stops at actual terminal status.
-- [ ] Manually drag another unlocked card during a running deploy and confirm saved order survives refresh/exit/restart.
+- [x] Confirm spinner becomes visible during a real Coolify deploy (2026-11-01, owner-observed). Spinner termination at server terminal status still unverified.
+- [ ] **BLOCKED/FAIL (2026-11-01):** dragging another card during a running deploy crashed CDM 2.2.2. Identify WPF crash from Windows Application Event Log, fix and retest; saved order persistence not validated.
+- [ ] Diagnose orphaned/other local listener on SSH port 18000 after CDM crash; verify process ownership, prevent tunnel orphan on abrupt termination where possible, retest recovery.
 - [ ] Evaluate behavior after Stop Queue or API disconnect (remote deployment may continue).
 - [ ] Explicitly approve separate v2.2.2 release only after acceptance.
 
