@@ -17,12 +17,15 @@ public partial class SettingsWindow : Window
     private string privateKey = "";
     private string knownHosts = "";
     internal UserSettings Result { get; private set; }
+    internal bool StartWithWindows => StartWithWindowsCheck.IsChecked == true;
 
     internal SettingsWindow(UserSettings settings)
     {
         InitializeComponent();
         original = settings.Copy();
         Result = settings.Copy();
+        // Local Windows preference, not part of portable credentials/profile.
+        StartWithWindowsCheck.IsChecked = WindowsStartup.IsRegisteredForCurrentClone();
         ServerLabel.Text = original.ServerLabel;
         UrlInput.Text = original.ServerUrl;
         ReadToken.Password = original.ReadToken;
