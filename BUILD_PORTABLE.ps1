@@ -103,7 +103,11 @@ try {
         [IO.File]::Exists($newFile)) {
         throw 'File.Replace produced incorrect destination, backup, or staging cleanup.'
     }
-    Write-Host 'PASS: Windows PowerShell File.Replace updated a file and preserved the original in a valid backup.'
+    [IO.File]::Delete($backupFile)
+    if ([IO.File]::Exists($backupFile)) {
+        throw 'The temporary File.Replace backup was not removed.'
+    }
+    Write-Host 'PASS: Windows PowerShell File.Replace updated the file and removed its temporary backup.'
 }
 finally {
     Remove-Item -LiteralPath $replaceProof -Recurse -Force -ErrorAction SilentlyContinue
@@ -329,8 +333,12 @@ try {
     $pending = Join-Path $smoke '.CDM-Smoke-Test.exe.pending'
     $updaterError = "$pending.updater-error.txt"
     $updaterStarted = "$pending.updater-started.txt"
+    $previousBackup = "$clone.before-save.bak"
     $deadline = [DateTime]::UtcNow.AddSeconds(65)
-    while ((Test-Path -LiteralPath $pending) -and [DateTime]::UtcNow -lt $deadline) {
+    while (((Test-Path -LiteralPath $pending) -or
+            (Test-Path -LiteralPath $updaterStarted) -or
+            (Test-Path -LiteralPath $previousBackup)) -and
+            [DateTime]::UtcNow -lt $deadline) {
         if (Test-Path -LiteralPath $updaterError) {
             throw "Detached updater failed. $((Get-Content -LiteralPath $updaterError -ErrorAction SilentlyContinue) -join ' ')"
         }
@@ -344,12 +352,16 @@ try {
         }
         throw "Detached updater did not apply disposable profile. Helper started=$started. $errorDetail"
     }
-    $previousBackup = "$clone.before-save.bak"
-    if (-not (Test-Path -LiteralPath $previousBackup) -or
-        (Get-FileHash -LiteralPath $previousBackup -Algorithm SHA256).Hash -ne $cloneHashBeforeSave) {
-        throw 'The detached helper did not preserve the previous personalized clone in its last-good backup.'
+    if ((Test-Path -LiteralPath $previousBackup) -or
+        (Test-Path -LiteralPath $updaterStarted) -or
+        (Test-Path -LiteralPath $updaterError)) {
+        throw 'Detached updater left a backup or updater marker after successful profile save.'
     }
-    Write-Host 'PASS: close-time save preserved the exact previous disposable clone in its last-good backup.'
+    $cloneHashAfterSave = (Get-FileHash -LiteralPath $clone -Algorithm SHA256).Hash
+    if ($cloneHashAfterSave -eq $cloneHashBeforeSave) {
+        throw 'The personal clone executable did not change after profile save.'
+    }
+    Write-Host 'PASS: close-time profile save applied without retaining a .before-save.bak or updater marker.'
     $updatedMarker = Join-Path $smoke 'pending-applied.txt'
     $verifySaved = Start-Process -FilePath $clone -ArgumentList ('--verify-saved-self-test-clone "' + $updatedMarker + '"') -Wait -PassThru
     if ($verifySaved.ExitCode -ne 0 -or -not (Test-Path $updatedMarker) -or
