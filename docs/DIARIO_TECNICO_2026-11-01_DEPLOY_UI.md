@@ -150,3 +150,11 @@ L'utente ha eseguito il controllo solo-lettura di processi CDM attivi e dei file
 Il sorgente `SettingsStore.Save` genera `.pending` come **intero eseguibile personalizzato** tramite `ExecutableProfile.Build`, includendo impostazioni, ordine card ed eventuali credenziali; il normale aggiornamento viene programmato all'uscita, mentre un crash può lasciare il `.pending` recuperabile (`Services/SettingsStore.cs`, righe 53–67). Il comando `--upgrade-clone-silent` accetta un clone `.exe`, verifica il profilo, costruisce il nuovo EXE generico 2.2.2 conservando le credenziali e crea un backup senza accedere a Coolify.
 
 **Decisione operativa:** non eliminare `.pending` e non sovrascrivere il vecchio clone; preparare un **nuovo clone di prova locale** a partire da una copia del `.pending`, aggiornando soltanto questa copia con il template compilato che ha superato gli smoke. Conserverà così l'eventuale ultimo ordinamento salvato al momento del crash, senza alterare gli altri due file. Evitare avvii contemporanei con CDM personale sulla porta 18000. Test UI manuali ancora da eseguire.
+
+## 2026-11-01 — Clone recuperato dalla copia di .pending: PASS
+
+L'utente ha eseguito il comando di ripristino non distruttivo: copia di `portable/.CDM-Test-2.2.2.exe.pending` in `portable/CDM-Test-2.2.2-Recovered.exe`, previa conferma dell'hash SHA256 del template generico 2.2.2 `12F5B9F44EF25E749BA40B8C56D13BE10B7326037EE23A11515AB56045AB5DEF`; aggiornamento con `CDM.exe --upgrade-clone-silent` e verifica del codice di uscita. **Riscontro dell'utente:** `PASS: clone recuperato e aggiornato alla build 2.2.2`.
+
+La procedura non avvia software o nuovi tunnel, conserva l'originale `CDM-Cris0338-coolify.exe`, il precedente clone `CDM-Test-2.2.2.exe` e il file `.pending`. Il clone recuperato include una copia delle credenziali e non va caricato su GitHub. Il backup creato dal tool upgrade resta locale.
+
+**Ancora da verificare:** avvio del clone recuperato, UI WPF su card attiva, assenza di crash con riordino, corretto arresto del cerchietto dopo deploy reale e assenza di righe locali nel log. Prima dell'avvio assicurarsi che nessun altro CDM o `ssh.exe` stia occupando la porta 18000; non terminare automaticamente processi sconosciuti. Nessuna release 2.2.2 pubblicata.
