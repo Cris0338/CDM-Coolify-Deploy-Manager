@@ -44,8 +44,19 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Confirm port 18000 recovered after targeted orphan cleanup and restart of stable personal CDM 2.2.1; user confirmed SSH/Coolify works (2026-11-01).
 - [x] Identify leftover `.CDM-Test-2.2.2.exe.pending` (11:00:42, same timestamp as crash; full staged clone per SettingsStore); no CDM process reported, original test clone remains unchanged. Preserve pending and prepare separate recovered test clone without touching stable personal 2.2.1 or SSH tunnel.
 - [x] Recover separate clone from crash-time pending and upgrade to passing 2.2.2 build; owner confirmed PASS and used it for successful real-world staging deployment.
-- [ ] Confirm reordered cards persist after clean exit and relaunch.
+- [x] Reordered cards persist after clean exit and relaunch; owner confirmed **«sì... è ok»** on 2026-11-01.
 - [ ] Evaluate behavior after Stop Queue or API disconnect (remote deployment may continue).
 - [ ] Explicitly approve separate v2.2.2 release only after acceptance.
 
 **Branch:** `feature/live-deploy-card-status-20261101`. No merge, no tag and no change to released v2.2.1; keep previous stable personal clone. Detailed reasoning and tests: `docs/DIARIO_TECNICO_2026-11-01_DEPLOY_UI.md`.
+
+## Phase 4 — Windows startup to notification area (requested 2026-11-01)
+
+- [ ] Add an explicit, **off-by-default**, per-personal-clone option **Start with Windows, minimized to the notification area**; use current user's Windows Run registry, no administrator rights and no token/key in registry.
+- [ ] Implement tray icon using approved CDM icon, restore from icon/menu, and explicit Exit; closing window should still end app/tunnel, never leave a hidden background process accidentally.
+- [ ] Skip splash and taskbar presence on Windows auto-start; keep Coolify inventory/tunnel loading in the background and preserve ordinary launch UX.
+- [ ] Make repeated launch of the **same clone** restore the existing window rather than competing for SSH localhost port; do not change separate clones or other SSH processes.
+- [ ] Add locale strings for IT/FR/EN, with English fallback in other languages.
+- [ ] Build Windows and run offline tests without writing real Windows startup registry settings; manually enable/disable startup and verify after Windows login before considering release.
+
+**Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
