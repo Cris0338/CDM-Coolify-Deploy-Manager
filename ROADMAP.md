@@ -35,7 +35,7 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Restrict terminal log to incoming/outgoing Coolify/SSH activity and related errors; move local blocked-move and skipped-deploy feedback to status bar.
 - [x] Add build-time guard against logging nine internal UI/queue events.
 - [ ] Confirm manually that card reorder and local settings changes do not append terminal lines while remote deploy messages still appear.
-- [ ] Rebuild and run new **real WPF retemplate** smoke after frozen-transform fix. Windows build 2026-11-01 failed with 83 cascade syntax errors (malformed `SetLiveDeploymentSpinner` signature); corrected in `bb8e1e6`, awaiting fresh Windows build and WPF smoke PASS.
+- [ ] Rebuild and run new **real WPF retemplate** smoke after frozen-transform fix. Two compilation blockers found and corrected: malformed `SetLiveDeploymentSpinner` signature (83 cascading errors, `bb8e1e6`) and CLI test variable collision `CS0136` (`146d7b3`). Both fixes await a fresh Windows build and actual WPF smoke PASS.
 - [x] Build the new development version on Windows and pass all smoke tests (2026-11-01, .NET 10 WPF win-x64, executable SHA256 `E363C98E6927B07C09E43F0E629EA58C3438349255FC9B88553DC4ADF905123C`).
 - [x] Confirm spinner becomes visible during a real Coolify deploy (2026-11-01, owner-observed). Spinner termination at server terminal status still unverified.
 - [ ] **WPF crash diagnosed and candidate fixed; Windows retest PENDING:** the 2026-11-01 crash was `XamlParseException` from the card spinner's frozen shared storyboard `RotateTransform`. Per-card runtime transform + actual re-template smoke added. Run Windows build and real drag test before clearing this item; order persistence still unvalidated.
