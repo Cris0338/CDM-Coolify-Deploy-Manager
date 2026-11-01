@@ -11,6 +11,7 @@ using System.Windows.Threading;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Documents;
+using System.Windows.Shapes;
 using System.Windows.Interop;
 using System.Runtime.InteropServices;
 
@@ -489,6 +490,42 @@ public partial class MainWindow : Window
             TimeSpan.FromMilliseconds(210)) { EasingFunction = ease });
         shift.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(12, 0,
             TimeSpan.FromMilliseconds(210)) { EasingFunction = ease });
+    }
+
+    // Each visible card owns a new, mutable RotateTransform. The old XAML
+    // Storyboard animated a Freezable shared/frozen by the WPF template during
+    // a drop-induced card rebuild and crashed the entire process. Directly
+    // animating a per-instance transform avoids that shared Freezable path.
+    private static void SetLiveDeploymentSpinner(Path path, bool shouldSpin)
+    {
+        if (path.RenderTransform is not RotateTransform rotate || rotate.IsFrozen)
+        {
+            rotate = new RotateTransform(0);
+            path.RenderTransform = rotate;
+        }
+        rotate.BeginAnimation(RotateTransform.AngleProperty, shouldSpin
+            ? new DoubleAnimation(0, 360, TimeSpan.FromSeconds(1))
+              { RepeatBehavior = RepeatBehavior.Forever }
+            : null);
+    }
+
+    private void LiveDeploymentSpinner_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is Path path)
+            SetLiveDeploymentSpinner(path, path.IsVisible);
+    }
+
+    private void LiveDeploymentSpinner_IsVisibleChanged(object sender,
+        DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is Path path)
+            SetLiveDeploymentSpinner(path, path.IsVisible);
+    }
+
+    private void LiveDeploymentSpinner_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is Path path)
+            SetLiveDeploymentSpinner(path, false);
     }
 
     // One drag-and-drop implementation. A card can be picked up from any
