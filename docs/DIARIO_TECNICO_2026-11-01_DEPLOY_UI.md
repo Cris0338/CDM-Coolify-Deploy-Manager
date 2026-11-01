@@ -284,3 +284,7 @@ Il controllo dell'utente nella cartella portable elenca solo CDM.exe (78.268.824
 **Rischio:** SettingsStore può aver preparato il file pending con le ultime modifiche al profilo incorporato, che saranno perse se il file è stato cancellato mentre il clone era aperto. Al successivo OnExit un updater potrebbe non trovare più il pending. Non eliminare altro né sostituire gli EXE; acquisire prima un inventario di processi CDM con PID e percorso, e listener della porta locale 18000. Quindi uscire ordinatamente dall'eventuale CDM aperto e verificare eventuali file di aggiornamento o errori.
 
 Nessuna nuova release pubblicata; non dichiarare persistenza di impostazioni non ancora confermata.
+
+## 2026-11-01 — Inventario finale portable: due EXE, nessun altro file
+
+L'utente ha fornito l'esito di `Get-ChildItem .\portable -Force -File` con due soli file: `CDM-Cris0338-coolify.exe` (78.270.196 byte) e `CDM.exe` (78.268.824 byte). Non compaiono `.pending`, backup o clone di prova. **PASS solo per l'inventario dei file**; non si può ricavare da questo estratto se ci siano processi CDM o listener SSH ancora attivi, né che l'ultimo profilo abbia mantenuto tutte le impostazioni dopo la cancellazione di un `.pending` personale mentre l'app era aperta. La chiave autostart personale era stata verificata nella fase precedente. Prossimo passo: comando read-only per vedere processi CDM (PID, percorso) e porta locale 18000; dopo, eventuale chiusura ordinata e verifica impostazioni, senza altri comandi di cancellazione.
