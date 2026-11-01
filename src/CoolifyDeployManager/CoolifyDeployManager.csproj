@@ -5,7 +5,9 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- WPF + WinForms with implicit usings causes ambiguous Application,
+         Window and MessageBox in .NET 10. Keep only explicit core globals. -->
+    <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>CoolifyDeployManager</AssemblyName>
     <RootNamespace>CoolifyDeployManager</RootNamespace>
     <ApplicationIcon>Assets\CDMOfficial.ico</ApplicationIcon>
