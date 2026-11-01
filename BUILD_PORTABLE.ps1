@@ -10,6 +10,24 @@ $destination = Join-Path $root 'portable'
 $dotnet = Join-Path $env:ProgramFiles 'dotnet\dotnet.exe'
 if (-not (Test-Path $dotnet)) { throw 'The 64-bit .NET 10 SDK was not found under Program Files.' }
 
+# The visible terminal is reserved for Coolify/SSH traffic and related
+# operation diagnostics. UI-only activities must not write terminal lines.
+$dashboardSource = Get-Content -LiteralPath (Join-Path $root 'src\CoolifyDeployManager\MainWindow.xaml.cs') -Raw
+foreach ($uiOnlyLog in @(
+    'AddLog(Loc.T("OrderSaved"))',
+    'AddLog(Loc.T("LockedPositionPrevented"))',
+    'AddLog(Loc.T("SettingsSaved"))',
+    'AddLog(Loc.T("LocalQueueCancelled"))',
+    'AddLog(BuildInfo.DiagnosticIdentity',
+    'AddLog(Loc.F("UnclassifiedExplanation"'
+)) {
+    if ($dashboardSource.Contains($uiOnlyLog)) {
+        throw "Internal UI event leaked into Coolify/SSH terminal: $uiOnlyLog"
+    }
+}
+Write-Host 'PASS: card reordering, local locks and settings events do not pollute the communication terminal.'
+
+
 
 # One-time import of the user-approved transparent CDM logo and derived icon.
 # Download CDM_Logo_Assets.zip to the regular Windows Downloads folder;
