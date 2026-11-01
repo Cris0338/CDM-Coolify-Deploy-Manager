@@ -32,6 +32,9 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Add a per-card spinner gated by real `queued/in_progress` deployment states (no invented progress).
 - [x] Decouple card reordering from `busy` while retaining inventory rebuild/filter/position-lock guards.
 - [x] Add offline WPF entrypoint to test state transitions, property notifications and drag policy.
+- [x] Restrict terminal log to incoming/outgoing Coolify/SSH activity and related errors; move local blocked-move and skipped-deploy feedback to status bar.
+- [x] Add build-time guard against logging nine internal UI/queue events.
+- [ ] Confirm manually that card reorder and local settings changes do not append terminal lines while remote deploy messages still appear.
 - [ ] Build the new development version on Windows and pass all smoke tests.
 - [ ] Manually confirm the spinner runs during a real deploy and stops at actual terminal status.
 - [ ] Manually drag another unlocked card during a running deploy and confirm saved order survives refresh/exit/restart.
