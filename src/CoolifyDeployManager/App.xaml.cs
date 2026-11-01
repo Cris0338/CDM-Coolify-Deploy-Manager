@@ -159,6 +159,11 @@ public partial class App : Application
                     updated.ServerLabel = "smoke-test-saved";
                     updated.CardOrders["ALL|Staging"] = new List<string> { "test-b", "test-a" };
                     updated.LockedPositions.Add("test-b");
+                    updated.WindowPlacement = new WindowPlacementState
+                    {
+                        Left = 140, Top = 110, Width = 1120, Height = 740,
+                        Maximized = true
+                    };
                     SettingsStore.Save(updated);
                     // During the running clone the staged file must already be
                     // complete, but the updater must not have been launched.
@@ -417,8 +422,12 @@ public partial class App : Application
                         updated.DeployToken != "__CDM_SELFTEST__" ||
                         !updated.CardOrders.TryGetValue("ALL|Staging", out var order) ||
                         !order.SequenceEqual(new[] { "test-b", "test-a" }) ||
-                        !updated.LockedPositions.Contains("test-b"))
-                        throw new InvalidDataException("The deferred profile save lost configuration data.");
+                        !updated.LockedPositions.Contains("test-b") ||
+                        updated.WindowPlacement is not {
+                            Left: 140, Top: 110, Width: 1120, Height: 740, Maximized: true
+                        })
+                        throw new InvalidDataException(
+                            "The deferred profile save lost card or window placement data.");
                     File.WriteAllText(e.Args[1], "CDM-PENDING-APPLIED");
                 }
                 else
