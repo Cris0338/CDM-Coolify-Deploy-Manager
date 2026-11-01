@@ -127,3 +127,15 @@ L'autore ha eseguito `git pull --ff-only` sul branch passando da `7ccacf6` a `f6
 **Correzione applicata direttamente nel branch:** commit `146d7b3670fbb86a4aedae84d4b55b953895849e`. Rinominata la sola variabile locale del test `dashboard` in `smokeDashboard` e tutti i suoi riferimenti; nessuna modifica a tunnel SSH, logica deploy o clone personale. **Compilazione e test WPF restano da verificare su Windows**; non presentare come PASS.
 
 **Prossimo passo:** `git pull --ff-only`, poi `BUILD_PORTABLE.ps1` e osservare il nuovo smoke WPF retemplate in esecuzione. La 2.2.1 rimane invariata e in uso con il tunnel SSH funzionante sulla porta 18000.
+
+## 2026-11-01 — Compilazione Windows definitiva della patch WPF: PASS
+
+L'autore ha compilato il branch `feature/live-deploy-card-status-20261101` con `BUILD_PORTABLE.ps1`. **Sorgente compilato**: `48c87cf6df3d`; `Built 2026-11-01T10:46:03Z`; versione `2.2.2`. `dotnet publish` WPF `net10.0-windows win-x64` **PASS** (7,8 s); `portable/CDM.exe` generico, 64,56 MiB, hash SHA256 **`12F5B9F44EF25E749BA40B8C56D13BE10B7326037EE23A11515AB56045AB5DEF`**. L'hash corrisponde all'output appena compilato.
+
+**Tutti i test del build script PASS**, inclusi 8/8 classificazione, localizzazione 14 lingue (IT/FR/EN complete), profilo embedded/cloni sintetici, URL SSH/HTTPS, File.Replace, log di sole comunicazioni, versione/Git/UTC e stato deploy per card. Crucialmente: **`PASS: real WPF card retemplate during live spinner does not crash or freeze transforms.`** Il test apre e ricrea realmente le card WPF mentre lo spinner è animato e ne controlla l'arresto quando lo stato diventa `finished`. Superata la regressione che aveva causato eccezione da transform Freezable non modificabile. Smoke separati health, tunnel SSH recovery, creazione/upgrade clone sintetico e save deferred `.pending`: tutti PASS.
+
+**Nota su file locali rilevati dallo script**: dentro `portable/` ci sono il clone stabile `CDM-Cris0338-coolify.exe` con backup, il vecchio clone di test `CDM-Test-2.2.2.exe` con backup, e **`.CDM-Test-2.2.2.exe.pending`**. Questi file non sono stati aggiornati dalla compilazione generica, né caricati su GitHub. Il `.pending` va esaminato prima di aggiornare il clone di prova, evitando di perderne le modifiche o sovrascriverlo mentre è attivo.
+
+**Stato di accettazione:** build e smoke WPF **PASS**, ma **non** ancora confermato il drag effettivo di una card durante un deploy Coolify reale, lo stop dell'animazione al termine del lavoro reale, la persistenza dell'ordine e la pulizia terminale con questa build. **Nessuna release GitHub 2.2.2 pubblicata e nessuna modifica alla release stabile v2.2.1.**
+
+**Prossimo passo:** verifica locale non distruttiva sul file `.pending` e gli eseguibili in esecuzione; solo dopo, aggiornare esclusivamente il clone di test e fare il collaudo manuale con un unico CDM/tunnel attivo.
