@@ -66,7 +66,8 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 - [x] Code patch: restore from tray and second-instance wake now explicitly raises WPF window in foreground using topmost z-order transition, WPF activation and Win32 SetForegroundWindow. **Windows manual confirmation pending**.
 - [x] Code patch: persist last normal window rectangle and normal/maximized mode inside personalized EXE profile on clean Close; restore on next launch and after tray. Validate virtual desktop bounds and do not persist transient minimized state. **Windows manual confirmation pending**.
 - [x] Offline WPF / JSON / real staged embedded profile smoke authored: `--verify-window-placement` and existing upgraded synthetic clone close-time save. No real network, registry or user settings written by tests.
-- [ ] Windows compile and smoke PASS for foreground/geometry patch; manually verify foreground focus, resize/maximize state persistence and absence of an unexpected second SSH tunnel on clone test.
+- [x] **Windows compile and smoke PASS** for foreground/geometry patch: source `1123f2d2d95f` built 2026-11-01T12:15:28Z, SHA256 generic `9A8612A7941A96AA02535A5832441F12436E5DCBA059CE7A1F1685FB7B43E0A1`; new WPF geometry/normal/maximized/JSON/pending-clone checks and prior smoke PASS.
+- [ ] Upgrade only recovered test clone from this hash-verified template after clean Exit and no remaining `.pending`; manually verify foreground focus, persisted normal bounds, maximized state and no competing SSH tunnel. Preserve personal 2.2.1.
 - [ ] Disable checkbox and verify HKCU Run entry removal, then optionally re-enable; actual sign-in auto-launch still unverified. No public release until accepted.
 
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
