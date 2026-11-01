@@ -79,3 +79,14 @@ Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 - [ ] Upgrade ONLY the active personal clone to verified generic build after closing CDM and checking no pending save; verify clean exit leaves only original generic and personal EXEs.
 - [ ] Keep explicit version-upgrade backups unchanged for now; no public v2.2.2 release without acceptance.
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
+
+
+## Phase 5 — CDM 2.2.3: animazione deploy taskbar + tray (planned)
+
+**Tracking issue:** https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/issues/3 (user request 2026-11-01). This is planned for **2.2.3, not 2.2.2**. No 2.2.3 code or release created yet.
+
+- [ ] Reuse the **real remote deployment active state** (`queued`/`in_progress`) already driving the 2.2.2 per-card spinner; multiple concurrent deployments must keep the global spinner active until all are terminal.
+- [ ] Add a small rotating circle indicator to the **Windows taskbar button** while it exists and a deploy is active; do not summon a taskbar button for a window intentionally hidden to tray.
+- [ ] Add the same active-state animated circle to the **notification-area tray icon**, including while startup-tray/minimized; restore normal icon after deploy, dispose temporary icon handles safely.
+- [ ] Guard transitions for stopped local queue, remote completion, disconnect, multi-deploy and restore/minimize; don't mistake queue cancellation for server terminal state.
+- [ ] Offline state/WPF smoke and one manual real deployment acceptance; document build SHA and changes. No public 2.2.3 release before 2.2.2 acceptance.
