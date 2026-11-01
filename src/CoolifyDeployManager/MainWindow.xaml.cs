@@ -120,21 +120,27 @@ public partial class MainWindow : Window
             lastNormalWindowBounds = bounds;
     }
 
+    internal WindowPlacementState? SnapshotWindowPlacement()
+    {
+        RecordNormalWindowBounds();
+        if (lastNormalWindowBounds is not Rect bounds) return null;
+        var result = new WindowPlacementState
+        {
+            Left = bounds.Left, Top = bounds.Top,
+            Width = bounds.Width, Height = bounds.Height,
+            Maximized = lastDisplayedWindowState == WindowState.Maximized
+        };
+        return result.IsValid ? result : null;
+    }
+
     private void SaveWindowPlacementAtExit()
     {
         if (SkipStartupConnectionForSmoke || !SettingsStore.HasPortableProfile ||
             !settings.IsConfigured)
             return;
 
-        RecordNormalWindowBounds();
-        if (lastNormalWindowBounds is not Rect bounds) return;
-        var latest = new WindowPlacementState
-        {
-            Left = bounds.Left, Top = bounds.Top,
-            Width = bounds.Width, Height = bounds.Height,
-            Maximized = lastDisplayedWindowState == WindowState.Maximized
-        };
-        if (!latest.IsValid || Equals(settings.WindowPlacement, latest)) return;
+        var latest = SnapshotWindowPlacement();
+        if (latest is null || Equals(settings.WindowPlacement, latest)) return;
 
         var previous = settings.WindowPlacement;
         settings.WindowPlacement = latest;
