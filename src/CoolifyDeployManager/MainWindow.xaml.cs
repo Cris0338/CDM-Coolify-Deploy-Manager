@@ -499,7 +499,7 @@ public partial class MainWindow : Window
     // Storyboard animated a Freezable shared/frozen by the WPF template during
     // a drop-induced card rebuild and crashed the entire process. Directly
     // animating a per-instance transform avoids that shared Freezable path.
-    private static void SetLiveDeploymentSpinner(ShapePath path), bool shouldSpin)
+    private static void SetLiveDeploymentSpinner(ShapePath path, bool shouldSpin)
     {
         if (path.RenderTransform is not RotateTransform rotate || rotate.IsFrozen)
         {
