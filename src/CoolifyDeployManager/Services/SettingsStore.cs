@@ -30,7 +30,7 @@ internal static class SettingsStore
     public static UserSettings Load() =>
         (cached ?? throw new InvalidOperationException("Settings are not initialized.")).Copy();
 
-    public static void Save(UserSettings settings)
+    public static void Save(UserSettings settings, bool? startWithWindows = null)
     {
         var normalized = Normalize(settings.Copy());
         if (!normalized.IsConfigured)
@@ -43,6 +43,7 @@ internal static class SettingsStore
             ExecutableProfile.Build(ExecutableProfile.OwnPath, target, normalized);
             if (new FileInfo(target).Length <= new FileInfo(ExecutableProfile.OwnPath).Length)
                 throw new InvalidDataException("The personalized executable is incomplete.");
+            if (startWithWindows == true) WindowsStartup.SetRegistered(target, true);
             ExecutableProfile.Launch(target);
             LaunchedClone = true;
             // Previous versions' configuration files are left completely untouched.
@@ -57,6 +58,10 @@ internal static class SettingsStore
         ExecutableProfile.Build(ExecutableProfile.OwnPath, pending, normalized);
         stagedPath = pending;
         cached = normalized;
+        // Machine-local opt-in; card-order and automatic profile saves never
+        // rewrite Windows startup configuration.
+        if (startWithWindows is bool enabled)
+            WindowsStartup.SetRegistered(ExecutableProfile.OwnPath, enabled);
     }
 
     // During a running session, every Save replaces the complete staged EXE,
