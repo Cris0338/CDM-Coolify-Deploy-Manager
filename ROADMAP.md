@@ -1,6 +1,6 @@
 # CDM — Roadmap and acceptance tracker
 
-Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
+Updated 2026-11-01. Author: Cris0338. Project independent of Chataide.fr.
 
 ## Phase 1 — CDM 2.2.1 Windows pre-release
 
@@ -52,11 +52,11 @@ Updated 2026-10-31. Author: Cris0338. Project independent of Chataide.fr.
 
 ## Phase 4 — Windows startup to notification area (requested 2026-11-01)
 
-- [ ] Add an explicit, **off-by-default**, per-personal-clone option **Start with Windows, minimized to the notification area**; use current user's Windows Run registry, no administrator rights and no token/key in registry.
-- [ ] Implement tray icon using approved CDM icon, restore from icon/menu, and explicit Exit; closing window should still end app/tunnel, never leave a hidden background process accidentally.
-- [ ] Skip splash and taskbar presence on Windows auto-start; keep Coolify inventory/tunnel loading in the background and preserve ordinary launch UX.
-- [ ] Make repeated launch of the **same clone** restore the existing window rather than competing for SSH localhost port; do not change separate clones or other SSH processes.
-- [ ] Add locale strings for IT/FR/EN, with English fallback in other languages.
-- [ ] Build Windows and run offline tests without writing real Windows startup registry settings; manually enable/disable startup and verify after Windows login before considering release.
+- [x] Code: explicit off-by-default **Start with Windows, minimized to the notification area**; HKCU Run key holds only selected clone EXE path and `--startup-tray`, no credentials. Windows end-to-end test pending.
+- [x] Code: official tray icon, restore from double-click/context menu and explicit Exit; ordinary Close still shuts down app/tunnel. Windows visual acceptance pending.
+- [x] Code: `--startup-tray` bypasses splash/taskbar, begins regular SSH/inventory in background; manual launch unchanged. Windows sign-in acceptance pending.
+- [x] Code: named mutex + restore event scoped by hash of clone EXE path; second launch should reopen same window, not compete for SSH port. Offline smoke and Windows manual acceptance pending.
+- [x] IT/FR/EN locale strings for Windows-start checkbox, explanation, menu Open/Exit and minimize tooltip (232/232 each); others use English fallback.
+- [ ] Windows build and full offline smoke **PENDING**. New `--verify-tray-ui` smoke exercises no-registry-write command, named-instance wake event, WPF minimize/restore. Then test checkbox on/off with clone and actual Windows sign-in. Do not publish yet.
 
 **Versioning:** continue the unpublished 2.2.2 feature branch, with no release or main changes pending validation.
