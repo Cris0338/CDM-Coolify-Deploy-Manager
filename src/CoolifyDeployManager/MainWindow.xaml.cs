@@ -34,6 +34,8 @@ public partial class MainWindow : Window
     // A server deploy is network-busy but must not lock dashboard layout.
     // Only an inventory refresh recreates card view-models.
     private bool inventoryRefreshing;
+    // Offline test mode: render WPF cards without creating SSH/API traffic.
+    internal bool SkipStartupConnectionForSmoke { get; set; }
     private string selectedProjectUuid = "ALL";
     private readonly List<ProjectChoice> projectChoices = new();
     private Point dragOrigin;
@@ -94,6 +96,7 @@ public partial class MainWindow : Window
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        if (SkipStartupConnectionForSmoke) return;
         if (settings.IsConfigured) await RefreshAsync();
         else _ = Dispatcher.BeginInvoke(new Action(() => OpenSettings()));
     }
@@ -526,6 +529,67 @@ public partial class MainWindow : Window
     {
         if (sender is Path path)
             SetLiveDeploymentSpinner(path, false);
+    }
+
+    // Exercise an actual loaded WPF card template, not just the view model.
+    // The previous XAML Storyboard threw XamlParseException when RenderCards
+    // recreated an active spinner during a drag/drop. No API, SSH or save.
+    internal void VerifyLiveSpinnerRetemplateForSmoke()
+    {
+        var first = new CoolifyApplication("offline-spinner-1", "spinner-one",
+            "running:healthy", "main", "test", "test-project", "staging", "");
+        var second = new CoolifyApplication("offline-spinner-2", "spinner-two",
+            "running:healthy", "main", "test", "test-project", "staging", "");
+        var active = new AppCardView(first, DeploymentGroup.Staging);
+        var other = new AppCardView(second, DeploymentGroup.Staging);
+        active.UpdateLiveDeployment("in_progress");
+        allCards.Clear();
+        allCards.Add(first.Uuid, active);
+        allCards.Add(second.Uuid, other);
+        inventory = new CoolifyInventory(Array.Empty<CoolifyProject>(),
+            new[] { first, second });
+
+        // Force several actual WPF DataTemplate unload/load cycles while the
+        // server-observed spinner is active, as a card reorder does in practice.
+        for (int attempt = 0; attempt < 4; attempt++)
+        {
+            settings.CardOrders[OrderKey(DeploymentGroup.Staging)] = attempt % 2 == 0
+                ? new List<string> { first.Uuid, second.Uuid }
+                : new List<string> { second.Uuid, first.Uuid };
+            RenderCards();
+            UpdateLayout();
+            Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded);
+            UpdateLayout();
+            var spinner = FindLiveSpinner(StagingItems, "in_progress");
+            if (spinner is null || !spinner.IsVisible ||
+                spinner.RenderTransform is not RotateTransform rotate ||
+                rotate.IsFrozen || !rotate.HasAnimatedProperties)
+                throw new InvalidOperationException(
+                    "The loaded, re-ordered card does not own a mutable animated spinner.");
+        }
+
+        active.UpdateLiveDeployment("finished");
+        UpdateLayout();
+        Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded);
+        var stopped = FindLiveSpinner(StagingItems, "finished");
+        if (stopped is null || stopped.IsVisible ||
+            stopped.RenderTransform is not RotateTransform stoppedRotate ||
+            stoppedRotate.HasAnimatedProperties)
+            throw new InvalidOperationException(
+                "Terminal Coolify state did not stop the real rendered spinner.");
+    }
+
+    private static Path? FindLiveSpinner(DependencyObject root, string tooltip)
+    {
+        if (root is Path path && string.Equals(
+            path.ToolTip?.ToString(), tooltip, StringComparison.Ordinal))
+            return path;
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var found = FindLiveSpinner(VisualTreeHelper.GetChild(root, i), tooltip);
+            if (found is not null) return found;
+        }
+        return null;
     }
 
     // One drag-and-drop implementation. A card can be picked up from any
