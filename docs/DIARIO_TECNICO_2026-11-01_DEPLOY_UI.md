@@ -158,3 +158,24 @@ L'utente ha eseguito il comando di ripristino non distruttivo: copia di `portabl
 La procedura non avvia software o nuovi tunnel, conserva l'originale `CDM-Cris0338-coolify.exe`, il precedente clone `CDM-Test-2.2.2.exe` e il file `.pending`. Il clone recuperato include una copia delle credenziali e non va caricato su GitHub. Il backup creato dal tool upgrade resta locale.
 
 **Ancora da verificare:** avvio del clone recuperato, UI WPF su card attiva, assenza di crash con riordino, corretto arresto del cerchietto dopo deploy reale e assenza di righe locali nel log. Prima dell'avvio assicurarsi che nessun altro CDM o `ssh.exe` stia occupando la porta 18000; non terminare automaticamente processi sconosciuti. Nessuna release 2.2.2 pubblicata.
+
+## 2026-11-01 12:11 CET — Accettazione sul campo 2.2.2: deploy e drag simultaneo PASS
+
+**Versione collaudata:** clone locale `portable/CDM-Test-2.2.2-Recovered.exe`, generato dalla copia salvata durante il crash e aggiornato dal template compilato con sorgente `48c87cf6df3d`; SHA256 del template generico `12F5B9F44EF25E749BA40B8C56D13BE10B7326037EE23A11515AB56045AB5DEF`. L'autore conferma direttamente: **«fatto sia senza che con il deploy... tutto ok... animazione ok... finito ok»**.
+
+**Verifiche manuali PASS:**
+- Riapertura del clone, avvio tunnel gestito alla porta locale `18000`, health SSH confermato alle 12:09:32; lettura inventario 8 progetti / 30 applicazioni, zero storici non disponibili.
+- Riordino manuale card a deploy inattivo **PASS**.
+- Riordino manuale card durante un deploy reale **PASS**, senza crash WPF; il precedente problema `XamlParseException` da `RotateTransform` congelato non si manifesta più in questa prova.
+- Spinner della card durante l'attività Coolify **PASS**; scomparsa/stop a fine lavoro **PASS**.
+- Log terminale focalizzato su chiamate/risposte API e connessione SSH, senza messaggi relativi allo spostamento locale delle card **PASS**.
+
+**Deployment Coolify osservato:**
+- Destinazione: `CHATAIDE-V2 / chataide-v2:staging/users-staging`.
+- `12:09:55`: richiesta `POST /deploy`, Coolify ha accodato e restituito un identificativo.
+- `12:09:59`: `in_progress` (commit `HEAD`).
+- `12:11:07`: `finished`, commit effettivo `976106bd36608d1f297e0573ecf1c0c757c14e0d`.
+- `12:11:07`: `OK: deploy terminato. Health check non verificato separatamente.` **Non** confondere la fine del job con una verifica indipendente di health.
+- `12:11:08`: nuovo inventario 8 progetti / 30 applicazioni, zero storici mancanti.
+
+**Conclusione:** funzionalità richieste per lo stato live sulla card, riordino durante deploy e pulizia del terminale **accettate sul campo** nella build di test 2.2.2. Rimangono non ancora collaudati: persistenza dell'ordine dopo chiusura/riapertura, stop queue/disconnessione e test su altro PC. Nessuna modifica a codice o credenziali, nessun tag o release 2.2.2 pubblicata: prossima decisione esplicita dell'autore se effettuare il test persistenza e/o procedere alla distribuzione di una release **generica** senza credenziali. La pre-release 2.2.1 rimane invariata.
