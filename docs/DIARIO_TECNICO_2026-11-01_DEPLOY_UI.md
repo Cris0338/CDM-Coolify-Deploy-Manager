@@ -116,3 +116,14 @@ Restano aperti **il crash e la sua correzione 2.2.2 non ancora verificata su Win
 **Correzione commit `bb8e1e644e7191dab274d24c5dc2ec18d1db445b`:** rimosso solo il carattere errato dalla dichiarazione; firma ora `private static void SetLiveDeploymentSpinner(ShapePath path, bool shouldSpin)`. Nessun cambiamento alla logica WPF o SSH. Non affermare che tutto compili finché il proprietario non ripete `dotnet publish` via `BUILD_PORTABLE.ps1` e mostra i risultati. Il clone stabile 2.2.1, il vecchio clone test e i relativi token non vengono modificati da questo commit.
 
 **Prossimo passo:** `git pull --ff-only` sul branch di sviluppo e ripetere build su Windows. Verificare in particolare il nuovo smoke `PASS: real WPF card retemplate during live spinner does not crash or freeze transforms.`; non effettuare deploy finché non è PASS.
+
+
+## 2026-11-01 — Seconda compilazione Windows: errore CS0136
+
+L'autore ha eseguito `git pull --ff-only` sul branch passando da `7ccacf6` a `f6bdecf` e ha ripetuto `powershell -NoProfile -ExecutionPolicy Bypass -File .\\BUILD_PORTABLE.ps1`. La prima correzione della firma C# ha eliminato gli 83 errori a cascata: gli stessi controlli preliminari PASS (classificazione 8/8, 14 cataloghi, configurazioni, profilo, sicurezza URL). La compilazione `net10.0-windows win-x64` dal commit `f6bdecf63ca7`, UTC `2026-11-01T10:43:46Z`, è però **fallita con un solo errore**: `App.xaml.cs(249,25): error CS0136`.
+
+**Causa:** il nuovo ramo CLI di test WPF dichiarava `var dashboard = new MainWindow ...` nello stesso metodo in cui il ramo ordinario successivo dichiara `var dashboard = new MainWindow()`. C# impedisce questo riuso del nome nella struttura degli scope esistenti, anche se il codice di test restituisce prima dell'avvio ordinario.
+
+**Correzione applicata direttamente nel branch:** commit `146d7b3670fbb86a4aedae84d4b55b953895849e`. Rinominata la sola variabile locale del test `dashboard` in `smokeDashboard` e tutti i suoi riferimenti; nessuna modifica a tunnel SSH, logica deploy o clone personale. **Compilazione e test WPF restano da verificare su Windows**; non presentare come PASS.
+
+**Prossimo passo:** `git pull --ff-only`, poi `BUILD_PORTABLE.ps1` e osservare il nuovo smoke WPF retemplate in esecuzione. La 2.2.1 rimane invariata e in uso con il tunnel SSH funzionante sulla porta 18000.
