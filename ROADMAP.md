@@ -1,19 +1,19 @@
-# CDM â€” Roadmap pubblica
+# CDM — Roadmap pubblica
 
 ## Stato
 - [x] Codice CDM 3.0.x, interfaccia WPF Windows e test importati da uno snapshot dei sorgenti.
 - [x] Cronologia di sviluppo precedente ESCLUSA dalla nuova copia pubblicabile.
-- [ ] Audit privacy finale di tutto il testo, immagini e binario generico.
-- [ ] Compilazione e smoke test di CDM 3.0.2 su Windows.
-- [ ] Nuovo repository GitHub con UNA cronologia iniziale pulita.
-- [ ] Release pubblica 3.0.2: EXE generico, ZIP e SHA256.
+- [x] Audit privacy finale di testo, immagini e binario generico superato prima della pubblicazione.
+- [x] Compilazione e smoke test di CDM 3.0.2 su Windows superati (FASE 7; packaging ufficiale FASE 10A).
+- [x] Nuovo repository GitHub creato con un singolo commit iniziale pulito (le manutenzioni successive sono nuovi commit separati).
+- [x] Release pubblica v3.0.2: EXE generico, ZIP e SHA256, verificati su GitHub.
 
 ## Regole operative
 - Nessuna credenziale, token, chiave SSH, indirizzo del VPS reale o percorso utente nei file pubblici.
 - Mai pubblicare cloni personali dell'applicazione.
 - Nessuna GitHub Action; build e release esclusivamente locali e manuali.
 - Aggiornare questa roadmap e il diario tecnico dopo ogni modifica sostanziale.
-### 2026-11-03 â€” FASE 3: esempi IPv4
+### 2026-11-03 — FASE 3: esempi IPv4
 - [x] Sostituiti gli IP pubblici presenti negli esempi dell'applicazione con indirizzi TEST-NET-3, senza toccare test locali/CGNAT.
 - [ ] Confermare con scansione Fase 2 il risultato sul candidato locale.
 - [ ] Eseguire compilazione Windows, smoke test e audit dell'EXE generico prima della nuova pubblicazione.
@@ -34,3 +34,20 @@
 - [ ] Ripetere build, smoke e audit binario dal commit root.
 - [ ] Solo dopo: sostituzione pubblica di GitHub previa autorizzazione esplicita.
 - [ ] Compilare release definitiva dal commit pubblico.
+
+## 2026-11-03 — FASI 7–11: pubblicazione verificata
+Le checklist delle fasi 3–6 sopra riportano lo stato storico al momento della loro compilazione. Lo stato corrente e il seguente:
+
+- [x] FASE 7: build Windows x64, test offline WPF/SSH, EXE generico, ZIP a 6 file e SHA256 verificati dal commit iniziale `0983609ba48c4fd509e538f965266767d652f28e` (75 file).
+- [x] FASE 8: controllati backup storico privato, SHA256, mirror Git e corrispondenza sorgenti/build; nessuna pubblicazione in questa fase.
+- [x] FASE 9: eliminato il vecchio repository GitHub, ricreato vuoto con lo stesso nome e pubblicato solo il commit pulito su `main`, senza `push --force`.
+- [x] FASE 10A: ricompilata e confezionata la release definitiva dal commit pubblico; verificati manifest SHA256 e whitelist di 6 file nello ZIP.
+- [x] FASE 10B: release pubblica stabile `v3.0.2` del 2026-11-03, tag legato al commit `0983609ba48c4fd509e538f965266767d652f28e`; allegati: `CDM-v3.0.2.exe`, `CDM-3.0.2-win-x64.zip`, `CDM-3.0.2-SHA256.txt`.
+- [x] FASE 11: corretto il controllo versione in `PUBLISH_RELEASE_3.0.2.ps1`; aggiornati ROADMAP e DIARIO TECNICO in un commit di manutenzione distinto, senza modificare il tag della release.
+
+### Prossimi passi
+- [ ] Sincronizzare le copie locali con `git pull --ff-only origin main` prima di nuove modifiche.
+- [ ] Per una futura release, predisporre uno script specifico o parametrico, evitando di ripubblicare `v3.0.2`; le release restano build e caricamenti locali manuali, mai GitHub Actions.
+- [ ] Allineare in un successivo intervento i documenti storici `RELEASE_GUIDE.md` e `RELEASE_NOTES_3.0.2.md` che descrivono ancora la fase precedente alla pubblicazione.
+
+Release: https://github.com/Cris0338/CDM-Coolify-Deploy-Manager/releases/tag/v3.0.2

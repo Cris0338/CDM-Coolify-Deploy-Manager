@@ -11,7 +11,7 @@ try {
     $repo = 'Cris0338/CDM-Coolify-Deploy-Manager'
     $tag = 'v3.0.2'
     $project = Join-Path $root 'src\CoolifyDeployManager\CoolifyDeployManager.csproj'
-    if ((Get-Content -LiteralPath $project -Raw) -notmatch '<Version>3\.0\.1</Version>') {
+    if ((Get-Content -LiteralPath $project -Raw) -notmatch '<Version>3\.0\.2</Version>') {
         throw 'This release script requires CDM project version 3.0.2.'
     }
     $branch = (& git branch --show-current).Trim()
