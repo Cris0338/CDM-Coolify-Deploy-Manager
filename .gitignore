@@ -1,0 +1,33 @@
+**/bin/
+**/obj/
+portable/
+release-artifacts/
+.vs/
+.vscode/
+*.user
+*.suo
+settings.json
+.env
+.env.*
+*.pfx
+*.pem
+*.key
+
+# Never publish portable encrypted user profiles or temporary vault writes.
+**/CDM.profile
+**/CDM.profile.*
+
+# Never commit a personalized CDM executable or its staging file.
+**/CDM-*.exe
+**/*.exe.pending
+**/.*.pending
+
+# Avoid accidentally staging a copied personalized clone, old backup,
+# temporary upgrade, or deferred-save error file outside portable/.
+**/*.exe
+**/*.bak
+**/*.exe.upgrade-in-progress
+**/*.exe.upgrade-error
+**/*.pending.updater-error.txt
+
+# Approved sanitized logo and icon are tracked for reproducible builds.

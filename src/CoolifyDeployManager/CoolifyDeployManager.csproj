@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <!-- WPF + WinForms with implicit usings causes ambiguous Application,
+         Window and MessageBox in .NET 10. Keep only explicit core globals. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>CoolifyDeployManager</AssemblyName>
+    <RootNamespace>CoolifyDeployManager</RootNamespace>
+    <ApplicationIcon>Assets\CDMOfficial.ico</ApplicationIcon>
+    <Version>3.0.2</Version>
+    <Authors>Cris0338</Authors>
+    <Copyright>Copyright © 2026 Cris0338</Copyright>
+    <Product>Coolify Deploy Manager</Product>
+    <Description>Coolify deployment dashboard for Windows. Independent, unofficial application by Cris0338.</Description>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <!-- Values are provided by BUILD_PORTABLE.ps1; direct IDE builds retain
+         explicit local/unknown metadata rather than inventing a Git SHA. -->
+    <CDMSourceCommit Condition="'$(CDMSourceCommit)' == ''">local</CDMSourceCommit>
+    <CDMBuildUtc Condition="'$(CDMBuildUtc)' == ''">unspecified</CDMBuildUtc>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CDM.SourceCommit</_Parameter1>
+      <_Parameter2>$(CDMSourceCommit)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CDM.BuildUtc</_Parameter1>
+      <_Parameter2>$(CDMBuildUtc)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\CDMOfficial.ico" />
+    <Resource Include="Assets\CDMLogo.png" />
+    <EmbeddedResource Include="Services\SshBootstrap.sh" LogicalName="CoolifyDeployManager.SshBootstrap.sh" />
+    <EmbeddedResource Include="Localization\*.json" LogicalName="CoolifyDeployManager.Localization.%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
